@@ -8,16 +8,25 @@ The caravan-cli will provide the following capabilities (commands):
 - init: creation of the needed configuration files and supporting state store and locking facilities for terraform
 - bake: baking of the VM images for the given cloud provider
 - up: startup of the caravan infrastructure deployment
+- status: provides a status of the deployment and running components
+- update: update a running instance with new versions
+- clean: destroy the project
 - TBD
 
 In the following table the support of the corresponding provider for each provider is reported:
 
-|  | init | bake | up |
-|--|--|--|--|
-|aws| :heavy_check_mark: | :heavy_check_mark: | WIP | 
-|gcp | :x: | :x: | :x: | 
-|az | :x: | :x: | :x: | 
-|oci | :x: | :x: | :x: | 
+|  | aws | gcp | az | oci |
+|--|--|--|--|--|
+|init| :heavy_check_mark: | :x: | :x: | :x: |
+|bake| :heavy_check_mark: | :x: | :x: | :x: |
+|up| WIP | :x: | :x: | :x: | 
+|status| :x: | :x: | :x: | :x: | 
+|update| :x: | :x: | :x: | :x: | 
+|clean| :x: | :x: | :x: | :x: | 
+
+
+
+
 
 ## Develop
 
