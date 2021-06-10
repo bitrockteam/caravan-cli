@@ -1,0 +1,10 @@
+region                  = "test-region"
+awsprofile              = "test-profile"
+shared_credentials_file = "~/.aws/credentials"
+prefix                  = "test-name"
+personal_ip_list        = ["0.0.0.0/0"]
+use_le_staging          = true
+external_domain         = "my-real-domain.io"
+tfstate_bucket_name     = "test-bucket"
+tfstate_table_name      = "test-table"
+tfstate_region          = "test-region"
