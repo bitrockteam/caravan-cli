@@ -1,0 +1,5 @@
+.DS_Store
+.caravan
+.terraform
+*.swp
+cmd/caravan/caravan
