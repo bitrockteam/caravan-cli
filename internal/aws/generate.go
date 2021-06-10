@@ -17,24 +17,24 @@ func (a *AWS) GenerateConfig() (err error) {
 		}
 	}
 
-	err = a.generateBaking()
+	err = a.GenerateBaking(filepath.Join(a.CaravanConfig.Workdir, "caravan-baking", "terraform", a.CaravanConfig.Provider+"-baking.tfvars"))
 	if err != nil {
 		return err
 	}
 
-	err = a.generateInfra()
+	err = a.GenerateInfra(filepath.Join(a.CaravanConfig.Workdir, "caravan-infra-aws", a.CaravanConfig.Name+"-infra.tfvars"))
 	if err != nil {
 		return err
 	}
 
-	err = a.generateBackend()
+	err = a.GenerateBackend(filepath.Join(a.CaravanConfig.Workdir, "caravan-infra-aws", a.CaravanConfig.Name+"-backend.tf"))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (a *AWS) generateBaking() (err error) {
+func (a *AWS) GenerateBaking(path string) (err error) {
 
 	t, err := template.New("baking").Parse(`build_on_aws      = true
 build_image_name  = "caravan-centos-image"
@@ -46,7 +46,7 @@ aws_instance_type = "t3.small"
 		return err
 	}
 
-	f, err := os.Create(filepath.Join(a.CaravanConfig.Workdir, "caravan-baking", "terraform", a.CaravanConfig.Provider+"-baking.tfvars"))
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ aws_instance_type = "t3.small"
 	return nil
 }
 
-func (a *AWS) generateInfra() (err error) {
+func (a *AWS) GenerateInfra(path string) (err error) {
 
 	t, err := template.New("infra").Parse(`region                  = "{{ .CaravanConfig.Region }}"
 awsprofile              = "{{ .CaravanConfig.Profile }}"
@@ -77,7 +77,7 @@ tfstate_region          = "{{ .CaravanConfig.Region }}"
 		return err
 	}
 
-	f, err := os.Create(filepath.Join(a.CaravanConfig.Workdir, "caravan-infra-aws", a.CaravanConfig.Name+"-infra.tfvars"))
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ tfstate_region          = "{{ .CaravanConfig.Region }}"
 	return nil
 }
 
-func (a *AWS) generateBackend() (err error) {
+func (a *AWS) GenerateBackend(path string) (err error) {
 
 	t, err := template.New("bakend").Parse(`terraform {
   backend "s3" {
@@ -105,7 +105,7 @@ func (a *AWS) generateBackend() (err error) {
 		return err
 	}
 
-	f, err := os.Create(filepath.Join(a.CaravanConfig.Workdir, "caravan-infra-aws", a.CaravanConfig.Name+"-backend.tf"))
+	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}

@@ -4,47 +4,61 @@ import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
 func TestGenerateConfig(t *testing.T) {
 
-	uid := uuid.New().String()
+	dir, err := ioutil.TempDir("", "caravan-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
 	aws := aws.NewAWS(caravan.Config{
 		Name:           "test-name",
 		Provider:       "test-provider",
 		Profile:        "test-profile",
 		Region:         "test-region",
-		Workdir:        ".testwd-" + uid,
-		WorkdirProject: ".testwd-" + uid + "/test-name",
+		Workdir:        dir,
+		WorkdirProject: dir + "/test-name",
 		TableName:      "test-table",
 		BucketName:     "test-bucket",
 	})
 
-	defer os.RemoveAll(aws.CaravanConfig.Workdir)
-
-	err := aws.GenerateConfig()
-	if err != nil {
-		t.Fatalf("error generating config: %s\n", err)
-	}
-
 	testCases := []struct {
-		name  string
-		ext   string
-		fname string
+		name   string
+		ext    string
+		folder string
+		fname  string
 	}{
-		{"baking", "tfvars", filepath.Join(aws.CaravanConfig.WorkdirProject, aws.CaravanConfig.Provider+"-baking.tfvars")},
-		{"infra", "tfvars", filepath.Join(aws.CaravanConfig.WorkdirProject, aws.CaravanConfig.Name+"-infra.tfvars")},
-		{"backend", "tf", filepath.Join(aws.CaravanConfig.WorkdirProject, aws.CaravanConfig.Name+"-backend.tf")},
+		{"baking", "tfvars", aws.CaravanConfig.Workdir, aws.CaravanConfig.Provider + "-baking.tfvars"},
+		{"infra", "tfvars", aws.CaravanConfig.Workdir, aws.CaravanConfig.Name + "-infra.tfvars"},
+		{"backend", "tf", aws.CaravanConfig.Workdir, aws.CaravanConfig.Name + "-backend.tf"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+
+			gen := filepath.Join(tc.folder, tc.fname)
 			gold := filepath.Join("testdata", tc.name+".golden."+tc.ext)
-			gen := tc.fname
+
+			switch tc.name {
+			case "baking":
+				err = aws.GenerateBaking(gen)
+				if err != nil {
+					t.Fatalf("error generating %s config: %s\n", tc.name, err)
+				}
+			case "infra":
+				err = aws.GenerateInfra(gen)
+				if err != nil {
+					t.Fatalf("error generating %s config: %s\n", tc.name, err)
+				}
+			case "backend":
+				err = aws.GenerateBackend(gen)
+				if err != nil {
+					t.Fatalf("error generating %s config: %s\n", tc.name, err)
+				}
+			}
+
 			want, err := ioutil.ReadFile(gold)
 			if err != nil {
 				t.Fatalf("error reading golden file: %s\n", err)
