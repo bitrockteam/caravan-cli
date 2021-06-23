@@ -1,10 +1,10 @@
-region                  = "test-region"
-awsprofile              = "test-profile"
+region                  = "eu-south-1"
+awsprofile              = "default"
 shared_credentials_file = "~/.aws/credentials"
 prefix                  = "test-name"
 personal_ip_list        = ["0.0.0.0/0"]
 use_le_staging          = true
-external_domain         = "my-real-domain.io"
-tfstate_bucket_name     = "test-bucket"
-tfstate_table_name      = "test-table"
-tfstate_region          = "test-region"
+external_domain         = "test.me"
+tfstate_bucket_name     = "test-name-caravan-terraform-state"
+tfstate_table_name      = "test-name-caravan-terraform-state-lock"
+tfstate_region          = "eu-south-1"

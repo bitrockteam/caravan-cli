@@ -58,7 +58,7 @@ func (t Terraform) ApplyVarMap(config map[string]string) (err error) {
 }
 
 func (t Terraform) ApplyVarFile(file string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancel()
 
 	args := []string{}
@@ -66,6 +66,27 @@ func (t Terraform) ApplyVarFile(file string) (err error) {
 	args = append(args, "-auto-approve")
 	args = append(args, "-var-file="+file)
 	fmt.Printf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
+	cmd := exec.CommandContext(ctx, "terraform", args...)
+	cmd.Dir = t.Workdir
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t Terraform) Destroy(file string) (err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
+	defer cancel()
+
+	args := []string{}
+	args = append(args, "destroy")
+	args = append(args, "-auto-approve")
+	args = append(args, "-var-file="+file)
+	fmt.Printf("running destroy on workdir: %s with args: %s\n", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 

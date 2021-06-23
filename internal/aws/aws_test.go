@@ -13,17 +13,17 @@ import (
 func TestBucketAWS(t *testing.T) {
 
 	uid := uuid.New().String()
-	aws := aws.NewAWS(caravan.Config{
-		Region: "eu-south-1",
-	})
-	err := aws.CreateBucket("caravan-aws-test-" + uid)
-
+	c, err := caravan.NewConfigFromScratch("name", "aws", "")
 	if err != nil {
+		t.Fatalf("unable to create config: %s\n", err)
+	}
+
+	aws, _ := aws.NewAWS(*c)
+	if err := aws.CreateBucket("caravan-aws-test-" + uid); err != nil {
 		t.Fatalf("error creating bucket: %s\n", err)
 	}
 
-	err = aws.DeleteBucket("caravan-aws-test-" + uid)
-	if err != nil {
+	if err := aws.DeleteBucket("caravan-aws-test-" + uid); err != nil {
 		t.Fatalf("error deleting bucket: %s\n", err)
 	}
 }
@@ -31,7 +31,7 @@ func TestBucketAWS(t *testing.T) {
 func TestIdempotentBucketAWS(t *testing.T) {
 
 	uid := uuid.New().String()
-	aws := aws.NewAWS(caravan.Config{
+	aws, _ := aws.NewAWS(caravan.Config{
 		Region: "eu-south-1",
 	})
 	err := aws.CreateBucket("caravan-aws-test-" + uid)
@@ -50,11 +50,43 @@ func TestIdempotentBucketAWS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error deleting bucket: %s\n", err)
 	}
+
+	err = aws.DeleteBucket("caravan-aws-test-" + uid)
+	if err != nil {
+		t.Fatalf("error deleting bucket: %s\n", err)
+	}
+}
+
+func TestEmptyBucketAWS(t *testing.T) {
+
+	uid := uuid.New().String()
+
+	aws, _ := aws.NewAWS(caravan.Config{
+		Region: "eu-south-1",
+	})
+
+	err := aws.CreateBucket("caravan-aws-test-" + uid)
+
+	if err != nil {
+		t.Fatalf("error creating bucket: %s\n", err)
+	}
+
+	err = aws.EmptyBucket("caravan-aws-test-" + uid)
+	if err != nil {
+		t.Fatalf("error emptying bucket: %s\n", err)
+	}
+
+	err = aws.DeleteBucket("caravan-aws-test-" + uid)
+
+	if err != nil {
+		t.Fatalf("error deleting bucket: %s\n", err)
+	}
+
 }
 
 func TestLockTableAWS(t *testing.T) {
 
-	aws := aws.NewAWS(caravan.Config{
+	aws, _ := aws.NewAWS(caravan.Config{
 		Region: "eu-south-1",
 	})
 	uid := uuid.New().String()
@@ -70,7 +102,7 @@ func TestLockTableAWS(t *testing.T) {
 
 func TestIdempotentLockTableAWS(t *testing.T) {
 
-	aws := aws.NewAWS(caravan.Config{
+	aws, _ := aws.NewAWS(caravan.Config{
 		Region: "eu-south-1",
 	})
 	uid := uuid.New().String()

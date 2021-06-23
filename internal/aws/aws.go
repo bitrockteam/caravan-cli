@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"caravan/internal/caravan"
@@ -21,19 +22,25 @@ type AWS struct {
 	AWSConfig     aws.Config
 }
 
-func NewAWS(conf caravan.Config) (a AWS) {
+func NewAWS(conf caravan.Config) (a AWS, err error) {
 
 	a.CaravanConfig = conf
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(a.CaravanConfig.Region),
-	)
+	cfg, err := config.LoadDefaultConfig(context.TODO())
 
-	if err != nil {
-		fmt.Printf("error creating config: %s\n", err)
-		return
+	if a.CaravanConfig.Region != "" {
+		cfg, err = config.LoadDefaultConfig(context.TODO(),
+			config.WithDefaultRegion(a.CaravanConfig.Region),
+		)
 	}
+	if err != nil {
+		return a, err
+	}
+	if cfg.Region == "" {
+		return a, fmt.Errorf("please provide a region")
+	}
+	a.CaravanConfig.Region = cfg.Region
 	a.AWSConfig = cfg
-	return a
+	return a, nil
 }
 
 func (a *AWS) CreateBucket(name string) (err error) {
@@ -54,7 +61,7 @@ func (a *AWS) CreateBucket(name string) (err error) {
 
 	if err != nil {
 		if !errors.As(err, &bae) && !errors.As(err, &bao) {
-			return err
+			return fmt.Errorf("unable to create bucket %s: %s\n", name, err)
 		}
 	}
 
@@ -68,13 +75,63 @@ func (a *AWS) CreateBucket(name string) (err error) {
 		})
 
 	if err != nil {
-		return fmt.Errorf("unable to enable versioning: %s\n", err)
+		return fmt.Errorf("unable to enable versioning on bucket %s: %s\n", name, err)
 	}
 
 	return nil
 }
 
+func (a *AWS) EmptyBucket(name string) (err error) {
+
+	var nsb *s3types.NoSuchBucket
+
+	svc := s3.NewFromConfig(a.AWSConfig)
+	vers, err := svc.ListObjectVersions(
+		context.TODO(),
+		&s3.ListObjectVersionsInput{
+			Bucket: &name,
+		})
+	if err != nil {
+		if errors.As(err, &nsb) {
+			return nil
+		}
+		return fmt.Errorf("error listing objects: %s\n", err)
+	}
+
+	for _, k := range vers.Versions {
+		_, err := svc.DeleteObject(
+			context.TODO(),
+			&s3.DeleteObjectInput{
+				Bucket:    &name,
+				Key:       k.Key,
+				VersionId: k.VersionId,
+			})
+		if err != nil {
+			if !errors.As(err, &nsb) {
+				return fmt.Errorf("error listing objects: %s\n", err)
+			}
+		}
+	}
+	for _, k := range vers.DeleteMarkers {
+		_, err := svc.DeleteObject(
+			context.TODO(),
+			&s3.DeleteObjectInput{
+				Bucket:    &name,
+				Key:       k.Key,
+				VersionId: k.VersionId,
+			})
+		if err != nil {
+			if !errors.As(err, &nsb) {
+				return fmt.Errorf("error listing objects: %s\n", err)
+			}
+		}
+	}
+	return nil
+}
+
 func (a *AWS) DeleteBucket(name string) (err error) {
+
+	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
 	_, err = svc.DeleteBucket(
@@ -83,7 +140,10 @@ func (a *AWS) DeleteBucket(name string) (err error) {
 			Bucket: &name,
 		})
 	if err != nil {
-		return err
+		//TODO why is error.As not working as expected ?
+		if !strings.Contains(err.Error(), "NoSuchBucket") && !errors.As(err, &nsb) {
+			return fmt.Errorf("error deleting bucket %s: %s \n", name, err)
+		}
 	}
 	return nil
 }
@@ -121,10 +181,10 @@ func (a *AWS) CreateLockTable(name string) (err error) {
 				time.Sleep(time.Duration(sleep) * time.Second)
 				continue
 			}
-			return err
+			return fmt.Errorf("error creating table %s: %s\n", name, err)
 		}
 		if i >= retry {
-			return fmt.Errorf("maximum number of retries reached: %d\n", retry)
+			return fmt.Errorf("maximum number of retries reached creating tabale %s: %d\n", name, retry)
 		}
 	}
 	return nil
@@ -154,12 +214,12 @@ func (a *AWS) DeleteLockTable(name string) (err error) {
 				return nil
 			}
 
-			return err
+			return fmt.Errorf("unable to delete lock table %s: %s\n", name, err)
 		}
 	}
 
 	if i >= retry {
-		return fmt.Errorf("maximum number of retries reached: %d\n", retry)
+		return fmt.Errorf("maximum number of retries reached deleting %s: %d\n", name, retry)
 	}
 	return nil
 

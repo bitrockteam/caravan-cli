@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 type Git struct {
@@ -15,18 +16,40 @@ func NewGit(org string) (g Git) {
 	return Git{org: org}
 }
 
-func (g Git) Clone(repo, dest string) (err error) {
+func (g Git) Clone(name, dest, branch string) (err error) {
 
-	fmt.Printf("cloning repo %s/%s to %s\n", g.org, repo, dest)
-	_, err = git.PlainClone("./"+dest, false, &git.CloneOptions{
-		URL:      "https://github.com/" + g.org + "/" + repo,
+	fmt.Printf("cloning repo %s/%s to %s - branch: %s\n", g.org, name, dest, branch)
+
+	repo, err := git.PlainClone("./"+dest, false, &git.CloneOptions{
+		URL:      "https://github.com/" + g.org + "/" + name,
 		Progress: os.Stdout,
 	})
 	if err != nil {
-		//TODO: improve error check
 		if err.Error() != "repository already exists" {
-			return fmt.Errorf("unable to clone repo %s: %s\n", repo, err)
+			return fmt.Errorf("unable to clone repo %s: %s\n", name, err)
+		}
+		repo, err = git.PlainOpen("./" + dest)
+		if err != nil {
+			return fmt.Errorf("unable to open repo %s: %s\n", name, err)
 		}
 	}
+
+	if branch == "" {
+		return nil
+	}
+
+	w, err := repo.Worktree()
+	if err != nil {
+		return fmt.Errorf("error getting worktree: %s\n", err)
+	}
+
+	b := plumbing.NewRemoteReferenceName("origin", branch)
+	err = w.Checkout(&git.CheckoutOptions{
+		Branch: b,
+	})
+	if err != nil {
+		return fmt.Errorf("error checking out: %s\n", err)
+	}
+
 	return nil
 }

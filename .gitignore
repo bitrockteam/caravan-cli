@@ -2,4 +2,4 @@
 .caravan
 .terraform
 *.swp
-cmd/caravan/caravan
+caravan
