@@ -14,16 +14,10 @@ func TestGenerateConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	aws := aws.NewAWS(caravan.Config{
-		Name:           "test-name",
-		Provider:       "test-provider",
-		Profile:        "test-profile",
-		Region:         "test-region",
-		Workdir:        dir,
-		WorkdirProject: dir + "/test-name",
-		TableName:      "test-table",
-		BucketName:     "test-bucket",
-	})
+	config, _ := caravan.NewConfigFromScratch("test-name", "aws", "eu-south-1")
+	config.SetWorkdir(dir)
+	_ = config.SetDomain("test.me")
+	aws, _ := aws.NewAWS(*config)
 
 	testCases := []struct {
 		name   string

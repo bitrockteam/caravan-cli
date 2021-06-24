@@ -1,8 +1,8 @@
 terraform {
   backend "s3" {
-    bucket         = "test-bucket"
+    bucket         = "test-name-caravan-terraform-state"
     key            = "infraboot/terraform/state/terraform.tfstate"
-    region         = "test-region"
-    dynamodb_table = "test-table"
+    region         = "eu-south-1"
+    dynamodb_table = "test-name-caravan-terraform-state-lock"
   }
 }

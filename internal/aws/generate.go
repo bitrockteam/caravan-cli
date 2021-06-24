@@ -3,31 +3,28 @@ package aws
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"text/template"
 )
 
 func (a *AWS) GenerateConfig() (err error) {
 
 	fmt.Printf("generating config files on: %s\n", a.CaravanConfig.WorkdirProject)
-	if _, err := os.Stat(a.CaravanConfig.WorkdirProject); os.IsNotExist(err) {
-		err := os.MkdirAll(a.CaravanConfig.WorkdirProject, 0777)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = a.GenerateBaking(filepath.Join(a.CaravanConfig.Workdir, "caravan-baking", "terraform", a.CaravanConfig.Provider+"-baking.tfvars"))
+	err = os.MkdirAll(a.CaravanConfig.WorkdirProject, 0777)
 	if err != nil {
 		return err
 	}
 
-	err = a.GenerateInfra(filepath.Join(a.CaravanConfig.Workdir, "caravan-infra-aws", a.CaravanConfig.Name+"-infra.tfvars"))
+	err = a.GenerateBaking(a.CaravanConfig.WorkdirBakingVars)
 	if err != nil {
 		return err
 	}
 
-	err = a.GenerateBackend(filepath.Join(a.CaravanConfig.Workdir, "caravan-infra-aws", a.CaravanConfig.Name+"-backend.tf"))
+	err = a.GenerateInfra(a.CaravanConfig.WorkdirInfraVars)
+	if err != nil {
+		return err
+	}
+
+	err = a.GenerateBackend(a.CaravanConfig.WorkdirInfraBackend)
 	if err != nil {
 		return err
 	}
@@ -67,7 +64,7 @@ shared_credentials_file = "~/.aws/credentials"
 prefix                  = "{{ .CaravanConfig.Name }}"
 personal_ip_list        = ["0.0.0.0/0"]
 use_le_staging          = true
-external_domain         = "my-real-domain.io"
+external_domain         = "{{ .CaravanConfig.Domain }}"
 tfstate_bucket_name     = "{{ .CaravanConfig.BucketName }}"
 tfstate_table_name      = "{{ .CaravanConfig.TableName }}"
 tfstate_region          = "{{ .CaravanConfig.Region }}"
