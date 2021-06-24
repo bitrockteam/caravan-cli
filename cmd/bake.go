@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// bakeCmd represents the bake command
+// bakeCmd represents the bake command.
 var bakeCmd = &cobra.Command{
 	Use:   "bake",
 	Short: "A brief description of your command",

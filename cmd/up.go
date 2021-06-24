@@ -5,16 +5,15 @@ Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"fmt"
-	"strings"
-
 	"caravan/internal/caravan"
 	"caravan/internal/terraform"
+	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// upCmd represents the up command
+// upCmd represents the up command.
 var upCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Deploy the caravan infra",
@@ -33,7 +32,7 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
-		//run terraform
+		// run terraform
 		tf := terraform.NewTerraform(c.WorkdirInfra)
 		err = tf.Init()
 		if err != nil {
@@ -43,14 +42,14 @@ var upCmd = &cobra.Command{
 		c.Destroy = true
 		c.Status = "DEPLOYING_INFRA"
 		if err := c.SaveConfig(); err != nil {
-			return fmt.Errorf("error persisting state: %s\n", err)
+			return fmt.Errorf("error persisting state: %w", err)
 		}
 		if err != nil {
-			return fmt.Errorf("error doing terraform apply: %s\n", err)
+			return fmt.Errorf("error doing terraform apply: %w", err)
 		}
 		c.Status = "DEPLOYED_INFRA"
 		if err := c.SaveConfig(); err != nil {
-			return fmt.Errorf("error persisting state: %s\n", err)
+			return fmt.Errorf("error persisting state: %w", err)
 		}
 
 		return nil

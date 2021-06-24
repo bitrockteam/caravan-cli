@@ -5,16 +5,15 @@ Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/spf13/cobra"
-
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
 	"caravan/internal/git"
+	"fmt"
+
+	"github.com/spf13/cobra"
 )
 
-// initCmd represents the init command
+// initCmd represents the init command.
 var initCmd = &cobra.Command{
 	Use:   "init --project=<project name> --provider=<provider>",
 	Short: "Create the needed config and terraform state store",
@@ -24,14 +23,13 @@ var initCmd = &cobra.Command{
 	--domain
 	optional parameters default respectively to the value defined in the default profile and <project>.com.`,
 	Args: func(cmd *cobra.Command, args []string) error {
-
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
 
 		_, err := caravan.NewConfigFromScratch(name, provider, region)
 		if err != nil {
-			return fmt.Errorf("error generating config: %s\n", err)
+			return fmt.Errorf("error generating config: %w", err)
 		}
 
 		return nil
@@ -98,8 +96,7 @@ func init() {
 }
 
 func initCloud(c *caravan.Config) (err error) {
-
-	//generate configs and supporting items (bucket and locktable)
+	// generate configs and supporting items (bucket and locktable)
 	fmt.Printf("initializing cloud resources\n")
 	cloud, err := aws.NewAWS(*c)
 	if err != nil {
@@ -108,7 +105,7 @@ func initCloud(c *caravan.Config) (err error) {
 
 	err = cloud.GenerateConfig()
 	if err != nil {
-		return fmt.Errorf("error generating config files: %s\n", err)
+		return fmt.Errorf("error generating config files: %w", err)
 	}
 
 	fmt.Printf("creating bucket: %s\n", c.BucketName)

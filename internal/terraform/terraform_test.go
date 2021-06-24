@@ -1,15 +1,13 @@
 package terraform_test
 
 import (
+	"caravan/internal/terraform"
 	"io/ioutil"
 	"os"
 	"testing"
-
-	"caravan/internal/terraform"
 )
 
 func TestTerraformInit(t *testing.T) {
-
 	dir, err := ioutil.TempDir("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
