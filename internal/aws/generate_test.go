@@ -9,7 +9,6 @@ import (
 )
 
 func TestGenerateConfig(t *testing.T) {
-
 	dir, err := ioutil.TempDir("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -31,7 +30,6 @@ func TestGenerateConfig(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-
 			gen := filepath.Join(tc.folder, tc.fname)
 			gold := filepath.Join("testdata", tc.name+".golden."+tc.ext)
 
@@ -65,7 +63,5 @@ func TestGenerateConfig(t *testing.T) {
 				t.Errorf("%s <-> %s: mismatch found with golden sample:\n%s\n%s\n", gen, gold, string(got), string(want))
 			}
 		})
-
 	}
-
 }

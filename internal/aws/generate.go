@@ -7,9 +7,8 @@ import (
 )
 
 func (a *AWS) GenerateConfig() (err error) {
-
 	fmt.Printf("generating config files on: %s\n", a.CaravanConfig.WorkdirProject)
-	err = os.MkdirAll(a.CaravanConfig.WorkdirProject, 0777)
+	err = os.MkdirAll(a.CaravanConfig.WorkdirProject, 0o777)
 	if err != nil {
 		return err
 	}
@@ -32,13 +31,11 @@ func (a *AWS) GenerateConfig() (err error) {
 }
 
 func (a *AWS) GenerateBaking(path string) (err error) {
-
 	t, err := template.New("baking").Parse(`build_on_aws      = true
 build_image_name  = "caravan-centos-image"
 aws_region        = "{{ .CaravanConfig.Region }}"
 aws_instance_type = "t3.small"
 `)
-
 	if err != nil {
 		return err
 	}
@@ -57,7 +54,6 @@ aws_instance_type = "t3.small"
 }
 
 func (a *AWS) GenerateInfra(path string) (err error) {
-
 	t, err := template.New("infra").Parse(`region                  = "{{ .CaravanConfig.Region }}"
 awsprofile              = "{{ .CaravanConfig.Profile }}"
 shared_credentials_file = "~/.aws/credentials"
@@ -69,7 +65,6 @@ tfstate_bucket_name     = "{{ .CaravanConfig.BucketName }}"
 tfstate_table_name      = "{{ .CaravanConfig.TableName }}"
 tfstate_region          = "{{ .CaravanConfig.Region }}"
 `)
-
 	if err != nil {
 		return err
 	}
@@ -88,7 +83,6 @@ tfstate_region          = "{{ .CaravanConfig.Region }}"
 }
 
 func (a *AWS) GenerateBackend(path string) (err error) {
-
 	t, err := template.New("bakend").Parse(`terraform {
   backend "s3" {
     bucket         = "{{ .CaravanConfig.BucketName }}"

@@ -11,7 +11,6 @@ import (
 )
 
 func TestBucketAWS(t *testing.T) {
-
 	uid := uuid.New().String()
 	c, err := caravan.NewConfigFromScratch("name", "aws", "")
 	if err != nil {
@@ -29,13 +28,11 @@ func TestBucketAWS(t *testing.T) {
 }
 
 func TestIdempotentBucketAWS(t *testing.T) {
-
 	uid := uuid.New().String()
 	aws, _ := aws.NewAWS(caravan.Config{
 		Region: "eu-south-1",
 	})
 	err := aws.CreateBucket("caravan-aws-test-" + uid)
-
 	if err != nil {
 		t.Fatalf("error creating bucket: %s\n", err)
 	}
@@ -58,7 +55,6 @@ func TestIdempotentBucketAWS(t *testing.T) {
 }
 
 func TestEmptyBucketAWS(t *testing.T) {
-
 	uid := uuid.New().String()
 
 	aws, _ := aws.NewAWS(caravan.Config{
@@ -66,7 +62,6 @@ func TestEmptyBucketAWS(t *testing.T) {
 	})
 
 	err := aws.CreateBucket("caravan-aws-test-" + uid)
-
 	if err != nil {
 		t.Fatalf("error creating bucket: %s\n", err)
 	}
@@ -81,11 +76,9 @@ func TestEmptyBucketAWS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error deleting bucket: %s\n", err)
 	}
-
 }
 
 func TestLockTableAWS(t *testing.T) {
-
 	aws, _ := aws.NewAWS(caravan.Config{
 		Region: "eu-south-1",
 	})
@@ -101,7 +94,6 @@ func TestLockTableAWS(t *testing.T) {
 }
 
 func TestIdempotentLockTableAWS(t *testing.T) {
-
 	aws, _ := aws.NewAWS(caravan.Config{
 		Region: "eu-south-1",
 	})

@@ -34,14 +34,13 @@ type Config struct {
 }
 
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
-
 	wd := ".caravan"
 	repos := []string{"caravan", "caravan-baking", "caravan-platform", "caravan-application-support"}
 
 	providers := []string{"aws"}
 
 	if len(name) > 12 {
-		return c, fmt.Errorf("name too long %d: max length is 12\n", len(name))
+		return c, fmt.Errorf("name too long %d: max length is 12", len(name))
 	}
 
 	c = &Config{
@@ -65,7 +64,6 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 }
 
 func NewConfigFromFile(path string) (c *Config, err error) {
-
 	wd := ".caravan"
 	b, err := ioutil.ReadFile(filepath.Join(wd, path, "caravan.state"))
 	if err != nil {
@@ -99,8 +97,7 @@ func (c *Config) setProvider(provider string) (err error) {
 			return nil
 		}
 	}
-	return fmt.Errorf("provider not supported: %s - %v\n", provider, c.Providers)
-
+	return fmt.Errorf("provider not supported: %s - %v", provider, c.Providers)
 }
 
 func (c *Config) setRegion(region string) (err error) {
@@ -119,9 +116,9 @@ func (c *Config) SetDomain(domain string) (err error) {
 	return fmt.Errorf("please provide a valid domain name")
 }
 
-// check the name of the region for the given provider
+// check the name of the region for the given provider.
 func isValidRegion(provider, region string) bool {
-	//TODO temp method, use SDK resources to validate
+	// TODO temp method, use SDK resources to validate
 	if provider == "aws" {
 		if region == "eu-south-1" {
 			return true
@@ -131,7 +128,6 @@ func isValidRegion(provider, region string) bool {
 }
 
 func (c *Config) SaveConfig() (err error) {
-
 	data, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
 		return err
@@ -142,14 +138,14 @@ func (c *Config) SaveConfig() (err error) {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(c.WorkdirProject, "caravan.state"), data, 0644)
+	err = ioutil.WriteFile(filepath.Join(c.WorkdirProject, "caravan.state"), data, 0o600)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// check id the provided string is a valid domain name
+// check id the provided string is a valid domain name.
 func isValidDomain(domain string) bool {
 	return govalidator.IsDNSName(domain)
 }

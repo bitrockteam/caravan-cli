@@ -5,19 +5,18 @@ Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
+	"caravan/internal/aws"
+	"caravan/internal/caravan"
+	"caravan/internal/terraform"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
-
-	"caravan/internal/aws"
-	"caravan/internal/caravan"
-	"caravan/internal/terraform"
 )
 
-// cleanCmd represents the clean command
+// cleanCmd represents the clean command.
 var cleanCmd = &cobra.Command{
 	Use:   "clean --project=<project name> --provider=<provider>",
 	Short: "Cleanup the needed config and terraform state store",
@@ -28,14 +27,13 @@ The following optional parameters can be specified:
 	--region: override of the region as specified in the cloud provider config
 	--force: set to true deletes all the objects from the cloud store.`,
 	Args: func(cmd *cobra.Command, args []string) error {
-
 		n, _ := cmd.Flags().GetString("project")
 		p, _ := cmd.Flags().GetString("provider")
 		r := ""
 
 		_, err := caravan.NewConfigFromScratch(n, p, r)
 		if err != nil {
-			return fmt.Errorf("error generating config: %s\n", err)
+			return fmt.Errorf("error generating config: %w", err)
 		}
 
 		return nil
@@ -51,7 +49,7 @@ The following optional parameters can be specified:
 		var c *caravan.Config
 		c, err = caravan.NewConfigFromFile(name)
 		if err != nil {
-			//TODO better error handling
+			// TODO better error handling
 			if !strings.Contains(err.Error(), "no such file or directory") {
 				return err
 			}
@@ -107,8 +105,7 @@ func init() {
 }
 
 func cleanCloud(cfg *caravan.Config) (err error) {
-
-	//generate configs and supporting items (bucket and locktable)
+	// generate configs and supporting items (bucket and locktable)
 	fmt.Printf("removing terraform state and locking structures\n")
 
 	cloud, err := aws.NewAWS(*cfg)
@@ -120,11 +117,11 @@ func cleanCloud(cfg *caravan.Config) (err error) {
 		fmt.Printf("emptying bucket %s\n", cfg.Name+"-caravan-terraform-state")
 		err = cloud.EmptyBucket(cfg.Name + "-caravan-terraform-state")
 		if err != nil {
-			return fmt.Errorf("error emptying: %s\n", err)
+			return fmt.Errorf("error emptying: %w", err)
 		}
 	}
 
-	//TODO cleanup before delete with force option
+	// TODO cleanup before delete with force option
 	err = cloud.DeleteBucket(cfg.Name + "-caravan-terraform-state")
 	if err != nil {
 		return err

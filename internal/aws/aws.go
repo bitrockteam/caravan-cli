@@ -23,7 +23,6 @@ type AWS struct {
 }
 
 func NewAWS(conf caravan.Config) (a AWS, err error) {
-
 	a.CaravanConfig = conf
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
@@ -44,7 +43,6 @@ func NewAWS(conf caravan.Config) (a AWS, err error) {
 }
 
 func (a *AWS) CreateBucket(name string) (err error) {
-
 	var bae *s3types.BucketAlreadyExists
 	var bao *s3types.BucketAlreadyOwnedByYou
 
@@ -61,7 +59,7 @@ func (a *AWS) CreateBucket(name string) (err error) {
 
 	if err != nil {
 		if !errors.As(err, &bae) && !errors.As(err, &bao) {
-			return fmt.Errorf("unable to create bucket %s: %s\n", name, err)
+			return fmt.Errorf("unable to create bucket %s: %w", name, err)
 		}
 	}
 
@@ -75,14 +73,13 @@ func (a *AWS) CreateBucket(name string) (err error) {
 		})
 
 	if err != nil {
-		return fmt.Errorf("unable to enable versioning on bucket %s: %s\n", name, err)
+		return fmt.Errorf("unable to enable versioning on bucket %s: %w", name, err)
 	}
 
 	return nil
 }
 
 func (a *AWS) EmptyBucket(name string) (err error) {
-
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -95,7 +92,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 		if errors.As(err, &nsb) {
 			return nil
 		}
-		return fmt.Errorf("error listing object versions: %s\n", err)
+		return fmt.Errorf("error listing object versions: %w", err)
 	}
 
 	for _, k := range vers.Versions {
@@ -108,7 +105,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 			})
 		if err != nil {
 			if !errors.As(err, &nsb) {
-				return fmt.Errorf("error deleting object %v: %s\n", k.Key, err)
+				return fmt.Errorf("error deleting object %v: %w", k.Key, err)
 			}
 		}
 	}
@@ -122,7 +119,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 			})
 		if err != nil {
 			if !errors.As(err, &nsb) {
-				return fmt.Errorf("error removing delete marker %v: %s\n", k.Key, err)
+				return fmt.Errorf("error removing delete marker %v: %w", k.Key, err)
 			}
 		}
 	}
@@ -130,7 +127,6 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 }
 
 func (a *AWS) DeleteBucket(name string) (err error) {
-
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -140,16 +136,15 @@ func (a *AWS) DeleteBucket(name string) (err error) {
 			Bucket: &name,
 		})
 	if err != nil {
-		//TODO why is error.As not working as expected ?
+		// TODO why is error.As not working as expected ?
 		if !strings.Contains(err.Error(), "NoSuchBucket") && !errors.As(err, &nsb) {
-			return fmt.Errorf("error deleting bucket %s: %s \n", name, err)
+			return fmt.Errorf("error deleting bucket %s: %w", name, err)
 		}
 	}
 	return nil
 }
 
 func (a *AWS) CreateLockTable(name string) (err error) {
-
 	var riu *dytypes.ResourceInUseException
 
 	retry := 10
@@ -162,13 +157,13 @@ func (a *AWS) CreateLockTable(name string) (err error) {
 			&dynamodb.CreateTableInput{
 				TableName: aws.String(name),
 				KeySchema: []dytypes.KeySchemaElement{
-					dytypes.KeySchemaElement{
+					{
 						KeyType:       dytypes.KeyTypeHash,
 						AttributeName: aws.String("LockID"),
 					},
 				},
 				AttributeDefinitions: []dytypes.AttributeDefinition{
-					dytypes.AttributeDefinition{
+					{
 						AttributeName: aws.String("LockID"),
 						AttributeType: dytypes.ScalarAttributeTypeS,
 					},
@@ -181,17 +176,16 @@ func (a *AWS) CreateLockTable(name string) (err error) {
 				time.Sleep(time.Duration(sleep) * time.Second)
 				continue
 			}
-			return fmt.Errorf("error creating table %s: %s\n", name, err)
+			return fmt.Errorf("error creating table %s: %w", name, err)
 		}
 		if i >= retry {
-			return fmt.Errorf("maximum number of retries reached creating table %s: %d\n", name, retry)
+			return fmt.Errorf("maximum number of retries reached creating table %s: %d", name, retry)
 		}
 	}
 	return nil
 }
 
 func (a *AWS) DeleteLockTable(name string) (err error) {
-
 	var riu *dytypes.ResourceInUseException
 	var rnf *dytypes.ResourceNotFoundException
 
@@ -214,13 +208,12 @@ func (a *AWS) DeleteLockTable(name string) (err error) {
 				return nil
 			}
 
-			return fmt.Errorf("unable to delete lock table %s: %s\n", name, err)
+			return fmt.Errorf("unable to delete lock table %s: %w", name, err)
 		}
 	}
 
 	if i >= retry {
-		return fmt.Errorf("maximum number of retries reached deleting %s: %d\n", name, retry)
+		return fmt.Errorf("maximum number of retries reached deleting %s: %d", name, retry)
 	}
 	return nil
-
 }

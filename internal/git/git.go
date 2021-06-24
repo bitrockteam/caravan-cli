@@ -17,7 +17,6 @@ func NewGit(org string) (g Git) {
 }
 
 func (g Git) Clone(name, dest, branch string) (err error) {
-
 	fmt.Printf("cloning repo %s/%s to %s - branch: %s\n", g.org, name, dest, branch)
 
 	repo, err := git.PlainClone("./"+dest, false, &git.CloneOptions{
@@ -26,11 +25,11 @@ func (g Git) Clone(name, dest, branch string) (err error) {
 	})
 	if err != nil {
 		if err.Error() != "repository already exists" {
-			return fmt.Errorf("unable to clone repo %s: %s\n", name, err)
+			return fmt.Errorf("unable to clone repo %s: %w", name, err)
 		}
 		repo, err = git.PlainOpen("./" + dest)
 		if err != nil {
-			return fmt.Errorf("unable to open repo %s: %s\n", name, err)
+			return fmt.Errorf("unable to open repo %s: %w", name, err)
 		}
 	}
 
@@ -40,7 +39,7 @@ func (g Git) Clone(name, dest, branch string) (err error) {
 
 	w, err := repo.Worktree()
 	if err != nil {
-		return fmt.Errorf("error getting worktree: %s\n", err)
+		return fmt.Errorf("error getting worktree: %w", err)
 	}
 
 	b := plumbing.NewRemoteReferenceName("origin", branch)
@@ -48,7 +47,7 @@ func (g Git) Clone(name, dest, branch string) (err error) {
 		Branch: b,
 	})
 	if err != nil {
-		return fmt.Errorf("error checking out: %s\n", err)
+		return fmt.Errorf("error checking out: %w", err)
 	}
 
 	return nil

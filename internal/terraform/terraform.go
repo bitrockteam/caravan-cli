@@ -17,7 +17,6 @@ func NewTerraform(wd string) (tf Terraform) {
 }
 
 func (t Terraform) Init() (err error) {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
