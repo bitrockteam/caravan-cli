@@ -95,7 +95,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 		if errors.As(err, &nsb) {
 			return nil
 		}
-		return fmt.Errorf("error listing objects: %s\n", err)
+		return fmt.Errorf("error listing object versions: %s\n", err)
 	}
 
 	for _, k := range vers.Versions {
@@ -108,7 +108,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 			})
 		if err != nil {
 			if !errors.As(err, &nsb) {
-				return fmt.Errorf("error listing objects: %s\n", err)
+				return fmt.Errorf("error deleting objecti %s: %s\n", k.Key, err)
 			}
 		}
 	}
@@ -122,7 +122,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 			})
 		if err != nil {
 			if !errors.As(err, &nsb) {
-				return fmt.Errorf("error listing objects: %s\n", err)
+				return fmt.Errorf("error removing delete marker %s: %s\n", k.Key, err)
 			}
 		}
 	}
@@ -184,7 +184,7 @@ func (a *AWS) CreateLockTable(name string) (err error) {
 			return fmt.Errorf("error creating table %s: %s\n", name, err)
 		}
 		if i >= retry {
-			return fmt.Errorf("maximum number of retries reached creating tabale %s: %d\n", name, retry)
+			return fmt.Errorf("maximum number of retries reached creating table %s: %d\n", name, retry)
 		}
 	}
 	return nil

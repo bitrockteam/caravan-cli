@@ -22,7 +22,7 @@ In the following table the support of the corresponding provider for each provid
 |up| WIP | :x: | :x: | :x: | 
 |status| :x: | :x: | :x: | :x: | 
 |update| :x: | :x: | :x: | :x: | 
-|clean| :hevy_check_mark: | :x: | :x: | :x: | 
+|clean| :heavy_check_mark: | :x: | :x: | :x: | 
 
 ## Develop
 
