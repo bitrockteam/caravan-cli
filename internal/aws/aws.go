@@ -108,7 +108,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 			})
 		if err != nil {
 			if !errors.As(err, &nsb) {
-				return fmt.Errorf("error deleting objecti %s: %s\n", k.Key, err)
+				return fmt.Errorf("error deleting object %v: %s\n", k.Key, err)
 			}
 		}
 	}
@@ -122,7 +122,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 			})
 		if err != nil {
 			if !errors.As(err, &nsb) {
-				return fmt.Errorf("error removing delete marker %s: %s\n", k.Key, err)
+				return fmt.Errorf("error removing delete marker %v: %s\n", k.Key, err)
 			}
 		}
 	}
