@@ -3,6 +3,7 @@ package caravan
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -16,8 +17,8 @@ type Config struct {
 	Regions             map[string][]string `json:",omitempty"`
 	Profile             string              `json:",omitempty"`
 	Provider            string              `json:",omitempty"`
-	InfraPath           string              `json:",omitempty"`
 	Providers           []string            `json:",omitempty"`
+	Branch              string              `json:",omitempty"`
 	TableName           string              `json:",omitempty"`
 	BucketName          string              `json:",omitempty"`
 	Repos               []string            `json:",omitempty"`
@@ -29,9 +30,10 @@ type Config struct {
 	WorkdirInfra        string              `json:",omitempty"`
 	WorkdirInfraVars    string              `json:",omitempty"`
 	WorkdirInfraBackend string              `json:",omitempty"`
+	WorkdirPlatform     string              `json:",omitempty"`
 	Destroy             bool                `json:",omitempty"`
 	Force               bool                `json:",omitempty"`
-	Status              string              `json:",omitempty"`
+	Status              Status              `json:",omitempty"`
 }
 
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
@@ -119,6 +121,10 @@ func (c *Config) SetDomain(domain string) (err error) {
 	return fmt.Errorf("please provide a valid domain name")
 }
 
+func (c *Config) SetBranch(branch string) {
+	c.Branch = branch
+}
+
 // check the name of the region for the given provider.
 func isValidRegion(provider, region string) bool {
 	// TODO temp method, use SDK resources to validate
@@ -148,7 +154,57 @@ func (c *Config) SaveConfig() (err error) {
 	return nil
 }
 
-// check id the provided string is a valid domain name.
+func (c *Config) StatusReport() {
+	t, err := template.New("status").Parse(`STATUS
+project: {{.Name }}
+workdir: {{.Workdir }}
+branch: {{.Branch }}
+provider: {{.Provider}}
+region: {{ or .Region "-- provider default --"}}
+status: {{.Status }}
+vault: https://vault.{{.Name }}.{{.Domain}} - status: {{.VaultCheck}} - version: {{.VaultVersion}} 
+consul: https://consul.{{.Name }}.{{.Domain}} - status: {{.ConsulCheck }} - version: {{.ConsulVersion}}
+nomad: https://nomad.{{.Name }}.{{.Domain}} - status: {{.NomadCheck}} - version: {{.NomadVersion}}
+`)
+	if err != nil {
+		fmt.Printf("error parsing report: %s\n", err)
+	}
+
+	if err := t.Execute(os.Stdout, c); err != nil {
+		fmt.Printf("error executing report: %s\n", err)
+	}
+}
+
+// check if the provided string is a valid domain name.
 func isValidDomain(domain string) bool {
 	return govalidator.IsDNSName(domain)
+}
+
+func (c *Config) VaultCheck() string {
+	v := NewVaultHealth("https://vault.demo.reactive-labs.io/")
+	return v.Check()
+}
+
+func (c *Config) VaultVersion() string {
+	v := NewVaultHealth("https://vault.demo.reactive-labs.io/")
+	return v.Version()
+}
+
+func (c *Config) ConsulCheck() bool {
+	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/")
+	return consul.Check()
+}
+
+func (c *Config) ConsulVersion() string {
+	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/")
+	return consul.Version()
+}
+func (c *Config) NomadCheck() bool {
+	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/")
+	return n.Check()
+}
+
+func (c *Config) NomadVersion() string {
+	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/")
+	return n.Version()
 }

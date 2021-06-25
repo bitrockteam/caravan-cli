@@ -1,10 +1,11 @@
 package terraform_test
 
 import (
-	"caravan/internal/terraform"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"caravan/internal/terraform"
 )
 
 func TestTerraformInit(t *testing.T) {

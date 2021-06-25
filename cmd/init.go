@@ -35,8 +35,6 @@ var initCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Println("init called")
-
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
@@ -46,6 +44,11 @@ var initCmd = &cobra.Command{
 		}
 
 		b, _ := cmd.Flags().GetString("branch")
+
+		c.SetBranch(b)
+		if err := c.SaveConfig(); err != nil {
+			return err
+		}
 
 		// checkout repos
 		git := git.NewGit("bitrockteam")
@@ -63,7 +66,7 @@ var initCmd = &cobra.Command{
 			fmt.Printf("error during init: %s\n", err)
 			return err
 		}
-		c.Status = "INIT_COMPLETE"
+		c.Status = caravan.InitDone
 		if err := c.SaveConfig(); err != nil {
 			return err
 		}

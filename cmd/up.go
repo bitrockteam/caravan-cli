@@ -7,10 +7,9 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"caravan/internal/caravan"
-	"caravan/internal/terraform"
+	tf "caravan/internal/terraform"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +20,6 @@ var upCmd = &cobra.Command{
 	Short: "Deploy the caravan infra",
 	Long:  `This commands applies the generated terraform configs and provision the needed infrastructure to deploy a caravan instance`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Println("up called")
 		name, _ := cmd.Flags().GetString("project")
 
 		c, err := caravan.NewConfigFromFile(name)
@@ -34,24 +32,19 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
-		// run terraform
-		tf := terraform.NewTerraform(c.WorkdirInfra)
-		err = tf.Init()
-		if err != nil {
-			return err
+		// TODO is this really needed ? is tf apply idempotent ?
+		if c.Status < caravan.InfraDeployDone {
+			err := deployInfra(c)
+			if err != nil {
+				return err
+			}
 		}
-		err = tf.ApplyVarFile(c.Name+"-infra.tfvars", 600*time.Second)
-		c.Destroy = true
-		c.Status = "DEPLOYING_INFRA"
-		if err := c.SaveConfig(); err != nil {
-			return fmt.Errorf("error persisting state: %w", err)
-		}
-		if err != nil {
-			return fmt.Errorf("error doing terraform apply: %w", err)
-		}
-		c.Status = "DEPLOYED_INFRA"
-		if err := c.SaveConfig(); err != nil {
-			return fmt.Errorf("error persisting state: %w", err)
+
+		if c.Status > caravan.InfraDeployDone {
+			err := deployPlatform(c)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -75,4 +68,40 @@ func init() {
 	_ = upCmd.MarkPersistentFlagRequired("project")
 	upCmd.PersistentFlags().String("provider", "", "name of provider")
 	_ = upCmd.MarkPersistentFlagRequired("provider")
+}
+
+func deployInfra(c *caravan.Config) error {
+	tf := tf.NewTerraform(c.WorkdirInfra)
+	err := tf.Init()
+	if err != nil {
+		return err
+	}
+	c.Status = caravan.InfraDeployRunning
+	if err := c.SaveConfig(); err != nil {
+		return fmt.Errorf("error persisting state: %w", err)
+	}
+
+	if err := tf.ApplyVarFile(c.Name + "-infra.tfvars"); err != nil {
+		return fmt.Errorf("error doing terraform apply: %w", err)
+	}
+
+	// TODO remove and use status as marker for destruction
+	c.Destroy = true
+	if err := c.SaveConfig(); err != nil {
+		return fmt.Errorf("error persisting state: %w", err)
+	}
+
+	c.Status = caravan.InfraDeployDone
+	if err := c.SaveConfig(); err != nil {
+		return fmt.Errorf("error persisting state: %w", err)
+	}
+	return nil
+}
+
+func deployPlatform(c *caravan.Config) error {
+	tf := tf.NewTerraform(c.WorkdirPlatform)
+	if err := tf.Init(); err != nil {
+		return err
+	}
+	return nil
 }
