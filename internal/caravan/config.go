@@ -138,7 +138,7 @@ func (c *Config) SaveConfig() (err error) {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(c.WorkdirProject, "caravan.state"), data, 0o600)
+	err = ioutil.WriteFile(filepath.Join(c.WorkdirProject, "caravan.state"), data, 0600)
 	if err != nil {
 		return err
 	}
