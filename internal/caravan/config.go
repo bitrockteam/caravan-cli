@@ -98,7 +98,7 @@ func (c *Config) setProvider(provider string) (err error) {
 			c.WorkdirInfraVars = filepath.Join(c.WorkdirInfra, c.Name+"-infra.tfvars")
 			c.WorkdirInfraBackend = filepath.Join(c.WorkdirInfra, c.Name+"-backend.tf")
 			c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
-			c.WorkdirBakingVars = c.Provider + "-baking.tfvars"
+			c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
 			return nil
 		}
 	}

@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"caravan/internal/caravan"
 	tf "caravan/internal/terraform"
@@ -81,7 +82,7 @@ func deployInfra(c *caravan.Config) error {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 
-	if err := tf.ApplyVarFile(c.Name + "-infra.tfvars"); err != nil {
+	if err := tf.ApplyVarFile(c.Name+"-infra.tfvars", 600*time.Second); err != nil {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
