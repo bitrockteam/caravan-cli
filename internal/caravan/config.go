@@ -181,30 +181,31 @@ func isValidDomain(domain string) bool {
 }
 
 func (c *Config) VaultCheck() string {
-	v := NewVaultHealth("https://vault.demo.reactive-labs.io/")
+	v := NewVaultHealth("https://vault.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
+
 	return v.Check()
 }
 
 func (c *Config) VaultVersion() string {
-	v := NewVaultHealth("https://vault.demo.reactive-labs.io/")
+	v := NewVaultHealth("https://vault.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
 	return v.Version()
 }
 
 func (c *Config) ConsulCheck() bool {
-	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/")
+	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
 	return consul.Check()
 }
 
 func (c *Config) ConsulVersion() string {
-	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/")
+	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
 	return consul.Version()
 }
 func (c *Config) NomadCheck() bool {
-	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/")
+	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
 	return n.Check()
 }
 
 func (c *Config) NomadVersion() string {
-	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/")
+	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
 	return n.Version()
 }

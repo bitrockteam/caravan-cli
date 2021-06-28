@@ -3,9 +3,11 @@ package caravan
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"time"
@@ -17,21 +19,23 @@ type Checker interface {
 }
 
 type VaultHealth struct {
-	url string
+	url    string
+	caFile string
 }
 
 type VaultResponse struct {
 	Version string `json:",omitempty"`
 }
 
-func NewVaultHealth(u string) VaultHealth {
+func NewVaultHealth(u, ca string) VaultHealth {
 	return VaultHealth{
-		url: u + "v1/sys/health",
+		url:    u + "v1/sys/health",
+		caFile: ca,
 	}
 }
 
 func (h VaultHealth) Check() string {
-	resp, err := Get(h.url)
+	resp, err := Get(h.url, h.caFile)
 	if err != nil {
 		return "error"
 	}
@@ -46,7 +50,7 @@ func (h VaultHealth) Check() string {
 }
 
 func (h VaultHealth) Version() string {
-	resp, err := Get(h.url)
+	resp, err := Get(h.url, h.caFile)
 	if err != nil {
 		fmt.Printf("error: %s\n", err)
 		return ""
@@ -69,18 +73,20 @@ func (h VaultHealth) Version() string {
 }
 
 type ConsulHealth struct {
-	url string
+	url    string
+	caFile string
 }
 
-func NewConsulHealth(u string) ConsulHealth {
+func NewConsulHealth(u, ca string) ConsulHealth {
 	return ConsulHealth{
 		// TODO use better endpoint when available
-		url: u + "ui/aws-dc/services",
+		url:    u + "ui/aws-dc/services",
+		caFile: ca,
 	}
 }
 
 func (c ConsulHealth) Check() bool {
-	resp, err := Get(c.url)
+	resp, err := Get(c.url, c.caFile)
 	if err != nil {
 		return false
 	}
@@ -90,7 +96,7 @@ func (c ConsulHealth) Check() bool {
 
 func (c ConsulHealth) Version() string {
 	// TODO make more robust (change endpoint)
-	resp, err := Get(c.url)
+	resp, err := Get(c.url, c.caFile)
 	if err != nil {
 		fmt.Printf("error: %s", err)
 		return ""
@@ -111,18 +117,20 @@ func (c ConsulHealth) Version() string {
 }
 
 type NomadHealth struct {
-	url string
+	url    string
+	caFile string
 }
 
-func NewNomadHealth(u string) NomadHealth {
+func NewNomadHealth(u, ca string) NomadHealth {
 	return NomadHealth{
 		// TODO use better endpoint when available
-		url: u + "v1/sys/leader",
+		url:    u + "v1/sys/leader",
+		caFile: ca,
 	}
 }
 
 func (n NomadHealth) Check() bool {
-	resp, err := Get(n.url)
+	resp, err := Get(n.url, n.caFile)
 	if err != nil {
 		return false
 	}
@@ -135,17 +143,30 @@ func (n NomadHealth) Version() string {
 	return "not found"
 }
 
-func Get(url string) (resp *http.Response, err error) {
+func Get(url, ca string) (resp *http.Response, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return resp, err
 	}
-	// TODO use generated certs available
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+
+	// Load CA cert
+	caCert, err := ioutil.ReadFile(ca)
+	if err != nil {
+		return resp, err
 	}
-	client := &http.Client{Transport: tr}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+		RootCAs:    caCertPool,
+	}
+	tlsConfig.BuildNameToCertificate()
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+
+	client := &http.Client{Transport: transport}
 	return client.Do(req)
 }
