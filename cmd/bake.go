@@ -5,7 +5,11 @@ Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
+	"caravan/internal/caravan"
+	"caravan/internal/terraform"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -13,28 +17,61 @@ import (
 // bakeCmd represents the bake command.
 var bakeCmd = &cobra.Command{
 	Use:   "bake",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate (bake) up to date VM images for caravan",
+	Long: `Baked images are available for usage in the selected provider's registry provided region.
+`,
+	Args: func(cmd *cobra.Command, args []string) error {
+		name, _ := cmd.Flags().GetString("project")
+		provider, _ := cmd.Flags().GetString("provider")
+		region, _ := cmd.Flags().GetString("region")
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
+		_, err := caravan.NewConfigFromScratch(name, provider, region)
+		if err != nil {
+			return fmt.Errorf("error generating config: %w", err)
+		}
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		fmt.Println("bake called")
+
+		name, _ := cmd.Flags().GetString("project")
+		provider, _ := cmd.Flags().GetString("provider")
+		region, _ := cmd.Flags().GetString("region")
+
+		c, err := caravan.NewConfigFromScratch(name, provider, region)
+		if err != nil {
+			return err
+		}
+
+		return bake(*c)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(bakeCmd)
 
-	// Here you will define your flags and configuration settings.
+	bakeCmd.PersistentFlags().String("project", "", "Project name, used for tagging and namespacing")
+	bakeCmd.PersistentFlags().String("provider", "", "Cloud provider name. Can be on of aws,gcp, ...")
+	bakeCmd.PersistentFlags().String("rgion", "", "Optional: override default profile region")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// bakeCmd.PersistentFlags().String("foo", "", "A help for foo")
+	_ = bakeCmd.MarkPersistentFlagRequired("project")
+	_ = bakeCmd.MarkPersistentFlagRequired("provider")
+}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// bakeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func bake(c caravan.Config) (err error) {
+	if _, err := os.Stat(c.WorkdirProject); os.IsNotExist(err) {
+		return fmt.Errorf("please run init before bake")
+	}
+
+	tf := terraform.NewTerraform(c.WorkdirBaking)
+	err = tf.Init()
+	if err != nil {
+		return err
+	}
+
+	err = tf.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second)
+	if err != nil {
+		return err
+	}
+	return nil
 }

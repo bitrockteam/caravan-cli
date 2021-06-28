@@ -56,8 +56,8 @@ func (t Terraform) ApplyVarMap(config map[string]string) (err error) {
 	return nil
 }
 
-func (t Terraform) ApplyVarFile(file string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
+func (t Terraform) ApplyVarFile(file string, timeout time.Duration) (err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	args := []string{}

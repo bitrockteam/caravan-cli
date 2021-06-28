@@ -24,6 +24,7 @@ type Config struct {
 	Domain              string              `json:",omitempty"`
 	Workdir             string              `json:",omitempty"`
 	WorkdirProject      string              `json:",omitempty"`
+	WorkdirBaking       string              `json:",omitempty"`
 	WorkdirBakingVars   string              `json:",omitempty"`
 	WorkdirInfra        string              `json:",omitempty"`
 	WorkdirInfraVars    string              `json:",omitempty"`
@@ -83,6 +84,7 @@ func (c *Config) SetWorkdir(wd string) {
 	c.WorkdirInfraVars = filepath.Join(c.WorkdirInfra, c.Name+"-infra.tfvars")
 	c.WorkdirInfraBackend = filepath.Join(c.WorkdirInfra, c.Name+"-backend.tf")
 	c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
+	c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
 }
 
 func (c *Config) setProvider(provider string) (err error) {
@@ -93,7 +95,8 @@ func (c *Config) setProvider(provider string) (err error) {
 			c.WorkdirInfra = filepath.Join(c.WorkdirProject, "caravan-infra-"+provider)
 			c.WorkdirInfraVars = filepath.Join(c.WorkdirInfra, c.Name+"-infra.tfvars")
 			c.WorkdirInfraBackend = filepath.Join(c.WorkdirInfra, c.Name+"-backend.tf")
-			c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
+			c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
+			c.WorkdirBakingVars = c.Provider + "-baking.tfvars"
 			return nil
 		}
 	}

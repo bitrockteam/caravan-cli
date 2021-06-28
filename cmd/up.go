@@ -5,10 +5,12 @@ Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan/internal/caravan"
-	"caravan/internal/terraform"
 	"fmt"
 	"strings"
+	"time"
+
+	"caravan/internal/caravan"
+	"caravan/internal/terraform"
 
 	"github.com/spf13/cobra"
 )
@@ -38,7 +40,7 @@ var upCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		err = tf.ApplyVarFile(c.Name + "-infra.tfvars")
+		err = tf.ApplyVarFile(c.Name+"-infra.tfvars", 600*time.Second)
 		c.Destroy = true
 		c.Status = "DEPLOYING_INFRA"
 		if err := c.SaveConfig(); err != nil {
