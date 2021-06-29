@@ -86,12 +86,6 @@ func deployInfra(c *caravan.Config) error {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
-	// TODO remove and use status as marker for destruction
-	c.Destroy = true
-	if err := c.SaveConfig(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-
 	c.Status = caravan.InfraDeployDone
 	if err := c.SaveConfig(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)

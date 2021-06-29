@@ -65,7 +65,7 @@ The following optional parameters can be specified:
 			c.Force = true
 		}
 
-		if c.Destroy {
+		if c.Status >= caravan.InfraDeployRunning {
 			tf := terraform.NewTerraform(c.WorkdirInfra)
 			err := tf.Destroy(filepath.Base(c.WorkdirInfraVars))
 			if err != nil {
@@ -74,7 +74,7 @@ The following optional parameters can be specified:
 					return nil
 				}
 			}
-			c.Destroy = false
+			c.Status = caravan.InitDone
 			if err := c.SaveConfig(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil

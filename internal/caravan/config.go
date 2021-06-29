@@ -31,7 +31,6 @@ type Config struct {
 	WorkdirInfraVars    string              `json:",omitempty"`
 	WorkdirInfraBackend string              `json:",omitempty"`
 	WorkdirPlatform     string              `json:",omitempty"`
-	Destroy             bool                `json:",omitempty"`
 	Force               bool                `json:",omitempty"`
 	Status              Status              `json:",omitempty"`
 }
