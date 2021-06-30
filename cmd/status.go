@@ -16,16 +16,13 @@ import (
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Reports the current caravan status",
-	Long: `Gets and diplay the current status for caravan both locally and remote:
-
-	--project: project name to get the status for
+	Long: `Gets and diplay the current status for caravan both locally and remotely
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name, _ := cmd.Flags().GetString("project")
-		c, err := caravan.NewConfigFromFile(name)
+		c, err := caravan.NewConfigFromFile()
 		if err != nil {
 			if strings.Contains(err.Error(), "no such file or directory") {
-				fmt.Printf("project %s status %s\n", name, caravan.InitMissing)
+				fmt.Printf("project status is missing: %s\n", caravan.InitMissing)
 				return nil
 			}
 			return err
@@ -38,7 +35,4 @@ var statusCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
-
-	statusCmd.PersistentFlags().String("project", "", "name of project")
-	_ = statusCmd.MarkPersistentFlagRequired("project")
 }

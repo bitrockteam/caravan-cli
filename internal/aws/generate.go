@@ -8,25 +8,25 @@ import (
 
 func (a *AWS) GenerateConfig() (err error) {
 	fmt.Printf("generating config files on: %s\n", a.CaravanConfig.WorkdirProject)
-	err = os.MkdirAll(a.CaravanConfig.WorkdirProject, 0o777)
-	if err != nil {
+	if err := os.MkdirAll(a.CaravanConfig.WorkdirProject, 0777); err != nil {
 		return err
 	}
 
-	err = a.GenerateBaking(a.CaravanConfig.WorkdirBakingVars)
-	if err != nil {
+	if err := a.GenerateBaking(a.CaravanConfig.WorkdirBakingVars); err != nil {
 		return err
 	}
 
-	err = a.GenerateInfra(a.CaravanConfig.WorkdirInfraVars)
-	if err != nil {
+	if err := a.GenerateInfra(a.CaravanConfig.WorkdirInfraVars); err != nil {
 		return err
 	}
 
-	err = a.GenerateBackend(a.CaravanConfig.WorkdirInfraBackend)
-	if err != nil {
+	if err := a.GenerateBackend(a.CaravanConfig.WorkdirInfraBackend); err != nil {
 		return err
 	}
+	if err := a.GeneratePlatform(a.CaravanConfig.WorkdirPlatformBackend); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -46,8 +46,7 @@ aws_instance_type = "t3.small"
 	}
 	defer f.Close()
 
-	err = t.Execute(f, a)
-	if err != nil {
+	if err := t.Execute(f, a); err != nil {
 		return err
 	}
 	return nil
@@ -75,8 +74,7 @@ tfstate_region          = "{{ .CaravanConfig.Region }}"
 	}
 	defer f.Close()
 
-	err = t.Execute(f, a)
-	if err != nil {
+	if err := t.Execute(f, a); err != nil {
 		return err
 	}
 	return nil
@@ -102,8 +100,33 @@ func (a *AWS) GenerateBackend(path string) (err error) {
 	}
 	defer f.Close()
 
-	err = t.Execute(f, a)
+	if err := t.Execute(f, a); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *AWS) GeneratePlatform(path string) (err error) {
+	t, err := template.New("bakend").Parse(`terraform {
+  backend "s3" {
+    bucket         = "{{ .CaravanConfig.BucketName }}"
+    key            = "platform/terraform/state/terraform.tfstate"
+    region         = "{{ .CaravanConfig.Region }}"
+    dynamodb_table = "{{ .CaravanConfig.TableName }}"
+  }
+}
+`)
 	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if err := t.Execute(f, a); err != nil {
 		return err
 	}
 	return nil

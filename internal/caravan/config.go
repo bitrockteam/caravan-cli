@@ -12,27 +12,29 @@ import (
 )
 
 type Config struct {
-	Name                string              `json:",omitempty"`
-	Region              string              `json:",omitempty"`
-	Regions             map[string][]string `json:",omitempty"`
-	Profile             string              `json:",omitempty"`
-	Provider            string              `json:",omitempty"`
-	Providers           []string            `json:",omitempty"`
-	Branch              string              `json:",omitempty"`
-	TableName           string              `json:",omitempty"`
-	BucketName          string              `json:",omitempty"`
-	Repos               []string            `json:",omitempty"`
-	Domain              string              `json:",omitempty"`
-	Workdir             string              `json:",omitempty"`
-	WorkdirProject      string              `json:",omitempty"`
-	WorkdirBaking       string              `json:",omitempty"`
-	WorkdirBakingVars   string              `json:",omitempty"`
-	WorkdirInfra        string              `json:",omitempty"`
-	WorkdirInfraVars    string              `json:",omitempty"`
-	WorkdirInfraBackend string              `json:",omitempty"`
-	WorkdirPlatform     string              `json:",omitempty"`
-	Force               bool                `json:",omitempty"`
-	Status              Status              `json:",omitempty"`
+	Name                   string              `json:",omitempty"`
+	Region                 string              `json:",omitempty"`
+	Regions                map[string][]string `json:",omitempty"`
+	Profile                string              `json:",omitempty"`
+	Provider               string              `json:",omitempty"`
+	Providers              []string            `json:",omitempty"`
+	Branch                 string              `json:",omitempty"`
+	TableName              string              `json:",omitempty"`
+	BucketName             string              `json:",omitempty"`
+	Repos                  []string            `json:",omitempty"`
+	Domain                 string              `json:",omitempty"`
+	Workdir                string              `json:",omitempty"`
+	WorkdirProject         string              `json:",omitempty"`
+	WorkdirBaking          string              `json:",omitempty"`
+	WorkdirBakingVars      string              `json:",omitempty"`
+	WorkdirInfra           string              `json:",omitempty"`
+	WorkdirInfraVars       string              `json:",omitempty"`
+	WorkdirInfraBackend    string              `json:",omitempty"`
+	WorkdirPlatform        string              `json:",omitempty"`
+	WorkdirPlatformVars    string              `json:",omitempty"`
+	WorkdirPlatformBackend string              `json:",omitempty"`
+	Force                  bool                `json:",omitempty"`
+	Status                 Status              `json:",omitempty"`
 }
 
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
@@ -65,9 +67,9 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 	return c, err
 }
 
-func NewConfigFromFile(path string) (c *Config, err error) {
+func NewConfigFromFile() (c *Config, err error) {
 	wd := ".caravan"
-	b, err := ioutil.ReadFile(filepath.Join(wd, path, "caravan.state"))
+	b, err := ioutil.ReadFile(filepath.Join(wd, "caravan.state"))
 	if err != nil {
 		return c, err
 	}
@@ -86,6 +88,9 @@ func (c *Config) SetWorkdir(wd string) {
 	c.WorkdirInfraBackend = filepath.Join(c.WorkdirInfra, c.Name+"-backend.tf")
 	c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
 	c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
+	c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
+	c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+".tfvars")
+	c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
 }
 
 func (c *Config) setProvider(provider string) (err error) {
@@ -98,6 +103,9 @@ func (c *Config) setProvider(provider string) (err error) {
 			c.WorkdirInfraBackend = filepath.Join(c.WorkdirInfra, c.Name+"-backend.tf")
 			c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
 			c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
+			c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
+			c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+".tfvars")
+			c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
 			return nil
 		}
 	}
@@ -141,12 +149,12 @@ func (c *Config) SaveConfig() (err error) {
 		return err
 	}
 
-	err = os.MkdirAll(c.WorkdirProject, os.ModePerm)
+	err = os.MkdirAll(c.Workdir, os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(c.WorkdirProject, "caravan.state"), data, 0600)
+	err = ioutil.WriteFile(filepath.Join(c.Workdir, "caravan.state"), data, 0600)
 	if err != nil {
 		return err
 	}
@@ -154,17 +162,27 @@ func (c *Config) SaveConfig() (err error) {
 }
 
 func (c *Config) StatusReport() {
-	t, err := template.New("status").Parse(`STATUS
-project: {{.Name }}
-workdir: {{.Workdir }}
-branch: {{.Branch }}
+	t, err := template.New("status").Parse(`======
+PROJECT: {{.Name }}@{{.Branch }}
+CARAVAN STATUS: {{ printf "%d" .Status}}-{{.Status}}
+
 provider: {{.Provider}}
 region: {{ or .Region "-- provider default --"}}
-status: {{.Status }}
-vault: https://vault.{{.Name }}.{{.Domain}} - status: {{.VaultCheck}} - version: {{.VaultVersion}} 
-consul: https://consul.{{.Name }}.{{.Domain}} - status: {{.ConsulCheck }} - version: {{.ConsulVersion}}
-nomad: https://nomad.{{.Name }}.{{.Domain}} - status: {{.NomadCheck}} - version: {{.NomadVersion}}
-`)
+{{ if gt .Status 3 }}
+ VAULT
+URL: https://vault.{{.Name }}.{{.Domain}}
+status: {{.VaultCheck}}
+version: {{.VaultVersion}} 
+ CONSUL
+URL: https://consul.{{.Name }}.{{.Domain}} 
+status: {{.ConsulCheck }}
+version: {{.ConsulVersion}}
+ NOMAD
+URL: https://nomad.{{.Name }}.{{.Domain}} 
+status: {{.NomadCheck}} 
+version: {{.NomadVersion}}
+{{ end }}
+======`)
 	if err != nil {
 		fmt.Printf("error parsing report: %s\n", err)
 	}
@@ -180,31 +198,30 @@ func isValidDomain(domain string) bool {
 }
 
 func (c *Config) VaultCheck() string {
-	v := NewVaultHealth("https://vault.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
-
+	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
 	return v.Check()
 }
 
 func (c *Config) VaultVersion() string {
-	v := NewVaultHealth("https://vault.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
+	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
 	return v.Version()
 }
 
 func (c *Config) ConsulCheck() bool {
-	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
-	return consul.Check()
+	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	return co.Check()
 }
 
 func (c *Config) ConsulVersion() string {
-	consul := NewConsulHealth("https://consul.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
-	return consul.Version()
+	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	return co.Version()
 }
 func (c *Config) NomadCheck() bool {
-	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
+	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
 	return n.Check()
 }
 
 func (c *Config) NomadVersion() string {
-	n := NewNomadHealth("https://nomad.demo.reactive-labs.io/", c.WorkdirInfra+"/ca_certs.pem")
+	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
 	return n.Version()
 }

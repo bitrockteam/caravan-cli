@@ -12,14 +12,11 @@ type Terraform struct {
 	Workdir string
 }
 
-func NewTerraform(wd string) (tf Terraform) {
-	return Terraform{Workdir: wd}
-}
-
-func (t Terraform) Init() (err error) {
+func (t *Terraform) Init(wd string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
+	t.Workdir = wd
 	fmt.Printf("running init on workdir: %s\n", t.Workdir)
 	cmd := exec.CommandContext(ctx, "terraform", "init")
 	cmd.Dir = t.Workdir

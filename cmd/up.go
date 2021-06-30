@@ -21,9 +21,7 @@ var upCmd = &cobra.Command{
 	Short: "Deploy the caravan infra",
 	Long:  `This commands applies the generated terraform configs and provision the needed infrastructure to deploy a caravan instance`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		name, _ := cmd.Flags().GetString("project")
-
-		c, err := caravan.NewConfigFromFile(name)
+		c, err := caravan.NewConfigFromFile()
 		if err != nil {
 			fmt.Printf("ERR: %s\n", err)
 			if strings.Contains(err.Error(), "no such file or directory") {
@@ -41,7 +39,7 @@ var upCmd = &cobra.Command{
 			}
 		}
 
-		if c.Status > caravan.InfraDeployDone {
+		if c.Status >= caravan.InfraDeployDone {
 			err := deployPlatform(c)
 			if err != nil {
 				return err
@@ -54,27 +52,12 @@ var upCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(upCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// upCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// upCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	upCmd.PersistentFlags().String("project", "", "name of project")
-	_ = upCmd.MarkPersistentFlagRequired("project")
-	upCmd.PersistentFlags().String("provider", "", "name of provider")
-	_ = upCmd.MarkPersistentFlagRequired("provider")
 }
 
 func deployInfra(c *caravan.Config) error {
-	tf := tf.NewTerraform(c.WorkdirInfra)
-	err := tf.Init()
-	if err != nil {
+	// Infra
+	t := &tf.Terraform{}
+	if err := t.Init(c.WorkdirInfra); err != nil {
 		return err
 	}
 	c.Status = caravan.InfraDeployRunning
@@ -82,7 +65,7 @@ func deployInfra(c *caravan.Config) error {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 
-	if err := tf.ApplyVarFile(c.Name+"-infra.tfvars", 600*time.Second); err != nil {
+	if err := t.ApplyVarFile(c.Name+"-infra.tfvars", 600*time.Second); err != nil {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
@@ -90,13 +73,28 @@ func deployInfra(c *caravan.Config) error {
 	if err := c.SaveConfig(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
+
 	return nil
 }
 
 func deployPlatform(c *caravan.Config) error {
-	tf := tf.NewTerraform(c.WorkdirPlatform)
-	if err := tf.Init(); err != nil {
+	// Platform
+	t := tf.Terraform{}
+	if err := t.Init(c.WorkdirPlatform); err != nil {
 		return err
+	}
+
+	c.Status = caravan.PlatformDeployRunning
+	if err := c.SaveConfig(); err != nil {
+		return fmt.Errorf("error persisting state: %w", err)
+	}
+	if err := t.ApplyVarFile(c.Name+"-"+c.Provider+".tfvars", 600*time.Second); err != nil {
+		return fmt.Errorf("error doing terraform apply: %w", err)
+	}
+
+	c.Status = caravan.PlatformDeployDone
+	if err := c.SaveConfig(); err != nil {
+		return fmt.Errorf("error persisting state: %w", err)
 	}
 	return nil
 }

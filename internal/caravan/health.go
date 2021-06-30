@@ -52,14 +52,14 @@ func (h VaultHealth) Check() string {
 func (h VaultHealth) Version() string {
 	resp, err := Get(h.url, h.caFile)
 	if err != nil {
-		fmt.Printf("error: %s\n", err)
+		fmt.Printf("error: %s", err)
 		return ""
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("body: %s error: %s\n", body, err)
+		fmt.Printf("body: %s error: %s", body, err)
 		return ""
 	}
 

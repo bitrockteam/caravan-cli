@@ -15,9 +15,11 @@ func TestTerraformInit(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	tf := terraform.NewTerraform(dir)
-	err = tf.Init()
-	if err != nil {
+	tf := terraform.Terraform{}
+	if err := tf.Init(dir); err != nil {
 		t.Errorf("error during terraform init: %s", err)
+	}
+	if tf.Workdir != dir {
+		t.Errorf("error setting terraform workdir: got %s want %s\n", tf.Workdir, dir)
 	}
 }

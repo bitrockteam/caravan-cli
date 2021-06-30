@@ -18,57 +18,55 @@ import (
 
 // cleanCmd represents the clean command.
 var cleanCmd = &cobra.Command{
-	Use:   "clean --project=<project name> --provider=<provider>",
+	Use:   "clean",
 	Short: "Cleanup the needed config and terraform state store",
 	Long: `Deletion of the config files and supporting state stores/locking for terraform created during either up or init. 
 
 The following optional parameters can be specified:
 
-	--region: override of the region as specified in the cloud provider config
 	--force: set to true deletes all the objects from the cloud store.`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		n, _ := cmd.Flags().GetString("project")
-		p, _ := cmd.Flags().GetString("provider")
-		r := ""
-
-		_, err := caravan.NewConfigFromScratch(n, p, r)
-		if err != nil {
-			return fmt.Errorf("error generating config: %w", err)
-		}
-
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Println("clean called")
 
-		name, _ := cmd.Flags().GetString("project")
-		project, _ := cmd.Flags().GetString("provider")
-		region, _ := cmd.Flags().GetString("region")
 		force, _ := cmd.Flags().GetBool("force")
 
 		var c *caravan.Config
-		c, err = caravan.NewConfigFromFile(name)
+		c, err = caravan.NewConfigFromFile()
 		if err != nil {
 			// TODO better error handling
 			if !strings.Contains(err.Error(), "no such file or directory") {
 				return err
 			}
-			fmt.Printf("getting config from scratch: %s\n", name)
-			c, err = caravan.NewConfigFromScratch(name, project, region)
-			if err != nil {
-				return err
-			}
+			fmt.Printf("all clean\n")
+			return nil
 		}
-		fmt.Printf("Config: %v\n", c)
-
 		if force {
 			c.Force = true
 		}
 
+		if c.Status >= caravan.PlatformDeployRunning {
+			tf := terraform.Terraform{}
+			if tf.Init(c.WorkdirPlatform); err != nil {
+				return err
+			}
+			if err := tf.Destroy(filepath.Base(c.WorkdirPlatformVars)); err != nil {
+				fmt.Printf("error during destroy of cloud resources: %s\n", err)
+				if !force {
+					return nil
+				}
+			}
+			c.Status = caravan.InfraDeployDone
+			if err := c.SaveConfig(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
+			}
+		}
+
 		if c.Status >= caravan.InfraDeployRunning {
-			tf := terraform.NewTerraform(c.WorkdirInfra)
-			err := tf.Destroy(filepath.Base(c.WorkdirInfraVars))
-			if err != nil {
+			tf := terraform.Terraform{}
+			if tf.Init(c.WorkdirInfra); err != nil {
+				return err
+			}
+			if err := tf.Destroy(filepath.Base(c.WorkdirInfraVars)); err != nil {
 				fmt.Printf("error during destroy of cloud resources: %s\n", err)
 				if !force {
 					return nil
@@ -87,6 +85,7 @@ The following optional parameters can be specified:
 			return nil
 		}
 		os.RemoveAll(c.Workdir + "/" + c.Name)
+		os.RemoveAll(c.Workdir + "/caravan.state")
 		return nil
 	},
 }
@@ -94,13 +93,6 @@ The following optional parameters can be specified:
 func init() {
 	rootCmd.AddCommand(cleanCmd)
 
-	cleanCmd.PersistentFlags().String("project", "", "name of project")
-	_ = cleanCmd.MarkPersistentFlagRequired("project")
-
-	cleanCmd.PersistentFlags().String("provider", "", "name of cloud provider: aws, gcp, az, oci,..")
-	_ = cleanCmd.MarkPersistentFlagRequired("provider")
-
-	cleanCmd.PersistentFlags().String("region", "", "provider target region")
 	cleanCmd.PersistentFlags().Bool("force", false, "force cleanup of S3 bucket")
 }
 
