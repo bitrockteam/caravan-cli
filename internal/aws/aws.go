@@ -18,17 +18,18 @@ import (
 )
 
 type AWS struct {
-	CaravanConfig caravan.Config
-	AWSConfig     aws.Config
+	Caravan   caravan.Config
+	AWSConfig aws.Config
+	Templates []Template
 }
 
 func NewAWS(conf caravan.Config) (a AWS, err error) {
-	a.CaravanConfig = conf
+	a.Caravan = conf
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
-	if a.CaravanConfig.Region != "" {
+	if a.Caravan.Region != "" {
 		cfg, err = config.LoadDefaultConfig(context.TODO(),
-			config.WithDefaultRegion(a.CaravanConfig.Region),
+			config.WithDefaultRegion(a.Caravan.Region),
 		)
 	}
 	if err != nil {
@@ -37,7 +38,7 @@ func NewAWS(conf caravan.Config) (a AWS, err error) {
 	if cfg.Region == "" {
 		return a, fmt.Errorf("please provide a region")
 	}
-	a.CaravanConfig.Region = cfg.Region
+	a.Caravan.Region = cfg.Region
 	a.AWSConfig = cfg
 	return a, nil
 }
@@ -53,7 +54,7 @@ func (a *AWS) CreateBucket(name string) (err error) {
 		&s3.CreateBucketInput{
 			Bucket: aws.String(name),
 			CreateBucketConfiguration: &s3types.CreateBucketConfiguration{
-				LocationConstraint: s3types.BucketLocationConstraint(a.CaravanConfig.Region),
+				LocationConstraint: s3types.BucketLocationConstraint(a.Caravan.Region),
 			},
 		})
 

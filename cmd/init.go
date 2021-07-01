@@ -47,12 +47,17 @@ var initCmd = &cobra.Command{
 			if !strings.Contains(err.Error(), "no such file or directory") {
 				return err
 			}
-
 			c, err = caravan.NewConfigFromScratch(name, provider, region)
 			if err != nil {
 				return err
 			}
 		}
+
+		if name != c.Name {
+			fmt.Printf("please clean --force before init a new project")
+			return nil
+		}
+
 		b, _ := cmd.Flags().GetString("branch")
 
 		c.SetBranch(b)

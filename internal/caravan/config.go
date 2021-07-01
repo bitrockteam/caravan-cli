@@ -3,7 +3,6 @@ package caravan
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -35,6 +34,7 @@ type Config struct {
 	WorkdirPlatformBackend string              `json:",omitempty"`
 	Force                  bool                `json:",omitempty"`
 	Status                 Status              `json:",omitempty"`
+	VaultRootToken         string              `json:",omitempty"`
 }
 
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
@@ -132,15 +132,14 @@ func (c *Config) SetBranch(branch string) {
 	c.Branch = branch
 }
 
-// check the name of the region for the given provider.
-func isValidRegion(provider, region string) bool {
-	// TODO temp method, use SDK resources to validate
-	if provider == "aws" {
-		if region == "eu-south-1" {
-			return true
-		}
+func (c *Config) SetVaultRootToken(path string) error {
+	vrt, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
 	}
-	return false
+	// TODO make more robust
+	c.VaultRootToken = string(vrt[0 : len(vrt)-1])
+	return nil
 }
 
 func (c *Config) SaveConfig() (err error) {
@@ -161,67 +160,18 @@ func (c *Config) SaveConfig() (err error) {
 	return nil
 }
 
-func (c *Config) StatusReport() {
-	t, err := template.New("status").Parse(`======
-PROJECT: {{.Name }}@{{.Branch }}
-CARAVAN STATUS: {{ printf "%d" .Status}}-{{.Status}}
-
-provider: {{.Provider}}
-region: {{ or .Region "-- provider default --"}}
-{{ if gt .Status 3 }}
- VAULT
-URL: https://vault.{{.Name }}.{{.Domain}}
-status: {{.VaultCheck}}
-version: {{.VaultVersion}} 
- CONSUL
-URL: https://consul.{{.Name }}.{{.Domain}} 
-status: {{.ConsulCheck }}
-version: {{.ConsulVersion}}
- NOMAD
-URL: https://nomad.{{.Name }}.{{.Domain}} 
-status: {{.NomadCheck}} 
-version: {{.NomadVersion}}
-{{ end }}
-======`)
-	if err != nil {
-		fmt.Printf("error parsing report: %s\n", err)
-	}
-
-	if err := t.Execute(os.Stdout, c); err != nil {
-		fmt.Printf("error executing report: %s\n", err)
-	}
-}
-
 // check if the provided string is a valid domain name.
 func isValidDomain(domain string) bool {
 	return govalidator.IsDNSName(domain)
 }
 
-func (c *Config) VaultCheck() string {
-	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
-	return v.Check()
-}
-
-func (c *Config) VaultVersion() string {
-	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
-	return v.Version()
-}
-
-func (c *Config) ConsulCheck() bool {
-	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
-	return co.Check()
-}
-
-func (c *Config) ConsulVersion() string {
-	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
-	return co.Version()
-}
-func (c *Config) NomadCheck() bool {
-	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
-	return n.Check()
-}
-
-func (c *Config) NomadVersion() string {
-	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
-	return n.Version()
+// check the name of the region for the given provider.
+func isValidRegion(provider, region string) bool {
+	// TODO temp method, use SDK resources to validate
+	if provider == "aws" {
+		if region == "eu-south-1" {
+			return true
+		}
+	}
+	return false
 }

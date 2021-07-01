@@ -3,6 +3,7 @@ package aws_test
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -17,50 +18,43 @@ func TestGenerateConfig(t *testing.T) {
 	config.SetWorkdir(dir)
 	_ = config.SetDomain("test.me")
 	aws, _ := aws.NewAWS(*config)
+	aws.LoadTemplates()
 
 	testCases := []struct {
-		name   string
-		ext    string
-		folder string
-		fname  string
+		name string
+		gold string
 	}{
-		{"baking", "tfvars", aws.CaravanConfig.Workdir, aws.CaravanConfig.Provider + "-baking.tfvars"},
-		{"infra", "tfvars", aws.CaravanConfig.Workdir, aws.CaravanConfig.Name + "-infra.tfvars"},
-		{"backend", "tf", aws.CaravanConfig.Workdir, aws.CaravanConfig.Name + "-backend.tf"},
+		{"baking-vars", "baking.golden.tfvars"},
+		{"infra-vars", "infra.golden.tfvars"},
+		{"infra-backend", "infra.golden.tf"},
+		{"platform-vars", "platform.golden.tfvars"},
+		{"platform-backend", "platform.golden.tf"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gen := filepath.Join(tc.folder, tc.fname)
-			gold := filepath.Join("testdata", tc.name+".golden."+tc.ext)
+			gold := filepath.Join("testdata", tc.gold)
+			for _, tmp := range aws.Templates {
+				if tmp.Name == tc.name {
+					fmt.Printf("%s\n", tc.name)
+					fmt.Printf("test: %s\n", tmp.Path)
 
-			switch tc.name {
-			case "baking":
-				err = aws.GenerateBaking(gen)
-				if err != nil {
-					t.Fatalf("error generating %s config: %s\n", tc.name, err)
-				}
-			case "infra":
-				err = aws.GenerateInfra(gen)
-				if err != nil {
-					t.Fatalf("error generating %s config: %s\n", tc.name, err)
-				}
-			case "backend":
-				err = aws.GenerateBackend(gen)
-				if err != nil {
-					t.Fatalf("error generating %s config: %s\n", tc.name, err)
-				}
-			}
+					if err := aws.Generate(tmp); err != nil {
+						t.Errorf("error generating template %s: %s\n", tmp.Name, err)
+					}
 
-			want, err := ioutil.ReadFile(gold)
-			if err != nil {
-				t.Fatalf("error reading golden file: %s\n", err)
-			}
-			got, err := ioutil.ReadFile(gen)
-			if err != nil {
-				t.Fatalf("error reading current file: %s\n", err)
-			}
-			if string(got) != string(want) {
-				t.Errorf("%s <-> %s: mismatch found with golden sample:\n%s\n%s\n", gen, gold, string(got), string(want))
+					want, err := ioutil.ReadFile(gold)
+					if err != nil {
+						t.Fatalf("error reading golden file: %s\n", err)
+					}
+					got, err := ioutil.ReadFile(tmp.Path)
+					if err != nil {
+						t.Fatalf("error reading current file: %s\n", err)
+					}
+
+					if string(got) != string(want) {
+						t.Errorf("%s <-> %s: mismatch found with golden sample:\n%s\n%s\n", tmp.Path, gold, string(got), string(want))
+					}
+				}
 			}
 		})
 	}

@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -37,6 +38,12 @@ var upCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+		}
+		if err := c.SetVaultRootToken(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token")); err != nil {
+			return fmt.Errorf("error setting Vault Root Token")
+		}
+		if err := c.SaveConfig(); err != nil {
+			return fmt.Errorf("error persisting state: %w", err)
 		}
 
 		if c.Status >= caravan.InfraDeployDone {
