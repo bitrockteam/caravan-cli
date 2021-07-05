@@ -77,7 +77,7 @@ func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[stri
 	return nil
 }
 
-func (t Terraform) Destroy(file string) (err error) {
+func (t Terraform) Destroy(file string, env map[string]string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancel()
 
@@ -88,7 +88,10 @@ func (t Terraform) Destroy(file string) (err error) {
 	fmt.Printf("running destroy on workdir: %s with args: %s\n", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
-
+	cmd.Env = os.Environ()
+	for k, v := range env {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()

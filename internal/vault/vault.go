@@ -37,10 +37,9 @@ func (v Vault) GetToken(path string) (token string, err error) {
 	if err != nil {
 		return "", err
 	}
-	t, err := s.TokenID()
+	t := s.Data["secret_id"].(string)
 	if err != nil {
 		return "", err
 	}
-	// fmt.Printf("secret: %v\n", t)
 	return t, nil
 }

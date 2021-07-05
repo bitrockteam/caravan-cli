@@ -48,7 +48,11 @@ The following optional parameters can be specified:
 			if tf.Init(c.WorkdirPlatform); err != nil {
 				return err
 			}
-			if err := tf.Destroy(filepath.Base(c.WorkdirPlatformVars)); err != nil {
+			env := map[string]string{
+				"VAULT_TOKEN": c.VaultRootToken,
+				"NOMAD_TOKEN": c.NomadToken,
+			}
+			if err := tf.Destroy(filepath.Base(c.WorkdirPlatformVars), env); err != nil {
 				fmt.Printf("error during destroy of cloud resources: %s\n", err)
 				if !force {
 					return nil
@@ -66,7 +70,8 @@ The following optional parameters can be specified:
 			if tf.Init(c.WorkdirInfra); err != nil {
 				return err
 			}
-			if err := tf.Destroy(filepath.Base(c.WorkdirInfraVars)); err != nil {
+			env := map[string]string{}
+			if err := tf.Destroy(filepath.Base(c.WorkdirInfraVars), env); err != nil {
 				fmt.Printf("error during destroy of cloud resources: %s\n", err)
 				if !force {
 					return nil
