@@ -54,7 +54,7 @@ var initCmd = &cobra.Command{
 		}
 
 		if name != c.Name {
-			fmt.Printf("please clean --force before init a new project")
+			fmt.Printf("please run: \"caravan clean --force\" before init a new project")
 			return nil
 		}
 

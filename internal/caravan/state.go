@@ -6,12 +6,16 @@ const (
 	InitMissing Status = iota
 	InitDone
 	BakingDone
+	InfraCleanDone
+	InfraCleanRunning
 	InfraDeployRunning
 	InfraDeployDone
+	PlatformCleanDone
+	PlatformCleanRunning
 	PlatformDeployRunning
 	PlatformDeployDone
 )
 
 func (s Status) String() string {
-	return [...]string{"InitMissing", "InitDone", "BakingDone", "InfraDeployRunning", "InfraDeployDone", "PlatformDeployRunning", "PlatformDeployDone"}[s]
+	return [...]string{"InitMissing", "InitDone", "BakingDone", "InfraCleanDone", "InfraCleanRunning", "InfraDeployRunning", "InfraDeployDone", "PlatformCleanDone", "PlatformCleanRunning", "PlatformDeployRunning", "PlatformDeployDone"}[s]
 }

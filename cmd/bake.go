@@ -67,8 +67,8 @@ func bake(c caravan.Config) (err error) {
 	if err := t.Init(c.WorkdirBaking); err != nil {
 		return err
 	}
-
-	if err := t.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second); err != nil {
+	env := map[string]string{}
+	if err := t.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second, env); err != nil {
 		return err
 	}
 	return nil

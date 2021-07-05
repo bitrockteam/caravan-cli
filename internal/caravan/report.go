@@ -36,30 +36,30 @@ version: {{.NomadVersion}}
 }
 
 func (c *Config) VaultCheck() string {
-	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.CApath)
 	return v.Check()
 }
 
 func (c *Config) VaultVersion() string {
-	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	v := NewVaultHealth("https://vault."+c.Name+"."+c.Domain+"/", c.CApath)
 	return v.Version()
 }
 
 func (c *Config) ConsulCheck() bool {
-	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.CApath)
 	return co.Check()
 }
 
 func (c *Config) ConsulVersion() string {
-	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	co := NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/", c.CApath)
 	return co.Version()
 }
 func (c *Config) NomadCheck() bool {
-	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.CApath)
 	return n.Check()
 }
 
 func (c *Config) NomadVersion() string {
-	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.WorkdirInfra+"/ca_certs.pem")
+	n := NewNomadHealth("https://nomad."+c.Name+"."+c.Domain+"/", c.CApath)
 	return n.Version()
 }

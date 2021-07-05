@@ -1,6 +1,7 @@
 package caravan
 
 import (
+	"caravan/internal/vault"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -35,6 +36,9 @@ type Config struct {
 	Force                  bool                `json:",omitempty"`
 	Status                 Status              `json:",omitempty"`
 	VaultRootToken         string              `json:",omitempty"`
+	NomadToken             string              `json:",omitempty"`
+	VaultURL               string              `json:",omitempty"`
+	CApath                 string              `json:",omitempty"`
 }
 
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
@@ -57,6 +61,7 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 		Domain:         "reactive-labs.io",
 		Workdir:        wd,
 		WorkdirProject: wd + "/" + name,
+		VaultURL:       "https://vault." + name + "." + "reactive-labs.io",
 	}
 	if provider != "" {
 		err = c.setProvider(provider)
@@ -89,8 +94,9 @@ func (c *Config) SetWorkdir(wd string) {
 	c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
 	c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
 	c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
-	c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+".tfvars")
+	c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+"-cli.tfvars")
 	c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
+	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 }
 
 func (c *Config) setProvider(provider string) (err error) {
@@ -104,8 +110,9 @@ func (c *Config) setProvider(provider string) (err error) {
 			c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
 			c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
 			c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
-			c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+".tfvars")
+			c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+"-cli.tfvars")
 			c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
+			c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 			return nil
 		}
 	}
@@ -125,6 +132,7 @@ func (c *Config) SetDomain(domain string) (err error) {
 		c.Domain = domain
 		return nil
 	}
+	c.VaultURL = "https://vault." + c.Name + "." + c.Domain
 	return fmt.Errorf("please provide a valid domain name")
 }
 
@@ -132,13 +140,29 @@ func (c *Config) SetBranch(branch string) {
 	c.Branch = branch
 }
 
-func (c *Config) SetVaultRootToken(path string) error {
-	vrt, err := ioutil.ReadFile(path)
+func (c *Config) SetVaultRootToken() error {
+	// TODO consolidate in constructor
+	vrt, err := ioutil.ReadFile(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token"))
 	if err != nil {
 		return err
 	}
 	// TODO make more robust
 	c.VaultRootToken = string(vrt[0 : len(vrt)-1])
+	return nil
+}
+
+func (c *Config) SetNomadToken() error {
+	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CApath)
+	if err != nil {
+		return err
+	}
+
+	t, err := v.GetToken("nomad/creds/token-manager")
+	if err != nil {
+		return err
+	}
+	c.NomadToken = t
+
 	return nil
 }
 

@@ -39,8 +39,11 @@ var upCmd = &cobra.Command{
 				return err
 			}
 		}
-		if err := c.SetVaultRootToken(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token")); err != nil {
-			return fmt.Errorf("error setting Vault Root Token")
+		if err := c.SetVaultRootToken(); err != nil {
+			return fmt.Errorf("error setting Vault Root Token: %w", err)
+		}
+		if err := c.SetNomadToken(); err != nil {
+			return fmt.Errorf("error setting Nomad Token: %w", err)
 		}
 		if err := c.SaveConfig(); err != nil {
 			return fmt.Errorf("error persisting state: %w", err)
@@ -71,8 +74,8 @@ func deployInfra(c *caravan.Config) error {
 	if err := c.SaveConfig(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
-
-	if err := t.ApplyVarFile(c.Name+"-infra.tfvars", 600*time.Second); err != nil {
+	env := map[string]string{}
+	if err := t.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 600*time.Second, env); err != nil {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
@@ -95,7 +98,12 @@ func deployPlatform(c *caravan.Config) error {
 	if err := c.SaveConfig(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
-	if err := t.ApplyVarFile(c.Name+"-"+c.Provider+".tfvars", 600*time.Second); err != nil {
+
+	env := map[string]string{
+		"VAULT_TOKEN": c.VaultRootToken,
+		"NOMAD_TOKEN": c.NomadToken,
+	}
+	if err := t.ApplyVarFile(filepath.Base(c.WorkdirPlatformVars), 600*time.Second, env); err != nil {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
