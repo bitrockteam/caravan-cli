@@ -138,7 +138,7 @@ func cleanPlatform(c *caravan.Config) (err error) {
 		"VAULT_TOKEN": c.VaultRootToken,
 		"NOMAD_TOKEN": c.NomadToken,
 	}
-	if err := tf.Destroy(c.WorkdirPlatformVars, env); err != nil {
+	if err := tf.Destroy(filepath.Base(c.WorkdirPlatformVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !c.Force {
 			return nil
@@ -161,7 +161,7 @@ func cleanApplication(c *caravan.Config) (err error) {
 		"VAULT_TOKEN": c.VaultRootToken,
 		"NOMAD_TOKEN": c.NomadToken,
 	}
-	if err := tf.Destroy(c.WorkdirApplication, env); err != nil {
+	if err := tf.Destroy(filepath.Base(c.WorkdirApplicationVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !c.Force {
 			return nil
