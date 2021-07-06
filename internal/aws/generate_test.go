@@ -3,7 +3,6 @@ package aws_test
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -29,14 +28,16 @@ func TestGenerateConfig(t *testing.T) {
 		{"infra-backend", "infra.golden.tf"},
 		{"platform-vars", "platform.golden.tfvars"},
 		{"platform-backend", "platform.golden.tf"},
+		{"application-backend", "application.golden.tf"},
+		{"application-vars", "application.golden.tfvars"},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			gold := filepath.Join("testdata", tc.gold)
 			for _, tmp := range aws.Templates {
 				if tmp.Name == tc.name {
-					fmt.Printf("%s\n", tc.name)
-					fmt.Printf("test: %s\n", tmp.Path)
+					// fmt.Printf("%s\n", tc.name)
+					// fmt.Printf("test: %s\n", tmp.Path)
 
 					if err := aws.Generate(tmp); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)

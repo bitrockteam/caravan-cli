@@ -12,33 +12,36 @@ import (
 )
 
 type Config struct {
-	Name                   string              `json:",omitempty"`
-	Region                 string              `json:",omitempty"`
-	Regions                map[string][]string `json:",omitempty"`
-	Profile                string              `json:",omitempty"`
-	Provider               string              `json:",omitempty"`
-	Providers              []string            `json:",omitempty"`
-	Branch                 string              `json:",omitempty"`
-	TableName              string              `json:",omitempty"`
-	BucketName             string              `json:",omitempty"`
-	Repos                  []string            `json:",omitempty"`
-	Domain                 string              `json:",omitempty"`
-	Workdir                string              `json:",omitempty"`
-	WorkdirProject         string              `json:",omitempty"`
-	WorkdirBaking          string              `json:",omitempty"`
-	WorkdirBakingVars      string              `json:",omitempty"`
-	WorkdirInfra           string              `json:",omitempty"`
-	WorkdirInfraVars       string              `json:",omitempty"`
-	WorkdirInfraBackend    string              `json:",omitempty"`
-	WorkdirPlatform        string              `json:",omitempty"`
-	WorkdirPlatformVars    string              `json:",omitempty"`
-	WorkdirPlatformBackend string              `json:",omitempty"`
-	Force                  bool                `json:",omitempty"`
-	Status                 Status              `json:",omitempty"`
-	VaultRootToken         string              `json:",omitempty"`
-	NomadToken             string              `json:",omitempty"`
-	VaultURL               string              `json:",omitempty"`
-	CApath                 string              `json:",omitempty"`
+	Name                      string              `json:",omitempty"`
+	Region                    string              `json:",omitempty"`
+	Regions                   map[string][]string `json:",omitempty"`
+	Profile                   string              `json:",omitempty"`
+	Provider                  string              `json:",omitempty"`
+	Providers                 []string            `json:",omitempty"`
+	Branch                    string              `json:",omitempty"`
+	TableName                 string              `json:",omitempty"`
+	BucketName                string              `json:",omitempty"`
+	Repos                     []string            `json:",omitempty"`
+	Domain                    string              `json:",omitempty"`
+	Workdir                   string              `json:",omitempty"`
+	WorkdirProject            string              `json:",omitempty"`
+	WorkdirBaking             string              `json:",omitempty"`
+	WorkdirBakingVars         string              `json:",omitempty"`
+	WorkdirInfra              string              `json:",omitempty"`
+	WorkdirInfraVars          string              `json:",omitempty"`
+	WorkdirInfraBackend       string              `json:",omitempty"`
+	WorkdirPlatform           string              `json:",omitempty"`
+	WorkdirPlatformVars       string              `json:",omitempty"`
+	WorkdirPlatformBackend    string              `json:",omitempty"`
+	WorkdirApplication        string              `json:",omitempty"`
+	WorkdirApplicationVars    string              `json:",omitempty"`
+	WorkdirApplicationBackend string              `json:",omitempty"`
+	Force                     bool                `json:",omitempty"`
+	Status                    Status              `json:",omitempty"`
+	VaultRootToken            string              `json:",omitempty"`
+	NomadToken                string              `json:",omitempty"`
+	VaultURL                  string              `json:",omitempty"`
+	CApath                    string              `json:",omitempty"`
 }
 
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
@@ -96,6 +99,9 @@ func (c *Config) SetWorkdir(wd string) {
 	c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
 	c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+"-cli.tfvars")
 	c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
+	c.WorkdirApplication = filepath.Join(c.WorkdirProject, "caravan-application-support")
+	c.WorkdirApplicationVars = filepath.Join(c.WorkdirProject, "caravan-application-support", c.Name+"-"+c.Provider+"-cli.tfvars")
+	c.WorkdirApplicationBackend = filepath.Join(c.WorkdirProject, "caravan-application-support", "backend.tf")
 	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 }
 
@@ -110,8 +116,11 @@ func (c *Config) setProvider(provider string) (err error) {
 			c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
 			c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
 			c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
-			c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+"-cli.tfvars")
 			c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
+			c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+"-cli.tfvars")
+			c.WorkdirApplication = filepath.Join(c.WorkdirProject, "caravan-application-support")
+			c.WorkdirApplicationVars = filepath.Join(c.WorkdirProject, "caravan-application-support", c.Name+"-"+c.Provider+"-cli.tfvars")
+			c.WorkdirApplicationBackend = filepath.Join(c.WorkdirProject, "caravan-application-support", "backend.tf")
 			c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 			return nil
 		}

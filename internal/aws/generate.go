@@ -92,12 +92,12 @@ nomad_endpoint  = "https://nomad.{{.Caravan.Name}}.{{.Caravan.Domain}}"
 
 vault_skip_tls_verify = true
 consul_insecure_https = true
-ca_cert_file          = "../caravan-infra-aws/ca_certs.pem"
+ca_cert_file          = "../caravan-infra-{{.Caravan.Provider}}/ca_certs.pem"
 
-auth_providers = ["aws"]
+auth_providers = ["{{.Caravan.Provider}}"]
 
 aws_region                  = "{{ .Caravan.Region }}"
-aws_shared_credentials_file = "~/.aws/credentials"
+aws_shared_credentials_file = "~/.{{.Caravan.Provider}}/credentials"
 aws_profile                 = "default"
 
 bootstrap_state_backend_provider   = "{{ .Caravan.Provider }}"
@@ -106,6 +106,41 @@ bootstrap_state_object_name_prefix = "infraboot/terraform/state"
 s3_bootstrap_region                = "{{ .Caravan.Region }}"
 `,
 			Path: a.Caravan.WorkdirPlatformVars,
+		},
+		{
+			Name: "application-vars",
+			Text: `
+vault_endpoint  = "https://vault.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+consul_endpoint = "https://consul.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+nomad_endpoint  = "https://nomad.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+domain = "{{.Caravan.Name}}.{{.Caravan.Domain}}"
+
+artifacts_source_prefix    = ""
+container_registry         = ""
+services_domain            = "service.consul"
+dc_names                   = ["{{.Caravan.Provider}}-dc"]
+cloud                      = "{{.Caravan.Provider}}"
+jenkins_volume_external_id = ""
+
+
+vault_skip_tls_verify = true
+consul_insecure_https = true
+ca_cert_file          = "../caravan-infra-{{.Caravan.Provider}}/ca_certs.pem"
+`,
+			Path: a.Caravan.WorkdirApplicationVars,
+		},
+		{
+			Name: "application-backend",
+			Text: `terraform {
+  backend "s3" {
+    bucket         = "{{ .Caravan.BucketName }}"
+    key            = "appsupport/terraform/state/terraform.tfstate"
+    region         = "{{ .Caravan.Region }}"
+    dynamodb_table = "{{ .Caravan.TableName }}"
+  }
+}
+`,
+			Path: a.Caravan.WorkdirApplicationBackend,
 		},
 	}
 }

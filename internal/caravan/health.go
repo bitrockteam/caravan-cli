@@ -91,7 +91,7 @@ func (c ConsulHealth) Check() bool {
 		return false
 	}
 	defer resp.Body.Close()
-	return true
+	return resp.StatusCode == 200
 }
 
 func (c ConsulHealth) Version() string {
@@ -135,7 +135,7 @@ func (n NomadHealth) Check() bool {
 		return false
 	}
 	defer resp.Body.Close()
-	return true
+	return resp.StatusCode == 200
 }
 
 func (n NomadHealth) Version() string {
