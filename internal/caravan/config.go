@@ -11,9 +11,9 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-// Config is used to collect the Caravan configuraton.
+// Config is used to collect the Caravan configuration.
 //
-// Relevant data is collected during status changes and persisted on disk
+// Relevant data is collected during status changes and persisted on disk.
 type Config struct {
 	Name                      string              `json:",omitempty"`
 	Region                    string              `json:",omitempty"`
@@ -158,7 +158,7 @@ func (c *Config) SetBranch(branch string) {
 	c.Branch = branch
 }
 
-// SetVaultRootToen reads the content of the token file into config
+// SetVaultRootToen reads the content of the token file into config.
 func (c *Config) SetVaultRootToken() error {
 	// TODO consolidate in constructor
 	vrt, err := ioutil.ReadFile(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token"))
@@ -170,7 +170,7 @@ func (c *Config) SetVaultRootToken() error {
 	return nil
 }
 
-// SetNomadToken reads into config the Nomad Token
+// SetNomadToken reads into config the Nomad Token.
 func (c *Config) SetNomadToken() error {
 	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CApath)
 	if err != nil {
