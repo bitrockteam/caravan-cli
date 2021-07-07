@@ -18,7 +18,7 @@ type Checker interface {
 	Version() string
 }
 
-// Health bundles the url and ca certificate location
+// Health bundles the url and ca certificate location.
 type Health struct {
 	url    string
 	caFile string

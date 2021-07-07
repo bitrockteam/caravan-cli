@@ -187,7 +187,7 @@ func (c *Config) SetNomadToken() error {
 	return nil
 }
 
-// Save serializes to json the configuration and a local state store (caravan.state)
+// Save serializes to json the configuration and a local state store (caravan.state).
 func (c *Config) Save() (err error) {
 	data, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
