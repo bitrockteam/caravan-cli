@@ -19,8 +19,8 @@ In the following table the support of the corresponding provider for each provid
 |--|--|--|--|--|
 |init| :heavy_check_mark: | :x: | :x: | :x: |
 |bake| :heavy_check_mark: | :x: | :x: | :x: |
-|up| WIP | :x: | :x: | :x: | 
-|status| :x: | :x: | :x: | :x: | 
+|up| :heavy_check_mark: | :x: | :x: | :x: | 
+|status| :heavy_check_mark: | :x: | :x: | :x: | 
 |update| :x: | :x: | :x: | :x: | 
 |clean| :heavy_check_mark: | :x: | :x: | :x: | 
 
