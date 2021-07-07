@@ -18,6 +18,27 @@ type Checker interface {
 	Version() string
 }
 
+type Health struct {
+	url    string
+	caFile string
+}
+
+func NewHealth(u, ca string) Health {
+	return Health{
+		url:    u,
+		caFile: ca,
+	}
+}
+
+func (h Health) Check() bool {
+	resp, err := Get(h.url, h.caFile)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	return resp.StatusCode == 200
+}
+
 type VaultHealth struct {
 	url    string
 	caFile string
@@ -34,8 +55,8 @@ func NewVaultHealth(u, ca string) VaultHealth {
 	}
 }
 
-func (h VaultHealth) Check() string {
-	resp, err := Get(h.url, h.caFile)
+func (v VaultHealth) Check() string {
+	resp, err := Get(v.url, v.caFile)
 	if err != nil {
 		return "error"
 	}
@@ -49,8 +70,8 @@ func (h VaultHealth) Check() string {
 	return "none"
 }
 
-func (h VaultHealth) Version() string {
-	resp, err := Get(h.url, h.caFile)
+func (v VaultHealth) Version() string {
+	resp, err := Get(v.url, v.caFile)
 	if err != nil {
 		fmt.Printf("error: %s", err)
 		return ""

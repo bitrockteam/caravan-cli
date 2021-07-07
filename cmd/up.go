@@ -40,6 +40,15 @@ var upCmd = &cobra.Command{
 		}
 		fmt.Printf("[%s] deployment of infrastructure completed\n", c.Status)
 
+		if err := checkStatus(c, "vault", "/v1/sys/leader", 20); err != nil {
+			return err
+		}
+		if err := checkStatus(c, "consul", "/v1/status/leader", 20); err != nil {
+			return err
+		}
+		if err := checkStatus(c, "nomad", "/v1/status/leader", 20); err != nil {
+			return err
+		}
 		if c.VaultRootToken == "" {
 			if err := c.SetVaultRootToken(); err != nil {
 				return fmt.Errorf("error setting Vault Root Token: %w", err)
@@ -60,19 +69,9 @@ var upCmd = &cobra.Command{
 			}
 		}
 		fmt.Printf("[%s] deployment of platform completed\n", c.Status)
-		fmt.Printf("checking caravan status:")
-		co := caravan.NewConsulHealth("https://consul."+c.Name+"."+c.Domain+"/v1/connect/ca/roots", c.CApath)
-		for i := 0; i <= 10; i++ {
-			if co.Check() {
-				break
-			}
-			if i >= 10 {
-				return fmt.Errorf("timeout waiting for consul to be available")
-			}
-			time.Sleep(6 * time.Second)
-			fmt.Printf(".")
+		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 20); err != nil {
+			return err
 		}
-
 		if c.Status < caravan.ApplicationDeployDone {
 			err := deployApplication(c)
 			if err != nil {
@@ -165,6 +164,25 @@ func deployApplication(c *caravan.Config) error {
 	c.Status = caravan.PlatformDeployDone
 	if err := c.SaveConfig(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
+	}
+	return nil
+}
+
+func checkStatus(c *caravan.Config, tool string, path string, count int) error {
+	fmt.Printf("checking %s status:", tool)
+
+	h := caravan.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CApath)
+	for i := 0; i <= count; i++ {
+		if h.Check() {
+			fmt.Printf("OK\n")
+			break
+		}
+		if i >= count {
+			fmt.Printf("KO\n")
+			return fmt.Errorf("timeout waiting for %s to be available", tool)
+		}
+		time.Sleep(6 * time.Second)
+		fmt.Printf(".")
 	}
 	return nil
 }
