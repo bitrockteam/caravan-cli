@@ -72,7 +72,7 @@ func TestConfigFromFile(t *testing.T) {
 			t.Errorf("domain mismatch: want %s, got %s", tc.wantDomain, c.Domain)
 		}
 
-		err = c.SaveConfig()
+		err = c.Save()
 		if err != nil {
 			t.Errorf("unable to save config to file: %s", err)
 		}

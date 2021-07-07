@@ -122,7 +122,7 @@ func cleanInfra(c *caravan.Config) (err error) {
 		}
 	}
 	c.Status = caravan.InitDone
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		fmt.Printf("error during config update of config: %s\n", err)
 		return nil
 	}
@@ -145,7 +145,7 @@ func cleanPlatform(c *caravan.Config) (err error) {
 		}
 	}
 	c.Status = caravan.InfraDeployDone
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		fmt.Printf("error during config update of config: %s\n", err)
 		return nil
 	}
@@ -168,7 +168,7 @@ func cleanApplication(c *caravan.Config) (err error) {
 		}
 	}
 	c.Status = caravan.InfraDeployDone
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		fmt.Printf("error during config update of config: %s\n", err)
 		return nil
 	}

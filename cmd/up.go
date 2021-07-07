@@ -59,7 +59,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error setting Nomad Token: %w", err)
 			}
 		}
-		if err := c.SaveConfig(); err != nil {
+		if err := c.Save(); err != nil {
 			return fmt.Errorf("error persisting state: %w", err)
 		}
 		if c.Status < caravan.PlatformDeployDone {
@@ -96,7 +96,7 @@ func deployInfra(c *caravan.Config) error {
 		return err
 	}
 	c.Status = caravan.InfraDeployRunning
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 	env := map[string]string{}
@@ -105,7 +105,7 @@ func deployInfra(c *caravan.Config) error {
 	}
 
 	c.Status = caravan.InfraDeployDone
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 
@@ -121,7 +121,7 @@ func deployPlatform(c *caravan.Config) error {
 	}
 
 	c.Status = caravan.PlatformDeployRunning
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 
@@ -134,7 +134,7 @@ func deployPlatform(c *caravan.Config) error {
 	}
 
 	c.Status = caravan.PlatformDeployDone
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 	return nil
@@ -149,7 +149,7 @@ func deployApplication(c *caravan.Config) error {
 	}
 
 	c.Status = caravan.ApplicationDeployRunning
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 
@@ -162,7 +162,7 @@ func deployApplication(c *caravan.Config) error {
 	}
 
 	c.Status = caravan.PlatformDeployDone
-	if err := c.SaveConfig(); err != nil {
+	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 	return nil

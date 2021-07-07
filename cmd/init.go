@@ -61,7 +61,7 @@ var initCmd = &cobra.Command{
 		b, _ := cmd.Flags().GetString("branch")
 
 		c.SetBranch(b)
-		if err := c.SaveConfig(); err != nil {
+		if err := c.Save(); err != nil {
 			return err
 		}
 
@@ -82,7 +82,7 @@ var initCmd = &cobra.Command{
 		}
 		if c.Status < caravan.InitDone {
 			c.Status = caravan.InitDone
-			if err := c.SaveConfig(); err != nil {
+			if err := c.Save(); err != nil {
 				return err
 			}
 		}

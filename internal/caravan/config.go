@@ -11,6 +11,9 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+// Config is used to collect the Caravan configuraton.
+//
+// Relevant data is collected during status changes and persisted on disk
 type Config struct {
 	Name                      string              `json:",omitempty"`
 	Region                    string              `json:",omitempty"`
@@ -44,6 +47,8 @@ type Config struct {
 	CApath                    string              `json:",omitempty"`
 }
 
+// NewConfigFromScratch is used to construct a minimal configuration when no state
+// is yet persisted on a local state file.
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
 	wd := ".caravan"
 	repos := []string{"caravan", "caravan-baking", "caravan-platform", "caravan-application-support"}
@@ -75,6 +80,7 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 	return c, err
 }
 
+// NewConfigFromFile constructs a configuration from  the content of the state file (caravan.state).
 func NewConfigFromFile() (c *Config, err error) {
 	wd := ".caravan"
 	b, err := ioutil.ReadFile(filepath.Join(wd, "caravan.state"))
@@ -88,6 +94,7 @@ func NewConfigFromFile() (c *Config, err error) {
 	return c, nil
 }
 
+// SetWorkdir is used for white box testing.
 func (c *Config) SetWorkdir(wd string) {
 	c.Workdir = wd
 	c.WorkdirProject = filepath.Join(wd, c.Name)
@@ -105,6 +112,7 @@ func (c *Config) SetWorkdir(wd string) {
 	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 }
 
+// setProvider is used to populate the relevant configuration parameters as part of the initialization.
 func (c *Config) setProvider(provider string) (err error) {
 	for _, v := range c.Providers {
 		if v == provider {
@@ -128,6 +136,7 @@ func (c *Config) setProvider(provider string) (err error) {
 	return fmt.Errorf("provider not supported: %s - %v", provider, c.Providers)
 }
 
+//
 func (c *Config) setRegion(region string) (err error) {
 	if isValidRegion(c.Provider, region) {
 		c.Region = region
@@ -149,6 +158,7 @@ func (c *Config) SetBranch(branch string) {
 	c.Branch = branch
 }
 
+// SetVaultRootToen reads the content of the token file into config
 func (c *Config) SetVaultRootToken() error {
 	// TODO consolidate in constructor
 	vrt, err := ioutil.ReadFile(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token"))
@@ -160,6 +170,7 @@ func (c *Config) SetVaultRootToken() error {
 	return nil
 }
 
+// SetNomadToken reads into config the Nomad Token
 func (c *Config) SetNomadToken() error {
 	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CApath)
 	if err != nil {
@@ -176,7 +187,8 @@ func (c *Config) SetNomadToken() error {
 	return nil
 }
 
-func (c *Config) SaveConfig() (err error) {
+// Save serializes to json the configuration and a local state store (caravan.state)
+func (c *Config) Save() (err error) {
 	data, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
 		return err
@@ -194,12 +206,12 @@ func (c *Config) SaveConfig() (err error) {
 	return nil
 }
 
-// check if the provided string is a valid domain name.
+// isValidDomain checks if the provided string is a valid domain name.
 func isValidDomain(domain string) bool {
 	return govalidator.IsDNSName(domain)
 }
 
-// check the name of the region for the given provider.
+// isValidRegion checks the name of the region for the given provider.
 func isValidRegion(provider, region string) bool {
 	// TODO temp method, use SDK resources to validate
 	if provider == "aws" {
