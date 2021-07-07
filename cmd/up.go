@@ -69,7 +69,7 @@ var upCmd = &cobra.Command{
 			}
 		}
 		fmt.Printf("[%s] deployment of platform completed\n", c.Status)
-		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 20); err != nil {
+		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 30); err != nil {
 			return err
 		}
 		if c.Status < caravan.ApplicationDeployDone {
