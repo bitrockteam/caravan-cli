@@ -146,7 +146,7 @@ type NomadHealth struct {
 func NewNomadHealth(u, ca string) NomadHealth {
 	return NomadHealth{
 		// TODO use better endpoint when available
-		url:    u + "v1/sys/leader",
+		url:    u + "v1/status/leader",
 		caFile: ca,
 	}
 }

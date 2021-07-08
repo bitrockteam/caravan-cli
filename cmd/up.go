@@ -40,13 +40,13 @@ var upCmd = &cobra.Command{
 		}
 		fmt.Printf("[%s] deployment of infrastructure completed\n", c.Status)
 
-		if err := checkStatus(c, "vault", "/v1/sys/leader", 20); err != nil {
+		if err := checkStatus(c, "vault", "/v1/sys/leader", 30); err != nil {
 			return err
 		}
-		if err := checkStatus(c, "consul", "/v1/status/leader", 20); err != nil {
+		if err := checkStatus(c, "consul", "/v1/status/leader", 30); err != nil {
 			return err
 		}
-		if err := checkStatus(c, "nomad", "/v1/status/leader", 20); err != nil {
+		if err := checkStatus(c, "nomad", "/v1/status/leader", 30); err != nil {
 			return err
 		}
 		if c.VaultRootToken == "" {
@@ -69,7 +69,7 @@ var upCmd = &cobra.Command{
 			}
 		}
 		fmt.Printf("[%s] deployment of platform completed\n", c.Status)
-		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 30); err != nil {
+		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 20); err != nil {
 			return err
 		}
 		if c.Status < caravan.ApplicationDeployDone {
