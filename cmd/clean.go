@@ -114,6 +114,11 @@ func cleanInfra(c *caravan.Config) (err error) {
 	if tf.Init(c.WorkdirInfra); err != nil {
 		return err
 	}
+	c.Status = caravan.InfraCleanRunning
+	if err := c.Save(); err != nil {
+		fmt.Printf("error during config update of config: %s\n", err)
+		return nil
+	}
 	env := map[string]string{}
 	if err := tf.Destroy(filepath.Base(c.WorkdirInfraVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
@@ -121,7 +126,7 @@ func cleanInfra(c *caravan.Config) (err error) {
 			return nil
 		}
 	}
-	c.Status = caravan.InitDone
+	c.Status = caravan.InfraCleanDone
 	if err := c.Save(); err != nil {
 		fmt.Printf("error during config update of config: %s\n", err)
 		return nil
@@ -138,13 +143,18 @@ func cleanPlatform(c *caravan.Config) (err error) {
 		"VAULT_TOKEN": c.VaultRootToken,
 		"NOMAD_TOKEN": c.NomadToken,
 	}
+	c.Status = caravan.PlatformCleanRunning
+	if err := c.Save(); err != nil {
+		fmt.Printf("error during config update of config: %s\n", err)
+		return nil
+	}
 	if err := tf.Destroy(filepath.Base(c.WorkdirPlatformVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !c.Force {
 			return nil
 		}
 	}
-	c.Status = caravan.InfraDeployDone
+	c.Status = caravan.PlatformCleanDone
 	if err := c.Save(); err != nil {
 		fmt.Printf("error during config update of config: %s\n", err)
 		return nil
@@ -157,6 +167,11 @@ func cleanApplication(c *caravan.Config) (err error) {
 	if tf.Init(c.WorkdirApplicationVars); err != nil {
 		return err
 	}
+	c.Status = caravan.ApplicationCleanRunning
+	if err := c.Save(); err != nil {
+		fmt.Printf("error during config update of config: %s\n", err)
+		return nil
+	}
 	env := map[string]string{
 		"VAULT_TOKEN": c.VaultRootToken,
 		"NOMAD_TOKEN": c.NomadToken,
@@ -167,7 +182,7 @@ func cleanApplication(c *caravan.Config) (err error) {
 			return nil
 		}
 	}
-	c.Status = caravan.InfraDeployDone
+	c.Status = caravan.ApplicationCleanDone
 	if err := c.Save(); err != nil {
 		fmt.Printf("error during config update of config: %s\n", err)
 		return nil

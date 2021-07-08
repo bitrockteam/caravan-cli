@@ -161,7 +161,7 @@ func deployApplication(c *caravan.Config) error {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
-	c.Status = caravan.PlatformDeployDone
+	c.Status = caravan.ApplicationDeployDone
 	if err := c.Save(); err != nil {
 		return fmt.Errorf("error persisting state: %w", err)
 	}

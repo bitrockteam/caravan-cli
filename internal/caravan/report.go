@@ -7,24 +7,24 @@ import (
 )
 
 func (c *Config) StatusReport() {
-	t, err := template.New("status").Parse(`====== {{.Name }}@{{or .Branch "default"}}
-status: {{ printf "%d" .Status}}-{{.Status}}
-provider: {{.Provider}} region: {{ or .Region "default"}}
+	t, err := template.New("status").Parse(`Name:		{{.Name }}@{{or .Branch "default"}}
+Status:		{{.Status}}
+Provider:	{{.Provider}} 
+Region:		{{ or .Region "default"}}
 {{- if gt .Status 3 }}
- VAULT
-URL: https://vault.{{.Name }}.{{.Domain}}
-status: {{.VaultCheck}}
-version: {{.VaultVersion}} 
- CONSUL
-URL: https://consul.{{.Name }}.{{.Domain}} 
-status: {{.ConsulCheck }}
-version: {{.ConsulVersion}}
- NOMAD
-URL: https://nomad.{{.Name }}.{{.Domain}} 
-status: {{.NomadCheck}} 
-version: {{.NomadVersion}}
+Vault	URL:		https://vault.{{.Name }}.{{.Domain}}
+	Status:		{{.VaultCheck}}
+	Version:	{{.VaultVersion}}
+	Token:		{{.VaultRootToken}}
+Consul	URL:		https://consul.{{.Name }}.{{.Domain}} 
+	Status:		{{.ConsulCheck }}
+	Version:	{{.ConsulVersion}}
+Nomad	URL: 		https://nomad.{{.Name }}.{{.Domain}} 
+	Status:		{{.NomadCheck}} 
+	Version:	{{.NomadVersion}}
+	Token:		{{.NomadToken}}
 {{- end }}
-======`)
+`)
 
 	if err != nil {
 		fmt.Printf("error parsing report: %s\n", err)
