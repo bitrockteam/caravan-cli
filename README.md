@@ -24,6 +24,29 @@ In the following table the support of the corresponding provider for each provid
 |update| :x: | :x: | :x: | :x: | 
 |clean| :heavy_check_mark: | :x: | :x: | :x: | 
 
+## Usage
+A typical session is as follows:
+```
+./caravan init --project --provider aws
+```
+This will generate in the ```.caravan``` local folder the needed variables/templates for the correspondig provider selected. In the same folder the git repos with the relevant terraform code will be checked-out with the default branch (release branch) unless the ```--branch``` optional parameter is specified.
+
+Once the init is performed the caravan environment can be started by issuing:
+```
+./caravan up
+```
+
+At each point in time the status of the ongoing deployment can be checked with:
+```
+./caravan status
+```
+
+To delete anenvironment the following command is available:
+```
+./caravan clean
+```
+A ```--force true``` option is needed to remove all the objects from the cloud bucket in order to avoid losing state.
+
 ## Develop
 
 To build the cli execute:
