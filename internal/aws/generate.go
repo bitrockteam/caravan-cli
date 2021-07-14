@@ -2,108 +2,164 @@ package aws
 
 import (
 	"fmt"
+	"html/template"
 	"os"
-	"text/template"
+	"path/filepath"
 )
 
+type Template struct {
+	Name string
+	Text string
+	Path string
+}
+
+// TODO refactor with common generate code.
 func (a *AWS) GenerateConfig() (err error) {
-	fmt.Printf("generating config files on: %s\n", a.CaravanConfig.WorkdirProject)
-	err = os.MkdirAll(a.CaravanConfig.WorkdirProject, 0o777)
-	if err != nil {
+	fmt.Printf("generating config files on: %s\n", a.Caravan.WorkdirProject)
+	if err := os.MkdirAll(a.Caravan.WorkdirProject, 0777); err != nil {
 		return err
+	}
+	a.LoadTemplates()
+
+	for _, t := range a.Templates {
+		fmt.Printf("generating %v:%s \n", t.Name, t.Path)
+		if err := a.Generate(t); err != nil {
+			return err
+		}
 	}
 
-	err = a.GenerateBaking(a.CaravanConfig.WorkdirBakingVars)
-	if err != nil {
-		return err
-	}
-
-	err = a.GenerateInfra(a.CaravanConfig.WorkdirInfraVars)
-	if err != nil {
-		return err
-	}
-
-	err = a.GenerateBackend(a.CaravanConfig.WorkdirInfraBackend)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
-func (a *AWS) GenerateBaking(path string) (err error) {
-	t, err := template.New("baking").Parse(`build_on_aws      = true
+func (a *AWS) LoadTemplates() {
+	a.Templates = []Template{
+		{
+			Name: "baking-vars",
+			Text: `build_on_aws      = true
 build_image_name  = "caravan-centos-image"
-aws_region        = "{{ .CaravanConfig.Region }}"
+aws_region        = "{{ .Caravan.Region }}"
 aws_instance_type = "t3.small"
-`)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	err = t.Execute(f, a)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *AWS) GenerateInfra(path string) (err error) {
-	t, err := template.New("infra").Parse(`region                  = "{{ .CaravanConfig.Region }}"
-awsprofile              = "{{ .CaravanConfig.Profile }}"
+`,
+			Path: a.Caravan.WorkdirBakingVars,
+		},
+		{
+			Name: "infra-vars",
+			Text: `region                  = "{{ .Caravan.Region }}"
+awsprofile              = "{{ .Caravan.Profile }}"
 shared_credentials_file = "~/.aws/credentials"
-prefix                  = "{{ .CaravanConfig.Name }}"
+prefix                  = "{{ .Caravan.Name }}"
 personal_ip_list        = ["0.0.0.0/0"]
 use_le_staging          = true
-external_domain         = "{{ .CaravanConfig.Domain }}"
-tfstate_bucket_name     = "{{ .CaravanConfig.BucketName }}"
-tfstate_table_name      = "{{ .CaravanConfig.TableName }}"
-tfstate_region          = "{{ .CaravanConfig.Region }}"
-`)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	err = t.Execute(f, a)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *AWS) GenerateBackend(path string) (err error) {
-	t, err := template.New("bakend").Parse(`terraform {
+external_domain         = "{{ .Caravan.Domain }}"
+tfstate_bucket_name     = "{{ .Caravan.BucketName }}"
+tfstate_table_name      = "{{ .Caravan.TableName }}"
+tfstate_region          = "{{ .Caravan.Region }}"
+`,
+			Path: a.Caravan.WorkdirInfraVars,
+		},
+		{
+			Name: "infra-backend",
+			Text: `terraform {
   backend "s3" {
-    bucket         = "{{ .CaravanConfig.BucketName }}"
+    bucket         = "{{ .Caravan.BucketName }}"
     key            = "infraboot/terraform/state/terraform.tfstate"
-    region         = "{{ .CaravanConfig.Region }}"
-    dynamodb_table = "{{ .CaravanConfig.TableName }}"
+    region         = "{{ .Caravan.Region }}"
+    dynamodb_table = "{{ .Caravan.TableName }}"
   }
 }
-`)
+`,
+			Path: a.Caravan.WorkdirInfraBackend,
+		},
+		{
+			Name: "platform-backend",
+			Text: `terraform {
+  backend "s3" {
+    bucket         = "{{ .Caravan.BucketName }}"
+    key            = "platform/terraform/state/terraform.tfstate"
+    region         = "{{ .Caravan.Region }}"
+    dynamodb_table = "{{ .Caravan.TableName }}"
+  }
+}
+`,
+			Path: a.Caravan.WorkdirPlatformBackend,
+		},
+		{
+			Name: "platform-vars",
+			Text: `
+vault_endpoint  = "https://vault.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+consul_endpoint = "https://consul.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+nomad_endpoint  = "https://nomad.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+
+vault_skip_tls_verify = true
+consul_insecure_https = true
+ca_cert_file          = "../caravan-infra-{{.Caravan.Provider}}/ca_certs.pem"
+
+auth_providers = ["{{.Caravan.Provider}}"]
+
+aws_region                  = "{{ .Caravan.Region }}"
+aws_shared_credentials_file = "~/.{{.Caravan.Provider}}/credentials"
+aws_profile                 = "default"
+
+bootstrap_state_backend_provider   = "{{ .Caravan.Provider }}"
+bootstrap_state_bucket_name_prefix = "{{ .Caravan.BucketName }}"
+bootstrap_state_object_name_prefix = "infraboot/terraform/state"
+s3_bootstrap_region                = "{{ .Caravan.Region }}"
+`,
+			Path: a.Caravan.WorkdirPlatformVars,
+		},
+		{
+			Name: "application-vars",
+			Text: `
+vault_endpoint  = "https://vault.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+consul_endpoint = "https://consul.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+nomad_endpoint  = "https://nomad.{{.Caravan.Name}}.{{.Caravan.Domain}}"
+domain = "{{.Caravan.Name}}.{{.Caravan.Domain}}"
+
+artifacts_source_prefix    = ""
+container_registry         = ""
+services_domain            = "service.consul"
+dc_names                   = ["{{.Caravan.Provider}}-dc"]
+cloud                      = "{{.Caravan.Provider}}"
+jenkins_volume_external_id = ""
+
+
+vault_skip_tls_verify = true
+consul_insecure_https = true
+ca_cert_file          = "../caravan-infra-{{.Caravan.Provider}}/ca_certs.pem"
+`,
+			Path: a.Caravan.WorkdirApplicationVars,
+		},
+		{
+			Name: "application-backend",
+			Text: `terraform {
+  backend "s3" {
+    bucket         = "{{ .Caravan.BucketName }}"
+    key            = "appsupport/terraform/state/terraform.tfstate"
+    region         = "{{ .Caravan.Region }}"
+    dynamodb_table = "{{ .Caravan.TableName }}"
+  }
+}
+`,
+			Path: a.Caravan.WorkdirApplicationBackend,
+		},
+	}
+}
+
+func (a *AWS) Generate(t Template) (err error) {
+	temp, err := template.New(t.Name).Parse(t.Text)
 	if err != nil {
 		return err
 	}
-
-	f, err := os.Create(path)
+	if err := os.MkdirAll(filepath.Dir(t.Path), 0777); err != nil {
+		return err
+	}
+	f, err := os.Create(t.Path)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	err = t.Execute(f, a)
-	if err != nil {
+	if err := temp.Execute(f, a); err != nil {
 		return err
 	}
 	return nil

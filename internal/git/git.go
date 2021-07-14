@@ -3,8 +3,9 @@ package git
 import (
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/go-git/go-git/v5"
+	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
 
@@ -47,7 +48,10 @@ func (g Git) Clone(name, dest, branch string) (err error) {
 		Branch: b,
 	})
 	if err != nil {
-		return fmt.Errorf("error checking out: %w", err)
+		// TODO better error check
+		if !strings.Contains(err.Error(), "worktree contains unstaged changes") {
+			return fmt.Errorf("error checking out: %w", err)
+		}
 	}
 
 	return nil

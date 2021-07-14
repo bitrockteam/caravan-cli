@@ -9,6 +9,7 @@ import (
 	"caravan/internal/caravan"
 	"caravan/internal/git"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -35,17 +36,34 @@ var initCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Println("init called")
 
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
-		c, err := caravan.NewConfigFromScratch(name, provider, region)
+
+		c, err := caravan.NewConfigFromFile()
 		if err != nil {
-			return err
+			// TODO better error checking
+			if !strings.Contains(err.Error(), "no such file or directory") {
+				return err
+			}
+			c, err = caravan.NewConfigFromScratch(name, provider, region)
+			if err != nil {
+				return err
+			}
+		}
+
+		if name != c.Name {
+			fmt.Printf("please run: \"caravan clean --force\" before init a new project")
+			return nil
 		}
 
 		b, _ := cmd.Flags().GetString("branch")
+
+		c.SetBranch(b)
+		if err := c.Save(); err != nil {
+			return err
+		}
 
 		// checkout repos
 		git := git.NewGit("bitrockteam")
@@ -58,14 +76,15 @@ var initCmd = &cobra.Command{
 		}
 
 		// init AWS
-		err = initCloud(c)
-		if err != nil {
+		if err := initCloud(c); err != nil {
 			fmt.Printf("error during init: %s\n", err)
 			return err
 		}
-		c.Status = "INIT_COMPLETE"
-		if err := c.SaveConfig(); err != nil {
-			return err
+		if c.Status < caravan.InitDone {
+			c.Status = caravan.InitDone
+			if err := c.Save(); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -75,12 +94,6 @@ var initCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
 	initCmd.PersistentFlags().String("project", "", "name of project")
 	_ = initCmd.MarkPersistentFlagRequired("project")
 
@@ -89,10 +102,6 @@ func init() {
 
 	initCmd.PersistentFlags().String("region", "", "provider target region")
 	initCmd.PersistentFlags().String("branch", "", "branch to checkout on repos")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 func initCloud(c *caravan.Config) (err error) {
@@ -103,20 +112,17 @@ func initCloud(c *caravan.Config) (err error) {
 		return err
 	}
 
-	err = cloud.GenerateConfig()
-	if err != nil {
+	if err := cloud.GenerateConfig(); err != nil {
 		return fmt.Errorf("error generating config files: %w", err)
 	}
 
 	fmt.Printf("creating bucket: %s\n", c.BucketName)
-	err = cloud.CreateBucket(c.BucketName)
-	if err != nil {
+	if err := cloud.CreateBucket(c.BucketName); err != nil {
 		return err
 	}
 
 	fmt.Printf("creating lock table: %s\n", c.TableName)
-	err = cloud.CreateLockTable(c.TableName)
-	if err != nil {
+	if err := cloud.CreateLockTable(c.TableName); err != nil {
 		return err
 	}
 

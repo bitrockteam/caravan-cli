@@ -63,14 +63,12 @@ func bake(c caravan.Config) (err error) {
 		return fmt.Errorf("please run init before bake")
 	}
 
-	tf := terraform.NewTerraform(c.WorkdirBaking)
-	err = tf.Init()
-	if err != nil {
+	t := terraform.Terraform{}
+	if err := t.Init(c.WorkdirBaking); err != nil {
 		return err
 	}
-
-	err = tf.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second)
-	if err != nil {
+	env := map[string]string{}
+	if err := t.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second, env); err != nil {
 		return err
 	}
 	return nil
