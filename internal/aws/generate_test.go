@@ -16,8 +16,7 @@ func TestGenerateConfig(t *testing.T) {
 	config, _ := caravan.NewConfigFromScratch("test-name", "aws", "eu-south-1")
 	config.SetWorkdir(dir)
 	_ = config.SetDomain("test.me")
-	aws, _ := aws.NewAWS(*config)
-	aws.LoadTemplates()
+	aws, _ := aws.New(*config)
 
 	testCases := []struct {
 		name string

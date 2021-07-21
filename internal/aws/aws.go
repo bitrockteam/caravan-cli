@@ -20,10 +20,10 @@ import (
 type AWS struct {
 	Caravan   caravan.Config
 	AWSConfig aws.Config
-	Templates []Template
+	Templates []caravan.Template
 }
 
-func NewAWS(conf caravan.Config) (a AWS, err error) {
+func New(conf caravan.Config) (a AWS, err error) {
 	a.Caravan = conf
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
@@ -40,10 +40,13 @@ func NewAWS(conf caravan.Config) (a AWS, err error) {
 	}
 	a.Caravan.Region = cfg.Region
 	a.AWSConfig = cfg
+
+	a.Templates = loadTemplates(a)
+
 	return a, nil
 }
 
-func (a *AWS) CreateBucket(name string) (err error) {
+func (a AWS) CreateBucket(name string) (err error) {
 	var bae *s3types.BucketAlreadyExists
 	var bao *s3types.BucketAlreadyOwnedByYou
 
@@ -80,7 +83,7 @@ func (a *AWS) CreateBucket(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) EmptyBucket(name string) (err error) {
+func (a AWS) EmptyBucket(name string) (err error) {
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -127,7 +130,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) DeleteBucket(name string) (err error) {
+func (a AWS) DeleteBucket(name string) (err error) {
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -145,7 +148,7 @@ func (a *AWS) DeleteBucket(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) CreateLockTable(name string) (err error) {
+func (a AWS) CreateLockTable(name string) (err error) {
 	var riu *dytypes.ResourceInUseException
 
 	retry := 10
@@ -186,7 +189,7 @@ func (a *AWS) CreateLockTable(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) DeleteLockTable(name string) (err error) {
+func (a AWS) DeleteLockTable(name string) (err error) {
 	var riu *dytypes.ResourceInUseException
 	var rnf *dytypes.ResourceNotFoundException
 

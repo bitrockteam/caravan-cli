@@ -1,25 +1,19 @@
 package aws
 
 import (
+	"caravan/internal/caravan"
 	"fmt"
-	"html/template"
 	"os"
 	"path/filepath"
+	"text/template"
 )
 
-type Template struct {
-	Name string
-	Text string
-	Path string
-}
-
 // TODO refactor with common generate code.
-func (a *AWS) GenerateConfig() (err error) {
+func (a AWS) GenerateConfig() (err error) {
 	fmt.Printf("generating config files on: %s\n", a.Caravan.WorkdirProject)
 	if err := os.MkdirAll(a.Caravan.WorkdirProject, 0777); err != nil {
 		return err
 	}
-	a.LoadTemplates()
 
 	for _, t := range a.Templates {
 		fmt.Printf("generating %v:%s \n", t.Name, t.Path)
@@ -31,8 +25,8 @@ func (a *AWS) GenerateConfig() (err error) {
 	return nil
 }
 
-func (a *AWS) LoadTemplates() {
-	a.Templates = []Template{
+func loadTemplates(a AWS) []caravan.Template {
+	return []caravan.Template{
 		{
 			Name: "baking-vars",
 			Text: `build_on_aws      = true
@@ -145,7 +139,7 @@ ca_cert_file          = "../caravan-infra-{{.Caravan.Provider}}/ca_certs.pem"
 	}
 }
 
-func (a *AWS) Generate(t Template) (err error) {
+func (a AWS) Generate(t caravan.Template) (err error) {
 	temp, err := template.New(t.Name).Parse(t.Text)
 	if err != nil {
 		return err

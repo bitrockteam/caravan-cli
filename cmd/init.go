@@ -4,6 +4,7 @@ package cmd
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
+	"caravan/internal/gcp"
 	"caravan/internal/git"
 	"fmt"
 	"strings"
@@ -72,7 +73,7 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		// init AWS
+		// init Provider
 		if err := initCloud(c); err != nil {
 			fmt.Printf("error during init: %s\n", err)
 			return err
@@ -104,22 +105,34 @@ func init() {
 func initCloud(c *caravan.Config) (err error) {
 	// generate configs and supporting items (bucket and locktable)
 	fmt.Printf("initializing cloud resources\n")
-	cloud, err := aws.NewAWS(*c)
-	if err != nil {
+	var p caravan.Provider
+	switch c.Provider {
+	case "aws":
+		p, err = aws.New(*c)
+		if err != nil {
+			return err
+		}
+	case "gcp":
+		p, err = gcp.New(*c)
+		if err != nil {
+			return err
+		}
+	default:
+		fmt.Printf("impl not found")
 		return err
 	}
 
-	if err := cloud.GenerateConfig(); err != nil {
+	if err := p.GenerateConfig(); err != nil {
 		return fmt.Errorf("error generating config files: %w", err)
 	}
 
 	fmt.Printf("creating bucket: %s\n", c.BucketName)
-	if err := cloud.CreateBucket(c.BucketName); err != nil {
+	if err := p.CreateBucket(c.BucketName); err != nil {
 		return err
 	}
 
 	fmt.Printf("creating lock table: %s\n", c.TableName)
-	if err := cloud.CreateLockTable(c.TableName); err != nil {
+	if err := p.CreateLockTable(c.TableName); err != nil {
 		return err
 	}
 

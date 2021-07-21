@@ -12,6 +12,12 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+type Template struct {
+	Name string
+	Text string
+	Path string
+}
+
 // Config is used to collect the Caravan configuration.
 //
 // Relevant data is collected during status changes and persisted on disk.
@@ -54,7 +60,7 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 	wd := ".caravan"
 	repos := []string{"caravan", "caravan-baking", "caravan-platform", "caravan-application-support"}
 
-	providers := []string{"aws"}
+	providers := []string{"aws", "gcp"}
 
 	if len(name) > 12 {
 		return c, fmt.Errorf("name too long %d: max length is 12", len(name))

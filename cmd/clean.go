@@ -62,6 +62,7 @@ The following optional parameters can be specified:
 			fmt.Printf("error during clean of cloud resources: %s\n", err)
 			return nil
 		}
+		fmt.Printf("removing %s/%s\n", c.Workdir, c.Name)
 
 		os.RemoveAll(c.Workdir + "/" + c.Name)
 		os.RemoveAll(c.Workdir + "/caravan.state")
@@ -76,10 +77,9 @@ func init() {
 }
 
 func cleanCloud(c *caravan.Config) (err error) {
-	// generate configs and supporting items (bucket and locktable)
 	fmt.Printf("removing terraform state and locking structures\n")
 
-	cloud, err := aws.NewAWS(*c)
+	cloud, err := aws.New(*c)
 	if err != nil {
 		return err
 	}
@@ -107,6 +107,7 @@ func cleanCloud(c *caravan.Config) (err error) {
 }
 
 func cleanInfra(c *caravan.Config) (err error) {
+	fmt.Printf("removing terraform infrastructure\n")
 	tf := terraform.Terraform{}
 	err = tf.Init(c.WorkdirInfra)
 	if err != nil {
@@ -133,6 +134,7 @@ func cleanInfra(c *caravan.Config) (err error) {
 }
 
 func cleanPlatform(c *caravan.Config) (err error) {
+	fmt.Printf("removing terraform platform\n")
 	tf := terraform.Terraform{}
 	err = tf.Init(c.WorkdirPlatform)
 	if err != nil {
@@ -162,6 +164,7 @@ func cleanPlatform(c *caravan.Config) (err error) {
 }
 
 func cleanApplication(c *caravan.Config) (err error) {
+	fmt.Printf("removing terraform application\n")
 	tf := terraform.Terraform{}
 	err = tf.Init(c.WorkdirApplicationVars)
 	if err != nil {
