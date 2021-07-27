@@ -90,7 +90,7 @@ func init() {
 
 func deployInfra(c *caravan.Config) error {
 	// Infra
-	fmt.Printf("deploying platform")
+	fmt.Println("deploying platform")
 	t := &tf.Terraform{}
 	if err := t.Init(c.WorkdirInfra); err != nil {
 		return err

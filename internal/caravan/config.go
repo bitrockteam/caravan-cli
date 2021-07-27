@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 
@@ -213,11 +214,9 @@ func isValidDomain(domain string) bool {
 
 // isValidRegion checks the name of the region for the given provider.
 func isValidRegion(provider, region string) bool {
-	// TODO temp method, use SDK resources to validate
 	if provider == "aws" {
-		if region == "eu-south-1" {
-			return true
-		}
+		_, err := net.LookupIP(fmt.Sprintf("ec2.%s.amazonaws.com", region))
+		return err == nil
 	}
 	return false
 }
