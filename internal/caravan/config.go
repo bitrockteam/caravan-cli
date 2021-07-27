@@ -216,10 +216,7 @@ func isValidDomain(domain string) bool {
 func isValidRegion(provider, region string) bool {
 	if provider == "aws" {
 		_, err := net.LookupIP(fmt.Sprintf("ec2.%s.amazonaws.com", region))
-		if err != nil {
-			return false
-		}
-		return true
+		return err == nil
 	}
 	return false
 }
