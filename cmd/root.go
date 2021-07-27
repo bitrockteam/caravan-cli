@@ -18,7 +18,7 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "caravan",
-	Short: "This tool allow you to deploy and setup a caravan clustern",
+	Short: "This tool allow you to deploy and setup a caravan cluster",
 	Long: `With caravan cli you can:
 		- init the required data structures
 		- bake the corresponding images

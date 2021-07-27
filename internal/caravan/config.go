@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
+  "net"
+  "os"
 	"path/filepath"
 
 	"github.com/asaskevich/govalidator"
@@ -213,11 +214,12 @@ func isValidDomain(domain string) bool {
 
 // isValidRegion checks the name of the region for the given provider.
 func isValidRegion(provider, region string) bool {
-	// TODO temp method, use SDK resources to validate
 	if provider == "aws" {
-		if region == "eu-south-1" {
-			return true
-		}
+    _, err := net.LookupIP(fmt.Sprintf("ec2.%s.amazonaws.com", region))
+    if err != nil {
+      return false
+    }
+    return true
 	}
 	return false
 }

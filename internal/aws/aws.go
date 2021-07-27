@@ -29,7 +29,7 @@ func NewAWS(conf caravan.Config) (a AWS, err error) {
 
 	if a.Caravan.Region != "" {
 		cfg, err = config.LoadDefaultConfig(context.TODO(),
-			config.WithDefaultRegion(a.Caravan.Region),
+			config.WithRegion(a.Caravan.Region),
 		)
 	}
 	if err != nil {
