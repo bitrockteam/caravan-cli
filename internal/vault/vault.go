@@ -15,10 +15,13 @@ type Vault struct {
 func New(url string, token string, ca string) (v Vault, err error) {
 	conf := vault.DefaultConfig()
 
-	conf.ConfigureTLS(
+	err = conf.ConfigureTLS(
 		&vault.TLSConfig{
 			CACert: ca,
 		})
+	if err != nil {
+		return v, err
+	}
 	conf.Address = url
 
 	c, err := vault.NewClient(conf)

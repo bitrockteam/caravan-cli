@@ -1,7 +1,4 @@
-/*
-Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
-
-*/
+// Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (

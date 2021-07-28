@@ -66,3 +66,13 @@ For the execution of the command to be successful the following pre-requisite ne
 
 - terraform installed and available in the `$PATH` environment variable
 - aws cli installed and with credentials provided in `.aws/credentials`
+
+### Pre Commit Checks
+
+We use https://pre-commit.com/ for executing some check for each commit locally before push
+
+Follow https://pre-commit.com/#install for the installation process.
+
+We require the following binary installed in the machine:
+
+- https://golangci-lint.run/usage/install/#local-installation

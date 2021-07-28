@@ -1,7 +1,4 @@
-/*
-Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
-
-*/
+// Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
@@ -100,8 +97,15 @@ func deployInfra(c *caravan.Config) error {
 		return fmt.Errorf("error persisting state: %w", err)
 	}
 	env := map[string]string{}
-	if err := t.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 600*time.Second, env); err != nil {
-		return fmt.Errorf("error doing terraform apply: %w", err)
+	targets := []string{}
+	if c.Provider == "aws" {
+		targets = append(targets, "aws_lb.hashicorp_alb")
+	}
+	targets = append(targets, "*")
+	for _, target := range targets {
+		if err := t.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 600*time.Second, env, target); err != nil {
+			return fmt.Errorf("error doing terraform apply: %w", err)
+		}
 	}
 
 	c.Status = caravan.InfraDeployDone
@@ -129,7 +133,7 @@ func deployPlatform(c *caravan.Config) error {
 		"VAULT_TOKEN": c.VaultRootToken,
 		"NOMAD_TOKEN": c.NomadToken,
 	}
-	if err := t.ApplyVarFile(filepath.Base(c.WorkdirPlatformVars), 600*time.Second, env); err != nil {
+	if err := t.ApplyVarFile(filepath.Base(c.WorkdirPlatformVars), 600*time.Second, env, "*"); err != nil {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
@@ -157,7 +161,7 @@ func deployApplication(c *caravan.Config) error {
 		"VAULT_TOKEN": c.VaultRootToken,
 		"NOMAD_TOKEN": c.NomadToken,
 	}
-	if err := t.ApplyVarFile(filepath.Base(c.WorkdirApplicationVars), 600*time.Second, env); err != nil {
+	if err := t.ApplyVarFile(filepath.Base(c.WorkdirApplicationVars), 600*time.Second, env, "*"); err != nil {
 		return fmt.Errorf("error doing terraform apply: %w", err)
 	}
 
