@@ -1,7 +1,4 @@
-/*
-Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
-
-*/
+// Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
@@ -68,7 +65,7 @@ func bake(c caravan.Config) (err error) {
 		return err
 	}
 	env := map[string]string{}
-	if err := t.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second, env); err != nil {
+	if err := t.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second, env, "*"); err != nil {
 		return err
 	}
 	return nil

@@ -16,6 +16,7 @@ linters:
     - dogsled
     - dupl
     - durationcheck
+    - errcheck
     - errorlint
     - exportloopref
     - funlen

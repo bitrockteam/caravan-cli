@@ -53,7 +53,7 @@ func (t Terraform) ApplyVarMap(config map[string]string) (err error) {
 	return nil
 }
 
-func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[string]string) (err error) {
+func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[string]string, target string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -61,6 +61,9 @@ func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[stri
 	args = append(args, "apply")
 	args = append(args, "-auto-approve")
 	args = append(args, "-var-file="+file)
+	if target != "*" {
+		args = append(args, "-target="+target)
+	}
 	fmt.Printf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir

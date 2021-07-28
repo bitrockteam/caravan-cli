@@ -1,7 +1,4 @@
-/*
-Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
-
-*/
+// Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
@@ -111,7 +108,8 @@ func cleanCloud(c *caravan.Config) (err error) {
 
 func cleanInfra(c *caravan.Config) (err error) {
 	tf := terraform.Terraform{}
-	if tf.Init(c.WorkdirInfra); err != nil {
+	err = tf.Init(c.WorkdirInfra)
+	if err != nil {
 		return err
 	}
 	c.Status = caravan.InfraCleanRunning
@@ -136,7 +134,8 @@ func cleanInfra(c *caravan.Config) (err error) {
 
 func cleanPlatform(c *caravan.Config) (err error) {
 	tf := terraform.Terraform{}
-	if tf.Init(c.WorkdirPlatform); err != nil {
+	err = tf.Init(c.WorkdirPlatform)
+	if err != nil {
 		return err
 	}
 	env := map[string]string{
@@ -164,7 +163,8 @@ func cleanPlatform(c *caravan.Config) (err error) {
 
 func cleanApplication(c *caravan.Config) (err error) {
 	tf := terraform.Terraform{}
-	if tf.Init(c.WorkdirApplicationVars); err != nil {
+	err = tf.Init(c.WorkdirApplicationVars)
+	if err != nil {
 		return err
 	}
 	c.Status = caravan.ApplicationCleanRunning
