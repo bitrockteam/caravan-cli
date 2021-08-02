@@ -52,6 +52,7 @@ type Config struct {
 	NomadToken                string              `json:",omitempty"`
 	VaultURL                  string              `json:",omitempty"`
 	CApath                    string              `json:",omitempty"`
+	GCPOrgID                  string              `json:",omitempty"`
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state
@@ -192,6 +193,10 @@ func (c *Config) SetNomadToken() error {
 	c.NomadToken = t
 
 	return nil
+}
+
+func (c *Config) SetGCPOrgID(id string) {
+	c.GCPOrgID = "organizations/" + id
 }
 
 // Save serializes to json the configuration and a local state store (caravan.state).

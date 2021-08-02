@@ -4,6 +4,7 @@ package cmd
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
+	"caravan/internal/gcp"
 	"caravan/internal/terraform"
 	"fmt"
 	"os"
@@ -79,27 +80,40 @@ func init() {
 func cleanCloud(c *caravan.Config) (err error) {
 	fmt.Printf("removing terraform state and locking structures\n")
 
-	cloud, err := aws.New(*c)
-	if err != nil {
-		return err
+	var p caravan.Provider
+	switch c.Provider {
+	case "aws":
+		p, err = aws.New(*c)
+		if err != nil {
+			return err
+		}
+	case "gcp":
+		p, err = gcp.New(*c)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("implementation not found: %s\n", c.Provider)
 	}
 
 	if c.Force {
 		fmt.Printf("emptying bucket %s\n", c.Name+"-caravan-terraform-state")
-		err = cloud.EmptyBucket(c.Name + "-caravan-terraform-state")
+		err = p.EmptyBucket(c.Name + "-caravan-terraform-state")
 		if err != nil {
 			return fmt.Errorf("error emptying: %w", err)
 		}
 	}
 
 	// TODO cleanup before delete with force option
-	err = cloud.DeleteBucket(c.Name + "-caravan-terraform-state")
-	if err != nil {
+	if err := p.DeleteBucket(c.Name + "-caravan-terraform-state"); err != nil {
 		return err
 	}
 
-	err = cloud.DeleteLockTable(c.Name + "-caravan-terraform-state-lock")
-	if err != nil {
+	if err := p.DeleteLockTable(c.Name + "-caravan-terraform-state-lock"); err != nil {
+		return err
+	}
+
+	if err := p.Clean(); err != nil {
 		return err
 	}
 

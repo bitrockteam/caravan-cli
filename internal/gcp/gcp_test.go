@@ -20,15 +20,17 @@ func TestProject(t *testing.T) {
 	}
 	name := c.Name + "-" + uid
 
+	c.SetGCPOrgID("55685363496")
+
 	g, err := gcp.New(*c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
-	if err := g.CreateProject(name); err != nil {
+	if err := g.CreateProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to create project: %s\n", err)
 	}
 	// idempotence
-	if err = g.CreateProject(name); err != nil {
+	if err = g.CreateProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to create project: %s\n", err)
 	}
 

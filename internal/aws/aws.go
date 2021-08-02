@@ -46,6 +46,14 @@ func New(conf caravan.Config) (a AWS, err error) {
 	return a, nil
 }
 
+func (a AWS) Init() error {
+	return nil
+}
+
+func (a AWS) Clean() error {
+	return nil
+}
+
 func (a AWS) CreateBucket(name string) (err error) {
 	var bae *s3types.BucketAlreadyExists
 	var bao *s3types.BucketAlreadyOwnedByYou
