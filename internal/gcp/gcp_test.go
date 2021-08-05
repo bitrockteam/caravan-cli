@@ -1,44 +1,35 @@
-// +build integration
-
 package gcp_test
 
 import (
 	"caravan/internal/caravan"
 	"caravan/internal/gcp"
-	"strings"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
-func TestProject(t *testing.T) {
-	uid := strings.Split(uuid.New().String(), "-")[0]
-
-	c, err := caravan.NewConfigFromScratch("name", "gcp", "")
-	if err != nil {
-		t.Fatalf("unable to create config: %s\n", err)
-	}
-	name := c.Name + "-" + uid
-
-	c.SetGCPOrgID("55685363496")
-
-	g, err := gcp.New(*c)
-	if err != nil {
-		t.Fatalf("unable to create GCP: %s\n", err)
-	}
-	if err := g.CreateProject(name, c.GCPOrgID); err != nil {
-		t.Fatalf("unable to create project: %s\n", err)
-	}
-	// idempotence
-	if err = g.CreateProject(name, c.GCPOrgID); err != nil {
-		t.Fatalf("unable to create project: %s\n", err)
+func TestValidate(t *testing.T) {
+	type test struct {
+		name  string
+		error bool
+		desc  string
 	}
 
-	if err := g.DeleteProject(name); err != nil {
-		t.Fatalf("unable to delete project %s: %s\n", name, err)
+	tests := []test{
+		{name: "test-me", error: false, desc: "ok"},
+		{name: "test", error: true, desc: "name shorter than minimum"},
+		{name: "test-me?", error: true, desc: "non supported characters"},
+		{name: "-test-me", error: true, desc: "starting with hypen"},
 	}
-	//idempotence
-	if err := g.DeleteProject(name); err != nil {
-		t.Fatalf("unable to delete project %s: %s\n", name, err)
+
+	for _, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			c, err := caravan.NewConfigFromScratch(tc.name, "gcp", "")
+			if err != nil {
+				t.Fatalf("unable to create config: %s\n", err)
+			}
+			_, err = gcp.New(*c)
+			if err == nil && tc.error || err != nil && !tc.error {
+				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
+			}
+		})
 	}
 }

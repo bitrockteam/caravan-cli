@@ -1,5 +1,10 @@
 package caravan
 
+const (
+	AWS = "aws"
+	GCP = "gcp"
+)
+
 type Provider interface {
 	Init() error
 	GenerateConfig() error

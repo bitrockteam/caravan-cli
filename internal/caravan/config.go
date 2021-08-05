@@ -27,7 +27,6 @@ type Config struct {
 	Regions                   map[string][]string `json:",omitempty"`
 	Profile                   string              `json:",omitempty"`
 	Provider                  string              `json:",omitempty"`
-	Providers                 []string            `json:",omitempty"`
 	Branch                    string              `json:",omitempty"`
 	TableName                 string              `json:",omitempty"`
 	BucketName                string              `json:",omitempty"`
@@ -53,6 +52,7 @@ type Config struct {
 	VaultURL                  string              `json:",omitempty"`
 	CApath                    string              `json:",omitempty"`
 	GCPOrgID                  string              `json:",omitempty"`
+	GCPBillingID              string              `json:",omitempty"`
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state
@@ -61,27 +61,20 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 	wd := ".caravan"
 	repos := []string{"caravan", "caravan-baking", "caravan-platform", "caravan-application-support"}
 
-	providers := []string{"aws", "gcp"}
-
-	if len(name) > 12 {
-		return c, fmt.Errorf("name too long %d: max length is 12", len(name))
-	}
-
 	c = &Config{
 		Name:           name,
 		Profile:        "default",
 		BucketName:     name + "-caravan-terraform-state",
 		TableName:      name + "-caravan-terraform-state-lock",
 		Repos:          repos,
-		Providers:      providers,
 		Domain:         "reactive-labs.io",
 		Workdir:        wd,
 		WorkdirProject: wd + "/" + name,
 		VaultURL:       "https://vault." + name + "." + "reactive-labs.io",
 	}
-	if provider != "" {
-		err = c.setProvider(provider)
-	}
+
+	c.SetWorkdir(wd, provider)
+
 	if region != "" {
 		err = c.setRegion(region)
 	}
@@ -103,8 +96,10 @@ func NewConfigFromFile() (c *Config, err error) {
 }
 
 // SetWorkdir is used for white box testing.
-func (c *Config) SetWorkdir(wd string) {
+func (c *Config) SetWorkdir(wd, provider string) {
 	c.Workdir = wd
+	c.Repos = append(c.Repos, "caravan-infra-"+provider)
+	c.Provider = provider
 	c.WorkdirProject = filepath.Join(wd, c.Name)
 	c.WorkdirInfra = filepath.Join(c.WorkdirProject, "caravan-infra-"+c.Provider)
 	c.WorkdirInfraVars = filepath.Join(c.WorkdirInfra, c.Name+"-infra.tfvars")
@@ -120,31 +115,7 @@ func (c *Config) SetWorkdir(wd string) {
 	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 }
 
-// setProvider is used to populate the relevant configuration parameters as part of the initialization.
-func (c *Config) setProvider(provider string) (err error) {
-	for _, v := range c.Providers {
-		if v == provider {
-			c.Repos = append(c.Repos, "caravan-infra-"+v)
-			c.Provider = provider
-			c.WorkdirInfra = filepath.Join(c.WorkdirProject, "caravan-infra-"+provider)
-			c.WorkdirInfraVars = filepath.Join(c.WorkdirInfra, c.Name+"-infra.tfvars")
-			c.WorkdirInfraBackend = filepath.Join(c.WorkdirInfra, c.Name+"-backend.tf")
-			c.WorkdirBaking = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform")
-			c.WorkdirBakingVars = filepath.Join(c.WorkdirProject, "caravan-baking", "terraform", c.Provider+"-baking.tfvars")
-			c.WorkdirPlatform = filepath.Join(c.WorkdirProject, "caravan-platform")
-			c.WorkdirPlatformBackend = filepath.Join(c.WorkdirProject, "caravan-platform", "backend.tf")
-			c.WorkdirPlatformVars = filepath.Join(c.WorkdirProject, "caravan-platform", c.Name+"-"+c.Provider+"-cli.tfvars")
-			c.WorkdirApplication = filepath.Join(c.WorkdirProject, "caravan-application-support")
-			c.WorkdirApplicationVars = filepath.Join(c.WorkdirProject, "caravan-application-support", c.Name+"-"+c.Provider+"-cli.tfvars")
-			c.WorkdirApplicationBackend = filepath.Join(c.WorkdirProject, "caravan-application-support", "backend.tf")
-			c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
-			return nil
-		}
-	}
-	return fmt.Errorf("provider not supported: %s - %v", provider, c.Providers)
-}
-
-//
+// setRegion validate the region and sets the value.
 func (c *Config) setRegion(region string) (err error) {
 	if isValidRegion(c.Provider, region) {
 		c.Region = region
@@ -166,7 +137,7 @@ func (c *Config) SetBranch(branch string) {
 	c.Branch = branch
 }
 
-// SetVaultRootToen reads the content of the token file into config.
+// SetVaultRootToken reads the content of the token file into config.
 func (c *Config) SetVaultRootToken() error {
 	// TODO consolidate in constructor
 	vrt, err := ioutil.ReadFile(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token"))
@@ -199,6 +170,10 @@ func (c *Config) SetGCPOrgID(id string) {
 	c.GCPOrgID = "organizations/" + id
 }
 
+func (c *Config) SetGCPBillingID(id string) {
+	c.GCPBillingID = id
+}
+
 // Save serializes to json the configuration and a local state store (caravan.state).
 func (c *Config) Save() (err error) {
 	data, err := json.MarshalIndent(c, "", " ")
@@ -223,11 +198,17 @@ func isValidDomain(domain string) bool {
 	return govalidator.IsDNSName(domain)
 }
 
+// TODO move to provider
+
 // isValidRegion checks the name of the region for the given provider.
 func isValidRegion(provider, region string) bool {
-	if provider == "aws" {
+	switch provider {
+	case AWS:
 		_, err := net.LookupIP(fmt.Sprintf("ec2.%s.amazonaws.com", region))
 		return err == nil
+	case GCP:
+		return region == "europe-west6"
+	default:
+		return false
 	}
-	return false
 }

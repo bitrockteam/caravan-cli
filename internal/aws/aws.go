@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -23,8 +24,11 @@ type AWS struct {
 	Templates []caravan.Template
 }
 
-func New(conf caravan.Config) (a AWS, err error) {
-	a.Caravan = conf
+func New(c caravan.Config) (a AWS, err error) {
+	if err := validate(c); err != nil {
+		return a, err
+	}
+	a = AWS{Caravan: c}
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
 	if a.Caravan.Region != "" {
@@ -226,6 +230,20 @@ func (a AWS) DeleteLockTable(name string) (err error) {
 
 	if i >= retry {
 		return fmt.Errorf("maximum number of retries reached deleting %s: %d", name, retry)
+	}
+	return nil
+}
+
+func validate(c caravan.Config) error {
+	m, err := regexp.MatchString("^[-0-9A-Za-z]{3,12}$", c.Name)
+	if err != nil {
+		return err
+	}
+	if !m {
+		return fmt.Errorf("project name not compliant: must be between 3 and 12 character long, only alphanumerics and hypens (-) are allowed: %s", c.Name)
+	}
+	if strings.Index(c.Name, "-") == 0 {
+		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", c.Name)
 	}
 	return nil
 }

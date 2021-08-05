@@ -1,113 +1,33 @@
-// +build integration
-
 package aws_test
 
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
 	"testing"
-
-	"github.com/google/uuid"
 )
 
-func TestBucketAWS(t *testing.T) {
-	uid := uuid.New().String()
-	c, err := caravan.NewConfigFromScratch("name", "aws", "")
-	if err != nil {
-		t.Fatalf("unable to create config: %s\n", err)
+func TestValidate(t *testing.T) {
+	type test struct {
+		name  string
+		error bool
+		desc  string
 	}
 
-	aws, _ := aws.NewAWS(*c)
-	if err := aws.CreateBucket("caravan-aws-test-" + uid); err != nil {
-		t.Fatalf("error creating bucket: %s\n", err)
+	tests := []test{
+		{name: "test-me", error: false, desc: "ok"},
+		{name: "test567890123", error: true, desc: "name too long"},
 	}
 
-	if err := aws.DeleteBucket("caravan-aws-test-" + uid); err != nil {
-		t.Fatalf("error deleting bucket: %s\n", err)
-	}
-}
-
-func TestIdempotentBucketAWS(t *testing.T) {
-	uid := uuid.New().String()
-	aws, _ := aws.NewAWS(caravan.Config{
-		Region: "eu-south-1",
-	})
-	err := aws.CreateBucket("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating bucket: %s\n", err)
-	}
-
-	err = aws.CreateBucket("caravan-aws-test-" + uid)
-
-	if err != nil {
-		t.Fatalf("error idempotent creating bucket: %s\n", err)
-	}
-
-	err = aws.DeleteBucket("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error deleting bucket: %s\n", err)
-	}
-
-	err = aws.DeleteBucket("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error deleting bucket: %s\n", err)
-	}
-}
-
-func TestEmptyBucketAWS(t *testing.T) {
-	uid := uuid.New().String()
-
-	aws, _ := aws.NewAWS(caravan.Config{
-		Region: "eu-south-1",
-	})
-
-	err := aws.CreateBucket("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating bucket: %s\n", err)
-	}
-
-	err = aws.EmptyBucket("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error emptying bucket: %s\n", err)
-	}
-
-	err = aws.DeleteBucket("caravan-aws-test-" + uid)
-
-	if err != nil {
-		t.Fatalf("error deleting bucket: %s\n", err)
-	}
-}
-
-func TestLockTableAWS(t *testing.T) {
-	aws, _ := aws.NewAWS(caravan.Config{
-		Region: "eu-south-1",
-	})
-	uid := uuid.New().String()
-	err := aws.CreateLockTable("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating lock: %s\n", err)
-	}
-	err = aws.DeleteLockTable("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating lock: %s\n", err)
-	}
-}
-
-func TestIdempotentLockTableAWS(t *testing.T) {
-	aws, _ := aws.NewAWS(caravan.Config{
-		Region: "eu-south-1",
-	})
-	uid := uuid.New().String()
-	err := aws.CreateLockTable("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating lock: %s\n", err)
-	}
-	err = aws.CreateLockTable("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating lock: %s\n", err)
-	}
-	err = aws.DeleteLockTable("caravan-aws-test-" + uid)
-	if err != nil {
-		t.Fatalf("error creating lock: %s\n", err)
+	for _, tc := range tests {
+		t.Run(tc.desc, func(t *testing.T) {
+			c, err := caravan.NewConfigFromScratch(tc.name, "aws", "")
+			if err != nil {
+				t.Fatalf("unable to create config: %s\n", err)
+			}
+			_, err = aws.New(*c)
+			if err == nil && tc.error || err != nil && !tc.error {
+				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
+			}
+		})
 	}
 }

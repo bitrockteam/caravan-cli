@@ -82,18 +82,18 @@ func cleanCloud(c *caravan.Config) (err error) {
 
 	var p caravan.Provider
 	switch c.Provider {
-	case "aws":
+	case caravan.AWS:
 		p, err = aws.New(*c)
 		if err != nil {
 			return err
 		}
-	case "gcp":
+	case caravan.GCP:
 		p, err = gcp.New(*c)
 		if err != nil {
 			return err
 		}
 	default:
-		return fmt.Errorf("implementation not found: %s\n", c.Provider)
+		return fmt.Errorf("implementation not found: %s", c.Provider)
 	}
 
 	if c.Force {

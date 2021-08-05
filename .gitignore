@@ -4,3 +4,4 @@
 *.swp
 /caravan
 .idea
+internal/vault/vault_test.go

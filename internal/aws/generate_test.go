@@ -14,7 +14,7 @@ func TestGenerateConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 	config, _ := caravan.NewConfigFromScratch("test-name", "aws", "eu-south-1")
-	config.SetWorkdir(dir)
+	config.SetWorkdir(dir, "aws")
 	_ = config.SetDomain("test.me")
 	aws, _ := aws.New(*config)
 
