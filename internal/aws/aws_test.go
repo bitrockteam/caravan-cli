@@ -20,7 +20,7 @@ func TestValidate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := caravan.NewConfigFromScratch(tc.name, "aws", "")
+			c, err := caravan.NewConfigFromScratch(tc.name, "aws", "eu-south-1")
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
