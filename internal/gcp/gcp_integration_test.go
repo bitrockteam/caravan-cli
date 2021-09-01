@@ -13,14 +13,14 @@ import (
 
 func TestProject(t *testing.T) {
 	uid := strings.Split(uuid.New().String(), "-")[0]
-
-	c, err := caravan.NewConfigFromScratch("name", "gcp", "")
+	name := "name-" + uid
+	c, err := caravan.NewConfigFromScratch(name, "gcp", "europe-west6")
 	if err != nil {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
-	name := c.Name + "-" + uid
 
 	c.SetGCPOrgID("55685363496")
+	c.SetGCPBillingID("016290-A416F4-EC4527")
 
 	g, err := gcp.New(*c)
 	if err != nil {
@@ -38,14 +38,45 @@ func TestProject(t *testing.T) {
 		t.Fatalf("unable to Get project: %s\n", err)
 	}
 
+	if err := g.SetBillingAccount(name, c.GCPBillingID); err != nil {
+		t.Errorf("unable to set billing ID: %s", err)
+	}
+
 	if p.Name != name && p.Parent != c.GCPOrgID {
 		t.Errorf("want %s,%s got %s,%s\n", name, c.GCPOrgID, p.Name, p.Parent)
 	}
+
+	// create bucket
+	if err := g.CreateBucket(name, c.GCPOrgID); err != nil {
+		t.Errorf("unable to create the bucket: %s", err)
+	}
+
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
 	//idempotence
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
+	}
+}
+
+func TestBucket(t *testing.T) {
+	uid := strings.Split(uuid.New().String(), "-")[0]
+	name := "name-" + uid
+	c, err := caravan.NewConfigFromScratch(name, "gcp", "europe-west6")
+	if err != nil {
+		t.Fatalf("unable to create config: %s\n", err)
+	}
+
+	c.SetGCPOrgID("55685363496")
+	c.SetGCPBillingID("016290-A416F4-EC4527")
+
+	g, err := gcp.New(*c)
+	if err != nil {
+		t.Fatalf("unable to create GCP: %s\n", err)
+	}
+	// create bucket
+	if err := g.CreateBucket(name, "andrea-test-003"); err != nil {
+		t.Errorf("unable to create the bucket: %s", err)
 	}
 }

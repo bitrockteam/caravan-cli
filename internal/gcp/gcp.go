@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/grpc/status"
 )
@@ -25,10 +27,14 @@ func New(c caravan.Config) (g GCP, err error) {
 }
 
 func (g GCP) Init() error {
-	fmt.Printf("creating project: %s,%s\n", g.Caravan.GCPOrgID, g.Caravan.Name)
 	if err := g.CreateProject(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
 		return err
 	}
+
+	if err := g.SetBillingAccount(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -39,8 +45,25 @@ func (g GCP) Clean() error {
 	return nil
 }
 
-func (g GCP) CreateBucket(name string) error {
-	fmt.Printf("NOP\n")
+func (g GCP) CreateBucket(name, projectId string) error {
+	fmt.Printf("creating bucket %s on project: %s\n", name, projectId)
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("storage.NewClient: %v", err)
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*20)
+	defer cancel()
+
+	storageLocation := &storage.BucketAttrs{
+		Location: g.Caravan.Region,
+	}
+	bucket := client.Bucket(name)
+	if err := bucket.Create(ctx, projectId, storageLocation); err != nil {
+		return fmt.Errorf("Bucket(%q).Create: %v", name, err)
+	}
 	return nil
 }
 
@@ -88,7 +111,10 @@ func (g GCP) CreateProject(id, orgID string) error {
 			if err != nil || p == nil {
 				return fmt.Errorf("unable to find already existing project %s - %w", id, err)
 			}
-			return nil
+			if p.State == "ACTIVE" {
+				return nil
+			}
+			return fmt.Errorf("project %s already existing and not in active state: %s", id, p.State)
 		}
 		return err
 	}
@@ -99,6 +125,7 @@ func (g GCP) CreateProject(id, orgID string) error {
 			return fmt.Errorf("error getting operation %s/%s: %w", id, orgID, err)
 		}
 		if resp.Done {
+			_, _ = g.GetProject(id, orgID)
 			return nil
 		}
 		time.Sleep(1 * time.Second)
@@ -169,8 +196,30 @@ func (g GCP) GetProject(name, organization string) (p *cloudresourcemanager.Proj
 	if len(resp.Projects) != 1 {
 		return p, fmt.Errorf("unable to uniquely identify project: %s (%d)", name, len(resp.Projects))
 	}
-
+	// fmt.Printf("found project: %v\n", resp.Projects[0])
 	return resp.Projects[0], nil
+}
+
+func (g GCP) SetBillingAccount(name, bai string) (err error) {
+	fmt.Printf("Setting Billing account: %s\n", bai)
+	ctx := context.Background()
+
+	cloudbillingservice, err := cloudbilling.NewService(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get billingservice: %w", err)
+	}
+
+	pbi, err := cloudbillingservice.Projects.GetBillingInfo(fmt.Sprintf("projects/%s", name)).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("unable to get project billing info: %w", err)
+	}
+
+	pbi.BillingAccountName = fmt.Sprintf("billingAccounts/%s", bai)
+	_, err = cloudbillingservice.Projects.UpdateBillingInfo(fmt.Sprintf("projects/%s", name), pbi).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("unable to update project billing info: %w", err)
+	}
+	return nil
 }
 
 func validate(c caravan.Config) error {
