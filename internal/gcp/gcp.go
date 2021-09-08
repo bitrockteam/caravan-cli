@@ -27,7 +27,6 @@ func New(c caravan.Config) (g GCP, err error) {
 }
 
 func (g GCP) Init() error {
-
 	// assume that the project and billing account are already available
 	/*
 		if err := g.CreateProject(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
