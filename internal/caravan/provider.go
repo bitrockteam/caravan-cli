@@ -8,10 +8,10 @@ const (
 type Provider interface {
 	Init() error
 	GenerateConfig() error
-	CreateBucket(name string) error
-	DeleteBucket(name string) error
-	EmptyBucket(name string) error
-	CreateLockTable(name string) error
-	DeleteLockTable(name string) error
+	CreateStateStore(name string) error
+	DeleteStateStore(name string) error
+	EmptyStateStore(name string) error
+	CreateLock(name string) error
+	DeleteLock(name string) error
 	Clean() error
 }

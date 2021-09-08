@@ -97,4 +97,6 @@ func init() {
 
 	awsCmd.PersistentFlags().String("project", "", "name of project")
 	_ = awsCmd.MarkPersistentFlagRequired("project")
+
+	awsCmd.PersistentFlags().String("region", "", "region for the deployment")
 }

@@ -46,11 +46,6 @@ func TestProject(t *testing.T) {
 		t.Errorf("want %s,%s got %s,%s\n", name, c.GCPOrgID, p.Name, p.Parent)
 	}
 
-	// create bucket
-	if err := g.CreateBucket(name, c.GCPOrgID); err != nil {
-		t.Errorf("unable to create the bucket: %s", err)
-	}
-
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
@@ -68,6 +63,7 @@ func TestBucket(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
+	c.Name = "andrea-test-003"
 	c.SetGCPOrgID("55685363496")
 	c.SetGCPBillingID("016290-A416F4-EC4527")
 
@@ -76,7 +72,12 @@ func TestBucket(t *testing.T) {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
 	// create bucket
-	if err := g.CreateBucket(name, "andrea-test-003"); err != nil {
+	if err := g.CreateBucket(name); err != nil {
+		t.Errorf("unable to create the bucket: %s", err)
+	}
+
+	// delete bucket
+	if err := g.DeleteBucket(name); err != nil {
 		t.Errorf("unable to create the bucket: %s", err)
 	}
 }

@@ -98,18 +98,17 @@ func cleanCloud(c *caravan.Config) (err error) {
 
 	if c.Force {
 		fmt.Printf("emptying bucket %s\n", c.Name+"-caravan-terraform-state")
-		err = p.EmptyBucket(c.Name + "-caravan-terraform-state")
+		err = p.EmptyStateStore(c.Name + "-caravan-terraform-state")
 		if err != nil {
 			return fmt.Errorf("error emptying: %w", err)
 		}
 	}
 
-	// TODO cleanup before delete with force option
-	if err := p.DeleteBucket(c.Name + "-caravan-terraform-state"); err != nil {
+	if err := p.DeleteStateStore(c.Name + "-caravan-terraform-state"); err != nil {
 		return err
 	}
 
-	if err := p.DeleteLockTable(c.Name + "-caravan-terraform-state-lock"); err != nil {
+	if err := p.DeleteLock(c.Name + "-caravan-terraform-state-lock"); err != nil {
 		return err
 	}
 

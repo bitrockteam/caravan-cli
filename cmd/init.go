@@ -32,13 +32,13 @@ func initProvider(c *caravan.Config, p caravan.Provider) (err error) {
 		return fmt.Errorf("error generating config files: %w", err)
 	}
 
-	fmt.Printf("creating bucket: %s\n", c.BucketName)
-	if err := p.CreateBucket(c.BucketName); err != nil {
+	fmt.Printf("creating statestore: %s\n", c.StateStoreName)
+	if err := p.CreateStateStore(c.StateStoreName); err != nil {
 		return err
 	}
 
-	fmt.Printf("creating lock table: %s\n", c.TableName)
-	if err := p.CreateLockTable(c.TableName); err != nil {
+	fmt.Printf("creating lock: %s\n", c.LockName)
+	if err := p.CreateLock(c.LockName); err != nil {
 		return err
 	}
 

@@ -42,13 +42,10 @@ func (g GCP) Init() error {
 }
 
 func (g GCP) Clean() error {
-	if err := g.DeleteProject(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (g GCP) CreateBucket(name string) error {
+func (g GCP) CreateStateStore(name string) error {
 	fmt.Printf("creating bucket %s on project: %s\n", name, g.Caravan.Name)
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -65,25 +62,39 @@ func (g GCP) CreateBucket(name string) error {
 	}
 	bucket := client.Bucket(name)
 	if err := bucket.Create(ctx, g.Caravan.Name, storageLocation); err != nil {
-		return fmt.Errorf("Bucket(%q).Create: %w", name, err)
+		return fmt.Errorf("bucket %s Create: %w", name, err)
 	}
 	return nil
 }
 
-func (g GCP) DeleteBucket(name string) error {
+func (g GCP) DeleteStateStore(name string) error {
+	fmt.Printf("deleting bucket %s on project: %s\n", name, g.Caravan.Name)
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("storage.NewClient: %w", err)
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*20)
+	defer cancel()
+
+	bucket := client.Bucket(name)
+	if err := bucket.Delete(ctx); err != nil {
+		return fmt.Errorf("bucket %s delete: %w", name, err)
+	}
+	return nil
+}
+func (g GCP) EmptyStateStore(name string) error {
 	fmt.Printf("NOP\n")
 	return nil
 }
-func (g GCP) EmptyBucket(name string) error {
-	fmt.Printf("NOP\n")
-	return nil
-}
-func (g GCP) CreateLockTable(name string) error {
+func (g GCP) CreateLock(name string) error {
 	fmt.Printf("NOP\n")
 	return nil
 }
 
-func (g GCP) DeleteLockTable(name string) error {
+func (g GCP) DeleteLock(name string) error {
 	fmt.Printf("NOP\n")
 	return nil
 }

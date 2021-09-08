@@ -28,8 +28,6 @@ to quickly create a Cobra application.`,
 		fmt.Println("gcp called")
 		name, _ := cmd.Flags().GetString("project")
 		region, _ := cmd.Flags().GetString("region")
-		orgID, _ := cmd.Flags().GetString("orgID")
-		baID, _ := cmd.Flags().GetString("billingAccountID")
 
 		c, err := caravan.NewConfigFromFile()
 		if err != nil {
@@ -49,8 +47,6 @@ to quickly create a Cobra application.`,
 			fmt.Printf("please run: \"caravan clean --force\" before init a new project")
 			return
 		}
-		c.SetGCPOrgID(orgID)
-		c.SetGCPBillingID(baID)
 
 		b, _ := cmd.Flags().GetString("branch")
 
@@ -107,6 +103,7 @@ func init() {
 	gcpCmd.PersistentFlags().String("project", "", "GCP project name")
 	_ = gcpCmd.MarkPersistentFlagRequired("project")
 
+	gcpCmd.PersistentFlags().String("region", "", "GCP deployment region")
 	// assume project already created
 	/*
 		gcpCmd.PersistentFlags().String("orgID", "", "GCP organization ID")

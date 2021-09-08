@@ -58,7 +58,7 @@ func (a AWS) Clean() error {
 	return nil
 }
 
-func (a AWS) CreateBucket(name string) (err error) {
+func (a AWS) CreateStateStore(name string) (err error) {
 	var bae *s3types.BucketAlreadyExists
 	var bao *s3types.BucketAlreadyOwnedByYou
 
@@ -95,7 +95,7 @@ func (a AWS) CreateBucket(name string) (err error) {
 	return nil
 }
 
-func (a AWS) EmptyBucket(name string) (err error) {
+func (a AWS) EmptyStateStore(name string) (err error) {
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -142,7 +142,7 @@ func (a AWS) EmptyBucket(name string) (err error) {
 	return nil
 }
 
-func (a AWS) DeleteBucket(name string) (err error) {
+func (a AWS) DeleteStateStore(name string) (err error) {
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -160,7 +160,7 @@ func (a AWS) DeleteBucket(name string) (err error) {
 	return nil
 }
 
-func (a AWS) CreateLockTable(name string) (err error) {
+func (a AWS) CreateLock(name string) (err error) {
 	var riu *dytypes.ResourceInUseException
 
 	retry := 10
@@ -201,7 +201,7 @@ func (a AWS) CreateLockTable(name string) (err error) {
 	return nil
 }
 
-func (a AWS) DeleteLockTable(name string) (err error) {
+func (a AWS) DeleteLock(name string) (err error) {
 	var riu *dytypes.ResourceInUseException
 	var rnf *dytypes.ResourceNotFoundException
 

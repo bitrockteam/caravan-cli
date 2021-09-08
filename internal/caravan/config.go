@@ -28,8 +28,8 @@ type Config struct {
 	Profile                   string              `json:",omitempty"`
 	Provider                  string              `json:",omitempty"`
 	Branch                    string              `json:",omitempty"`
-	TableName                 string              `json:",omitempty"`
-	BucketName                string              `json:",omitempty"`
+	LockName                  string              `json:",omitempty"`
+	StateStoreName            string              `json:",omitempty"`
 	Repos                     []string            `json:",omitempty"`
 	Domain                    string              `json:",omitempty"`
 	Workdir                   string              `json:",omitempty"`
@@ -64,8 +64,8 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 	c = &Config{
 		Name:           name,
 		Profile:        "default",
-		BucketName:     name + "-caravan-terraform-state",
-		TableName:      name + "-caravan-terraform-state-lock",
+		StateStoreName: name + "-caravan-terraform-state",
+		LockName:       name + "-caravan-terraform-state-lock",
 		Repos:          repos,
 		Domain:         "reactive-labs.io",
 		Workdir:        wd,
