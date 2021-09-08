@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"caravan/internal/caravan"
+	"caravan/internal/git"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -42,5 +43,21 @@ func initProvider(c *caravan.Config, p caravan.Provider) (err error) {
 		return err
 	}
 
+	return nil
+}
+
+func initRepos(c *caravan.Config, b string) (err error) {
+	c.SetBranch(b)
+	if err := c.Save(); err != nil {
+		return fmt.Errorf("unable to save config after setting branch %s: %w", b, err)
+	}
+	// checkout repos
+	git := git.NewGit("bitrockteam")
+	for _, repo := range c.Repos {
+		err := git.Clone(repo, ".caravan/"+c.Name+"/"+repo, b)
+		if err != nil {
+			return fmt.Errorf("unable to clone repo %s: %w", repo, err)
+		}
+	}
 	return nil
 }

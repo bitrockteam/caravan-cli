@@ -7,7 +7,6 @@ package cmd
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
-	"caravan/internal/git"
 	"fmt"
 	"strings"
 
@@ -56,19 +55,9 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		c.SetBranch(b)
-		if err := c.Save(); err != nil {
-			fmt.Printf("unable to set branch: %s\n", err)
+		if err := initRepos(c, b); err != nil {
+			fmt.Printf("error: %s\n", err)
 			return
-		}
-		// checkout repos
-		git := git.NewGit("bitrockteam")
-		for _, repo := range c.Repos {
-			err := git.Clone(repo, ".caravan/"+c.Name+"/"+repo, b)
-			if err != nil {
-				fmt.Printf("error: %s\n", err)
-				return
-			}
 		}
 
 		// init Provider
