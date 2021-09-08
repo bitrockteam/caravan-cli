@@ -62,7 +62,11 @@ func (g GCP) CreateStateStore(name string) error {
 	}
 	bucket := client.Bucket(name)
 	if err := bucket.Create(ctx, g.Caravan.Name, storageLocation); err != nil {
-		return fmt.Errorf("bucket %s Create: %w", name, err)
+		s, _ := status.FromError(err)
+		if strings.Contains(s.Message(), "You already own this bucket") {
+			return nil
+		}
+		return fmt.Errorf("error during bucket %s create: %w", name, err)
 	}
 	return nil
 }
