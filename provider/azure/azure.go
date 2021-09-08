@@ -20,7 +20,51 @@ func New(c *caravan.Config) (Azure, error) {
 }
 
 func (a Azure) GetTemplates() ([]cli.Template, error) {
-	panic("implement me")
+	baking := caravan.Template{
+		Name: "baking-vars",
+		Text: bakingTfVarsTmpl,
+		Path: a.Caravan.WorkdirBakingVars,
+	}
+	infra := caravan.Template{
+		Name: "infra-vars",
+		Text: infraTfVarsTmpl,
+		Path: a.Caravan.WorkdirInfraVars,
+	}
+	infraBackend := caravan.Template{
+		Name: "infra-backend",
+		Text: infraBackendTmpl,
+		Path: a.Caravan.WorkdirInfraBackend,
+	}
+	platform := caravan.Template{
+		Name: "platform-vars",
+		Text: platformTfVarsTmpl,
+		Path: a.Caravan.WorkdirPlatformVars,
+	}
+	platformBackend := caravan.Template{
+		Name: "platform-backend",
+		Text: platformBackendTmpl,
+		Path: a.Caravan.WorkdirPlatformBackend,
+	}
+	applicationSupport := caravan.Template{
+		Name: "application-vars",
+		Text: applicationTfVarsTmpl,
+		Path: a.Caravan.WorkdirApplicationVars,
+	}
+	applicationSupportBackend := caravan.Template{
+		Name: "application-backend",
+		Text: applicationSupportBackendTmpl,
+		Path: a.Caravan.WorkdirApplicationBackend,
+	}
+
+	return []caravan.Template{
+		baking,
+		infra,
+		infraBackend,
+		platform,
+		platformBackend,
+		applicationSupport,
+		applicationSupportBackend,
+	}, nil
 }
 
 func (a Azure) ValidateConfiguration() error {
