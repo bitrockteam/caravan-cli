@@ -55,7 +55,7 @@ func TestProject(t *testing.T) {
 	}
 }
 
-func TestBucket(t *testing.T) {
+func TestStateStore(t *testing.T) {
 	uid := strings.Split(uuid.New().String(), "-")[0]
 	name := "name-" + uid
 	c, err := caravan.NewConfigFromScratch(name, "gcp", "europe-west6")
@@ -72,12 +72,15 @@ func TestBucket(t *testing.T) {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
 	// create bucket
-	if err := g.CreateBucket(name); err != nil {
+	if err := g.CreateStateStore(name); err != nil {
 		t.Errorf("unable to create the bucket: %s", err)
 	}
 
 	// delete bucket
-	if err := g.DeleteBucket(name); err != nil {
+	if err := g.DeleteStateStore(name); err != nil {
+		t.Errorf("unable to create the bucket: %s", err)
+	}
+	if err := g.DeleteStateStore(name); err != nil {
 		t.Errorf("unable to create the bucket: %s", err)
 	}
 }

@@ -46,7 +46,6 @@ func New(c caravan.Config) (a AWS, err error) {
 	a.AWSConfig = cfg
 
 	a.Templates = loadTemplates(a)
-
 	return a, nil
 }
 

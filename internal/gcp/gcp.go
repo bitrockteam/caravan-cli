@@ -81,7 +81,12 @@ func (g GCP) DeleteStateStore(name string) error {
 
 	bucket := client.Bucket(name)
 	if err := bucket.Delete(ctx); err != nil {
-		return fmt.Errorf("bucket %s delete: %w", name, err)
+		s, _ := status.FromError(err)
+		if strings.Contains(s.Message(), "notFound") {
+			return nil
+		}
+
+		return fmt.Errorf("error during bucket %s delete: %w", name, err)
 	}
 	return nil
 }

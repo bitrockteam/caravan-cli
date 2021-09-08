@@ -45,8 +45,8 @@ prefix                  = "{{ .Caravan.Name }}"
 personal_ip_list        = ["0.0.0.0/0"]
 use_le_staging          = true
 external_domain         = "{{ .Caravan.Domain }}"
-tfstate_bucket_name     = "{{ .Caravan.BucketName }}"
-tfstate_table_name      = "{{ .Caravan.TableName }}"
+tfstate_bucket_name     = "{{ .Caravan.StateStoreName }}"
+tfstate_table_name      = "{{ .Caravan.LockName }}"
 tfstate_region          = "{{ .Caravan.Region }}"
 `,
 			Path: a.Caravan.WorkdirInfraVars,
@@ -55,10 +55,10 @@ tfstate_region          = "{{ .Caravan.Region }}"
 			Name: "infra-backend",
 			Text: `terraform {
   backend "s3" {
-    bucket         = "{{ .Caravan.BucketName }}"
+    bucket         = "{{ .Caravan.StateStoreName }}"
     key            = "infraboot/terraform/state/terraform.tfstate"
     region         = "{{ .Caravan.Region }}"
-    dynamodb_table = "{{ .Caravan.TableName }}"
+    dynamodb_table = "{{ .Caravan.LockName }}"
   }
 }
 `,
@@ -68,10 +68,10 @@ tfstate_region          = "{{ .Caravan.Region }}"
 			Name: "platform-backend",
 			Text: `terraform {
   backend "s3" {
-    bucket         = "{{ .Caravan.BucketName }}"
+    bucket         = "{{ .Caravan.StateStoreName }}"
     key            = "platform/terraform/state/terraform.tfstate"
     region         = "{{ .Caravan.Region }}"
-    dynamodb_table = "{{ .Caravan.TableName }}"
+    dynamodb_table = "{{ .Caravan.LockName }}"
   }
 }
 `,
@@ -95,7 +95,7 @@ aws_shared_credentials_file = "~/.{{.Caravan.Provider}}/credentials"
 aws_profile                 = "default"
 
 bootstrap_state_backend_provider   = "{{ .Caravan.Provider }}"
-bootstrap_state_bucket_name_prefix = "{{ .Caravan.BucketName }}"
+bootstrap_state_bucket_name_prefix = "{{ .Caravan.StateStoreName }}"
 bootstrap_state_object_name_prefix = "infraboot/terraform/state"
 s3_bootstrap_region                = "{{ .Caravan.Region }}"
 `,
@@ -127,10 +127,10 @@ ca_cert_file          = "../caravan-infra-{{.Caravan.Provider}}/ca_certs.pem"
 			Name: "application-backend",
 			Text: `terraform {
   backend "s3" {
-    bucket         = "{{ .Caravan.BucketName }}"
+    bucket         = "{{ .Caravan.StateStoreName }}"
     key            = "appsupport/terraform/state/terraform.tfstate"
     region         = "{{ .Caravan.Region }}"
-    dynamodb_table = "{{ .Caravan.TableName }}"
+    dynamodb_table = "{{ .Caravan.LockName }}"
   }
 }
 `,
