@@ -107,9 +107,12 @@ func init() {
 	gcpCmd.PersistentFlags().String("project", "", "GCP project name")
 	_ = gcpCmd.MarkPersistentFlagRequired("project")
 
-	gcpCmd.PersistentFlags().String("orgID", "", "GCP organization ID")
-	_ = gcpCmd.MarkPersistentFlagRequired("orgID")
+	// assume project already created
+	/*
+		gcpCmd.PersistentFlags().String("orgID", "", "GCP organization ID")
+		_ = gcpCmd.MarkPersistentFlagRequired("orgID")
 
-	gcpCmd.PersistentFlags().String("billingAccountID", "", "GCP billing account  ID")
-	_ = gcpCmd.MarkPersistentFlagRequired("billingAccountID")
+		gcpCmd.PersistentFlags().String("billingAccountID", "", "GCP billing account  ID")
+		_ = gcpCmd.MarkPersistentFlagRequired("billingAccountID")
+	*/
 }
