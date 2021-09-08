@@ -45,12 +45,12 @@ func (g GCP) Clean() error {
 	return nil
 }
 
-func (g GCP) CreateBucket(name, projectId string) error {
-	fmt.Printf("creating bucket %s on project: %s\n", name, projectId)
+func (g GCP) CreateBucket(name string) error {
+	fmt.Printf("creating bucket %s on project: %s\n", name, g.Caravan.Name)
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
-		return fmt.Errorf("storage.NewClient: %v", err)
+		return fmt.Errorf("storage.NewClient: %w", err)
 	}
 	defer client.Close()
 
@@ -61,8 +61,8 @@ func (g GCP) CreateBucket(name, projectId string) error {
 		Location: g.Caravan.Region,
 	}
 	bucket := client.Bucket(name)
-	if err := bucket.Create(ctx, projectId, storageLocation); err != nil {
-		return fmt.Errorf("Bucket(%q).Create: %v", name, err)
+	if err := bucket.Create(ctx, g.Caravan.Name, storageLocation); err != nil {
+		return fmt.Errorf("Bucket(%q).Create: %w", name, err)
 	}
 	return nil
 }
