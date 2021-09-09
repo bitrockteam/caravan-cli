@@ -11,6 +11,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v3"
+	"google.golang.org/api/iam/v1"
 	"google.golang.org/grpc/status"
 )
 
@@ -89,7 +90,6 @@ func (g GCP) DeleteStateStore(name string) error {
 		if strings.Contains(s.Message(), "notFound") {
 			return nil
 		}
-
 		return fmt.Errorf("error during bucket %s delete: %w", name, err)
 	}
 	return nil
@@ -242,6 +242,54 @@ func (g GCP) SetBillingAccount(name, bai string) (err error) {
 	if err != nil {
 		return fmt.Errorf("unable to update project billing info: %w", err)
 	}
+	return nil
+}
+
+func (g GCP) CreateServiceAccount(name string) (err error) {
+	fmt.Printf("Create service account: %s\n", name)
+	ctx := context.Background()
+
+	iamservice, err := iam.NewService(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get projectsservice: %w", err)
+	}
+
+	sar := iam.CreateServiceAccountRequest{
+		AccountId: name,
+		ServiceAccount: &iam.ServiceAccount{
+			DisplayName: name,
+		},
+	}
+	_, err = iamservice.Projects.ServiceAccounts.Create(fmt.Sprintf("projects/%s", g.Caravan.Name), &sar).Context(ctx).Do()
+	if err != nil {
+		s, _ := status.FromError(err)
+		if strings.Contains(s.Message(), "alreadyExists") {
+			return nil
+		}
+		return fmt.Errorf("unable to create service account %s: %w", name, err)
+	}
+
+	return nil
+}
+
+func (g GCP) DeleteServiceAccount(name string) (err error) {
+	fmt.Printf("delete service account: %s\n", name)
+	ctx := context.Background()
+
+	iamservice, err := iam.NewService(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get projectsservice: %w", err)
+	}
+
+	_, err = iamservice.Projects.ServiceAccounts.Delete(fmt.Sprintf("projects/%s/serviceAccounts/%s@%s.iam.gserviceaccount.com", g.Caravan.Name, name, g.Caravan.Name)).Context(ctx).Do()
+	if err != nil {
+		s, _ := status.FromError(err)
+		if strings.Contains(s.Message(), "notFound") {
+			return nil
+		}
+		return fmt.Errorf("unable to delete service account %s: %w", name, err)
+	}
+
 	return nil
 }
 

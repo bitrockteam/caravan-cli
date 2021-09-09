@@ -83,3 +83,30 @@ func TestStateStore(t *testing.T) {
 		t.Errorf("unable to create the bucket: %s", err)
 	}
 }
+
+func TestServiceAccount(t *testing.T) {
+	uid := strings.Split(uuid.New().String(), "-")[0]
+	name := "name-" + uid
+	c, err := caravan.NewConfigFromScratch("andrea-test-003", "gcp", "europe-west6")
+	if err != nil {
+		t.Fatalf("unable to create config: %s\n", err)
+	}
+
+	g, err := gcp.New(*c)
+	if err != nil {
+		t.Fatalf("unable to create GCP: %s\n", err)
+	}
+
+	if err := g.CreateServiceAccount(name); err != nil {
+		t.Fatalf("unable to create service account: %s\n", err)
+	}
+	if err := g.CreateServiceAccount(name); err != nil {
+		t.Fatalf("unable to create service account: %s\n", err)
+	}
+	if err := g.DeleteServiceAccount(name); err != nil {
+		t.Fatalf("unable to delete service account: %s\n", err)
+	}
+	if err := g.DeleteServiceAccount(name); err != nil {
+		t.Fatalf("unable to delete service account: %s\n", err)
+	}
+}
