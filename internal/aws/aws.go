@@ -111,10 +111,6 @@ func (a AWS) InitProvider() error {
 	return nil
 }
 
-func (a AWS) Deploy(layer caravan.DeployLayer) error {
-	panic("implement me")
-}
-
 func (a AWS) Init() error {
 	return nil
 }
@@ -143,4 +139,17 @@ func (a AWS) Clean() error {
 
 func (a AWS) GenerateConfig() error {
 	return nil
+}
+
+func (a AWS) Deploy(layer caravan.DeployLayer) error {
+	switch layer {
+	case caravan.Infrastructure:
+		return caravan.GenericDeployInfra(a.Caravan, []string{"aws_lb.hashicorp_alb", "*"})
+	case caravan.Platform:
+		return caravan.GenericDeployPlatform(a.Caravan, []string{"*"})
+	case caravan.ApplicationSupport:
+		return caravan.GenericDeployApplicationSupport(a.Caravan, []string{"*"})
+	default:
+		return fmt.Errorf("unknown Deploy Layer")
+	}
 }

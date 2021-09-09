@@ -3,12 +3,10 @@ package cmd
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"caravan/internal/caravan"
-	tf "caravan/internal/terraform"
 
 	"github.com/spf13/cobra"
 )
@@ -29,8 +27,13 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
+		provider, err := getProvider(c.Provider, c)
+		if err != nil {
+			return err
+		}
+
 		if c.Status < caravan.InfraDeployDone {
-			err := deployInfra(c)
+			err := provider.Deploy(caravan.Infrastructure)
 			if err != nil {
 				return err
 			}
@@ -60,7 +63,7 @@ var upCmd = &cobra.Command{
 			return fmt.Errorf("error persisting state: %w", err)
 		}
 		if c.Status < caravan.PlatformDeployDone {
-			err := deployPlatform(c)
+			err := provider.Deploy(caravan.Platform)
 			if err != nil {
 				return err
 			}
@@ -70,7 +73,7 @@ var upCmd = &cobra.Command{
 			return err
 		}
 		if c.Status < caravan.ApplicationDeployDone {
-			err := deployApplication(c)
+			err := provider.Deploy(caravan.ApplicationSupport)
 			if err != nil {
 				return err
 			}
@@ -83,93 +86,6 @@ var upCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(upCmd)
-}
-
-func deployInfra(c *caravan.Config) error {
-	// Infra
-	fmt.Println("deploying platform")
-	t := &tf.Terraform{}
-	if err := t.Init(c.WorkdirInfra); err != nil {
-		return err
-	}
-	c.Status = caravan.InfraDeployRunning
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-	env := map[string]string{}
-	targets := []string{}
-	if c.Provider == "aws" {
-		targets = append(targets, "aws_lb.hashicorp_alb")
-	}
-	targets = append(targets, "*")
-	for _, target := range targets {
-		if err := t.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 600*time.Second, env, target); err != nil {
-			return fmt.Errorf("error doing terraform apply: %w", err)
-		}
-	}
-
-	c.Status = caravan.InfraDeployDone
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-
-	return nil
-}
-
-func deployPlatform(c *caravan.Config) error {
-	// Platform
-	fmt.Printf("deployng platform\n")
-	t := tf.Terraform{}
-	if err := t.Init(c.WorkdirPlatform); err != nil {
-		return err
-	}
-
-	c.Status = caravan.PlatformDeployRunning
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-
-	env := map[string]string{
-		"VAULT_TOKEN": c.VaultRootToken,
-		"NOMAD_TOKEN": c.NomadToken,
-	}
-	if err := t.ApplyVarFile(filepath.Base(c.WorkdirPlatformVars), 600*time.Second, env, "*"); err != nil {
-		return fmt.Errorf("error doing terraform apply: %w", err)
-	}
-
-	c.Status = caravan.PlatformDeployDone
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-	return nil
-}
-
-func deployApplication(c *caravan.Config) error {
-	// Application support
-	t := tf.Terraform{}
-	fmt.Printf("deployng application\n")
-	if err := t.Init(c.WorkdirApplication); err != nil {
-		return err
-	}
-
-	c.Status = caravan.ApplicationDeployRunning
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-
-	env := map[string]string{
-		"VAULT_TOKEN": c.VaultRootToken,
-		"NOMAD_TOKEN": c.NomadToken,
-	}
-	if err := t.ApplyVarFile(filepath.Base(c.WorkdirApplicationVars), 600*time.Second, env, "*"); err != nil {
-		return fmt.Errorf("error doing terraform apply: %w", err)
-	}
-
-	c.Status = caravan.ApplicationDeployDone
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("error persisting state: %w", err)
-	}
-	return nil
 }
 
 func checkStatus(c *caravan.Config, tool string, path string, count int) error {
