@@ -55,6 +55,8 @@ to quickly create a Cobra application.`,
 			fmt.Printf("error: %s\n", err)
 			return
 		}
+		// fixme: remove
+		fmt.Printf("%v", p)
 
 		c.SetBranch(b)
 		if err := c.Save(); err != nil {
@@ -73,10 +75,11 @@ to quickly create a Cobra application.`,
 		}
 
 		// init Provider
-		if err := initProvider(c, p); err != nil {
-			fmt.Printf("error during init: %s\n", err)
-			return
-		}
+		// FIXME: uncomment
+		// if err := initProvider(c, p); err != nil {
+		//	fmt.Printf("error during init: %s\n", err)
+		//	return
+		// }
 		if c.Status < caravan.InitDone {
 			c.Status = caravan.InitDone
 			if err := c.Save(); err != nil {

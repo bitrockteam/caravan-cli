@@ -1,5 +1,5 @@
 package caravan
 
 type GenericProvider struct {
-	Caravan Config
+	Caravan *Config
 }

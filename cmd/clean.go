@@ -83,7 +83,7 @@ func cleanCloud(c *caravan.Config) (err error) {
 	var p caravan.Provider
 	switch c.Provider {
 	case caravan.AWS:
-		p, err = aws.New(*c)
+		p, err = aws.New(c)
 		if err != nil {
 			return err
 		}
