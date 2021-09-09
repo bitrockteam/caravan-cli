@@ -27,7 +27,7 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
-		provider, err := getProvider(c.Provider, c)
+		provider, err := getProvider(c)
 		if err != nil {
 			return err
 		}

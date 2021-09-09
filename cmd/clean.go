@@ -33,7 +33,7 @@ var cleanCmd = &cobra.Command{
 			c.Force = true
 		}
 
-		provider, err := getProvider(c.Provider, c)
+		provider, err := getProvider(c)
 		if err != nil {
 			return err
 		}

@@ -60,14 +60,14 @@ func executeInit(cmd *cobra.Command, args []string) error {
 			fmt.Printf("unable to create config from file: %s\n", err)
 			return err
 		}
-		c, err = caravan.NewConfigFromScratch(name, caravan.AWS, region)
+		c, err = caravan.NewConfigFromScratch(name, provider, region)
 		if err != nil {
 			fmt.Printf("unable to create config from scratch: %s\n", err)
 			return err
 		}
 	}
 
-	p, err := getProvider(provider, c)
+	p, err := getProvider(c)
 	if err != nil {
 		return err
 	}
@@ -92,10 +92,10 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func getProvider(provider string, c *caravan.Config) (caravan.Provider, error) {
+func getProvider(c *caravan.Config) (caravan.Provider, error) {
 	var p caravan.Provider
 	var err error
-	switch provider {
+	switch c.Provider {
 	case caravan.AWS:
 		p, err = aws.New(c)
 	// case caravan.GCP:

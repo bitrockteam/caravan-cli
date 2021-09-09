@@ -36,7 +36,7 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
-		p, err := getProvider(provider, c)
+		p, err := getProvider(c)
 		if err != nil {
 			return err
 		}
