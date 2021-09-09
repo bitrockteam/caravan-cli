@@ -30,22 +30,12 @@ func (g GenericDestroy) cleanInfra() (err error) {
 	if err != nil {
 		return err
 	}
-	g.Caravan.Status = InfraCleanRunning
-	if err := g.Caravan.Save(); err != nil {
-		fmt.Printf("error during config update of config: %s\n", err)
-		return nil
-	}
 	env := map[string]string{}
 	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirInfraVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
 			return nil
 		}
-	}
-	g.Caravan.Status = InfraCleanDone
-	if err := g.Caravan.Save(); err != nil {
-		fmt.Printf("error during config update of config: %s\n", err)
-		return nil
 	}
 	return nil
 }
@@ -61,21 +51,11 @@ func (g GenericDestroy) cleanPlatform() (err error) {
 		"VAULT_TOKEN": g.Caravan.VaultRootToken,
 		"NOMAD_TOKEN": g.Caravan.NomadToken,
 	}
-	g.Caravan.Status = PlatformCleanRunning
-	if err := g.Caravan.Save(); err != nil {
-		fmt.Printf("error during config update of config: %s\n", err)
-		return nil
-	}
 	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirPlatformVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
 			return nil
 		}
-	}
-	g.Caravan.Status = PlatformCleanDone
-	if err := g.Caravan.Save(); err != nil {
-		fmt.Printf("error during config update of config: %s\n", err)
-		return nil
 	}
 	return nil
 }
@@ -87,11 +67,6 @@ func (g GenericDestroy) cleanApplication() (err error) {
 	if err != nil {
 		return err
 	}
-	g.Caravan.Status = ApplicationCleanRunning
-	if err := g.Caravan.Save(); err != nil {
-		fmt.Printf("error during config update of config: %s\n", err)
-		return nil
-	}
 	env := map[string]string{
 		"VAULT_TOKEN": g.Caravan.VaultRootToken,
 		"NOMAD_TOKEN": g.Caravan.NomadToken,
@@ -101,11 +76,6 @@ func (g GenericDestroy) cleanApplication() (err error) {
 		if !g.Caravan.Force {
 			return nil
 		}
-	}
-	g.Caravan.Status = ApplicationCleanDone
-	if err := g.Caravan.Save(); err != nil {
-		fmt.Printf("error during config update of config: %s\n", err)
-		return nil
 	}
 	return nil
 }

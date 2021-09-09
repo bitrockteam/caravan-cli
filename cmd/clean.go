@@ -39,20 +39,56 @@ var cleanCmd = &cobra.Command{
 		}
 
 		if c.Status >= caravan.ApplicationDeployRunning {
+			c.Status = caravan.ApplicationCleanRunning
+			if err := c.Save(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
+			}
+
 			if err := provider.Destroy(caravan.ApplicationSupport); err != nil {
 				return err
+			}
+
+			c.Status = caravan.ApplicationCleanDone
+			if err := c.Save(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
 			}
 		}
 
 		if c.Status >= caravan.PlatformDeployRunning {
+			c.Status = caravan.PlatformCleanRunning
+			if err := c.Save(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
+			}
+
 			if err := provider.Destroy(caravan.Platform); err != nil {
 				return err
+			}
+
+			c.Status = caravan.PlatformCleanDone
+			if err := c.Save(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
 			}
 		}
 
 		if c.Status >= caravan.InfraDeployRunning {
+			c.Status = caravan.InfraCleanRunning
+			if err := c.Save(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
+			}
+
 			if err := provider.Destroy(caravan.Infrastructure); err != nil {
 				return err
+			}
+
+			c.Status = caravan.InfraCleanDone
+			if err := c.Save(); err != nil {
+				fmt.Printf("error during config update of config: %s\n", err)
+				return nil
 			}
 		}
 

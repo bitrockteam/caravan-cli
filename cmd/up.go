@@ -33,9 +33,19 @@ var upCmd = &cobra.Command{
 		}
 
 		if c.Status < caravan.InfraDeployDone {
+			c.Status = caravan.InfraDeployRunning
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
+			}
+
 			err := provider.Deploy(caravan.Infrastructure)
 			if err != nil {
 				return err
+			}
+
+			c.Status = caravan.InfraDeployDone
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
 			}
 		}
 		fmt.Printf("[%s] deployment of infrastructure completed\n", c.Status)
@@ -63,9 +73,19 @@ var upCmd = &cobra.Command{
 			return fmt.Errorf("error persisting state: %w", err)
 		}
 		if c.Status < caravan.PlatformDeployDone {
+			c.Status = caravan.PlatformDeployRunning
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
+			}
+
 			err := provider.Deploy(caravan.Platform)
 			if err != nil {
 				return err
+			}
+
+			c.Status = caravan.PlatformDeployDone
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
 			}
 		}
 		fmt.Printf("[%s] deployment of platform completed\n", c.Status)
@@ -73,9 +93,19 @@ var upCmd = &cobra.Command{
 			return err
 		}
 		if c.Status < caravan.ApplicationDeployDone {
+			c.Status = caravan.ApplicationDeployRunning
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
+			}
+
 			err := provider.Deploy(caravan.ApplicationSupport)
 			if err != nil {
 				return err
+			}
+
+			c.Status = caravan.ApplicationDeployDone
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
 			}
 		}
 		fmt.Printf("[%s] deployment of application completed\n", c.Status)
