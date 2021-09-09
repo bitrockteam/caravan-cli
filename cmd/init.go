@@ -67,17 +67,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	var p caravan.NewProvider
-	switch provider {
-	case caravan.AWS:
-		p, err = aws.New(c)
-	// case caravan.GCP:
-	//	p, err = gcp.New(c)
-	// case caravan.Azure:
-	//	p, err = azure.New(c)
-	default:
-		p, err = nil, fmt.Errorf("unknown provider")
-	}
+	p, err := getProvider(provider, c)
 	if err != nil {
 		return err
 	}
@@ -100,6 +90,25 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func getProvider(provider string, c *caravan.Config) (caravan.NewProvider, error) {
+	var p caravan.NewProvider
+	var err error
+	switch provider {
+	case caravan.AWS:
+		p, err = aws.New(c)
+	// case caravan.GCP:
+	//	p, err = gcp.New(c)
+	// case caravan.Azure:
+	//	p, err = azure.New(c)
+	default:
+		p, err = nil, fmt.Errorf("unknown provider")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 func initProvider(c *caravan.Config, p caravan.NewProvider) error {

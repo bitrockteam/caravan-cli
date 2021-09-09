@@ -3,10 +3,7 @@ package cmd
 
 import (
 	"caravan/internal/caravan"
-	"caravan/internal/terraform"
 	"fmt"
-	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -15,9 +12,8 @@ import (
 var bakeCmd = &cobra.Command{
 	Use:   "bake",
 	Short: "Generate (bake) up to date VM images for caravan",
-	Long: `Baked images are available for usage in the selected provider's registry provided region.
-`,
-	Args: func(cmd *cobra.Command, args []string) error {
+	Long:  `Baked images are available for usage in the selected provider's registry provided region.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
@@ -40,7 +36,12 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
-		return bake(*c)
+		p, err := getProvider(provider, c)
+		if err != nil {
+			return err
+		}
+
+		return p.Bake()
 	},
 }
 
@@ -49,24 +50,8 @@ func init() {
 
 	bakeCmd.PersistentFlags().String("project", "", "Project name, used for tagging and namespacing")
 	bakeCmd.PersistentFlags().String("provider", "", "Cloud provider name. Can be on of aws,gcp, ...")
-	bakeCmd.PersistentFlags().String("rgion", "", "Optional: override default profile region")
+	bakeCmd.PersistentFlags().String("region", "", "Optional: override default profile region")
 
 	_ = bakeCmd.MarkPersistentFlagRequired("project")
 	_ = bakeCmd.MarkPersistentFlagRequired("provider")
-}
-
-func bake(c caravan.Config) (err error) {
-	if _, err := os.Stat(c.WorkdirProject); os.IsNotExist(err) {
-		return fmt.Errorf("please run init before bake")
-	}
-
-	t := terraform.Terraform{}
-	if err := t.Init(c.WorkdirBaking); err != nil {
-		return err
-	}
-	env := map[string]string{}
-	if err := t.ApplyVarFile(c.WorkdirBakingVars, 1200*time.Second, env, "*"); err != nil {
-		return err
-	}
-	return nil
 }
