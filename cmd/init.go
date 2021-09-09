@@ -92,8 +92,8 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func getProvider(provider string, c *caravan.Config) (caravan.NewProvider, error) {
-	var p caravan.NewProvider
+func getProvider(provider string, c *caravan.Config) (caravan.Provider, error) {
+	var p caravan.Provider
 	var err error
 	switch provider {
 	case caravan.AWS:
@@ -111,7 +111,7 @@ func getProvider(provider string, c *caravan.Config) (caravan.NewProvider, error
 	return p, nil
 }
 
-func initProvider(c *caravan.Config, p caravan.NewProvider) error {
+func initProvider(c *caravan.Config, p caravan.Provider) error {
 	fmt.Printf("initializing cloud resources\n")
 	if err := p.InitProvider(); err != nil {
 		return fmt.Errorf("error initing provider: %w", err)

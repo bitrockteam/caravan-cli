@@ -56,7 +56,7 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 
-		err = provider.Clean()
+		err = provider.CleanProvider()
 		if err != nil {
 			fmt.Printf("error during clean of cloud resources: %s\n", err)
 			return nil

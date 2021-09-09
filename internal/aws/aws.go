@@ -115,7 +115,7 @@ func (a AWS) Init() error {
 	return nil
 }
 
-func (a AWS) Clean() error {
+func (a AWS) CleanProvider() error {
 	fmt.Printf("removing terraform state and locking structures\n")
 
 	if a.Caravan.Force {
