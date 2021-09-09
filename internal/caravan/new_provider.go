@@ -3,7 +3,7 @@ package caravan
 type DeployLayer int
 
 const (
-	Infrastructure Status = iota
+	Infrastructure DeployLayer = iota
 	Platform
 	ApplicationSupport
 )
@@ -23,6 +23,11 @@ type WithStatus interface {
 	Status() error
 }
 
+type WithDestroy interface {
+	// Destroy will execute the operations needed to destroy the different stack layers
+	Destroy(DeployLayer) error
+}
+
 type NewProvider interface {
 	// GetTemplates returns the templates needed by the provider. The caller will handle persistence of the files.
 	GetTemplates() ([]Template, error)
@@ -37,6 +42,8 @@ type NewProvider interface {
 	WithBake
 
 	WithDeploy
+
+	WithDestroy
 
 	// Clean deletes everything, including baseline resources
 	Clean() error

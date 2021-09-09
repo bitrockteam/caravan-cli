@@ -15,6 +15,7 @@ type AWS struct {
 	caravan.GenericProvider
 	caravan.GenericBake
 	caravan.GenericStatus
+	caravan.GenericDestroy
 	AWSConfig aws.Config
 }
 
@@ -119,6 +120,24 @@ func (a AWS) Init() error {
 }
 
 func (a AWS) Clean() error {
+	fmt.Printf("removing terraform state and locking structures\n")
+
+	if a.Caravan.Force {
+		fmt.Printf("emptying bucket %s\n", a.Caravan.Name+"-caravan-terraform-state")
+		err := a.EmptyStateStore(a.Caravan.Name + "-caravan-terraform-state")
+		if err != nil {
+			return fmt.Errorf("error emptying: %w", err)
+		}
+	}
+
+	if err := a.DeleteStateStore(a.Caravan.Name + "-caravan-terraform-state"); err != nil {
+		return err
+	}
+
+	if err := a.DeleteLock(a.Caravan.Name + "-caravan-terraform-state-lock"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
