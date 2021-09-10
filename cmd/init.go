@@ -4,6 +4,7 @@ package cmd
 import (
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
+	"caravan/internal/gcp"
 	"caravan/internal/git"
 	"fmt"
 	"os"
@@ -98,8 +99,8 @@ func getProvider(c *caravan.Config) (caravan.Provider, error) {
 	switch c.Provider {
 	case caravan.AWS:
 		p, err = aws.New(c)
-	// case caravan.GCP:
-	//	p, err = gcp.New(c)
+	case caravan.GCP:
+		p, err = gcp.New(c)
 	// case caravan.Azure:
 	//	p, err = azure.New(c)
 	default:

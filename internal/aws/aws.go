@@ -111,10 +111,6 @@ func (a AWS) InitProvider() error {
 	return nil
 }
 
-func (a AWS) Init() error {
-	return nil
-}
-
 func (a AWS) CleanProvider() error {
 	fmt.Printf("removing terraform state and locking structures\n")
 
@@ -134,10 +130,6 @@ func (a AWS) CleanProvider() error {
 		return err
 	}
 
-	return nil
-}
-
-func (a AWS) GenerateConfig() error {
 	return nil
 }
 
