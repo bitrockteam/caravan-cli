@@ -103,6 +103,12 @@ func TestServiceAccount(t *testing.T) {
 	if err := g.CreateServiceAccount(name); err != nil {
 		t.Fatalf("unable to create service account: %s\n", err)
 	}
+
+	_, err = g.CreateServiceAccountKeys(name, name)
+	if err != nil {
+		t.Errorf("unable to create service account key: %s\n", err)
+	}
+
 	if err := g.DeleteServiceAccount(name); err != nil {
 		t.Fatalf("unable to delete service account: %s\n", err)
 	}

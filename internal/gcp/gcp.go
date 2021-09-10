@@ -251,7 +251,7 @@ func (g GCP) CreateServiceAccount(name string) (err error) {
 
 	iamservice, err := iam.NewService(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to get projectsservice: %w", err)
+		return fmt.Errorf("unable to get iam service: %w", err)
 	}
 
 	sar := iam.CreateServiceAccountRequest{
@@ -278,7 +278,7 @@ func (g GCP) DeleteServiceAccount(name string) (err error) {
 
 	iamservice, err := iam.NewService(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to get projectsservice: %w", err)
+		return fmt.Errorf("unable to get iam service: %w", err)
 	}
 
 	_, err = iamservice.Projects.ServiceAccounts.Delete(fmt.Sprintf("projects/%s/serviceAccounts/%s@%s.iam.gserviceaccount.com", g.Caravan.Name, name, g.Caravan.Name)).Context(ctx).Do()
@@ -291,6 +291,27 @@ func (g GCP) DeleteServiceAccount(name string) (err error) {
 	}
 
 	return nil
+}
+
+func (g GCP) CreateServiceAccountKeys(sa, name string) (key string, err error) {
+	fmt.Printf("create service account keys: %s\n", name)
+	ctx := context.Background()
+
+	iamservice, err := iam.NewService(ctx)
+	if err != nil {
+		return key, fmt.Errorf("unable to get iam service: %w", err)
+	}
+
+	sak, err := iamservice.Projects.ServiceAccounts.Keys.Create(fmt.Sprintf("projects/%s/serviceAccounts/%s@%s.iam.gserviceaccount.com", g.Caravan.Name, sa, g.Caravan.Name), &iam.CreateServiceAccountKeyRequest{}).Context(ctx).Do()
+	if err != nil {
+		s, _ := status.FromError(err)
+		if strings.Contains(s.Message(), "alreadyExists") {
+			return sak.PrivateKeyData, nil
+		}
+		return key, fmt.Errorf("unable to create service account keys %s: %w", name, err)
+	}
+
+	return sak.PrivateKeyData, nil
 }
 
 func validate(c caravan.Config) error {
