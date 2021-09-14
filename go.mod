@@ -3,7 +3,7 @@ module caravan
 go 1.16
 
 require (
-	cloud.google.com/go/storage v1.16.0 // indirect
+	cloud.google.com/go/storage v1.16.0
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0

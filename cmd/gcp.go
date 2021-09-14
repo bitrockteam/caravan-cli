@@ -28,6 +28,7 @@ to quickly create a Cobra application.`,
 		fmt.Println("gcp called")
 		name, _ := cmd.Flags().GetString("project")
 		region, _ := cmd.Flags().GetString("region")
+		parentProject, _ := cmd.Flags().GetString("parent-project")
 
 		c, err := caravan.NewConfigFromFile()
 		if err != nil {
@@ -55,7 +56,7 @@ to quickly create a Cobra application.`,
 			fmt.Printf("error: %s\n", err)
 			return
 		}
-
+		c.ParentProject = parentProject
 		c.SetBranch(b)
 		if err := c.Save(); err != nil {
 			fmt.Printf("error saving state: %s\n", err)
@@ -103,7 +104,10 @@ func init() {
 	gcpCmd.PersistentFlags().String("project", "", "GCP project name")
 	_ = gcpCmd.MarkPersistentFlagRequired("project")
 
-	gcpCmd.PersistentFlags().String("region", "", "GCP deployment region")
+	gcpCmd.PersistentFlags().String("parent-project", "", "GCP parent project name")
+	_ = gcpCmd.MarkPersistentFlagRequired("parent-project")
+
+	gcpCmd.PersistentFlags().String("region", "europe-west6", "GCP deployment region")
 	// assume project already created
 	/*
 		gcpCmd.PersistentFlags().String("orgID", "", "GCP organization ID")

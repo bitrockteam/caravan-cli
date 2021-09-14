@@ -3,7 +3,9 @@ package gcp
 import (
 	"caravan/internal/caravan"
 	"context"
+	"encoding/base64"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -24,7 +26,10 @@ func New(c caravan.Config) (g GCP, err error) {
 	if err := validate(c); err != nil {
 		return g, err
 	}
-	return GCP{Caravan: c}, nil
+	g = GCP{Caravan: c}
+
+	g.Templates = loadTemplates(g)
+	return g, nil
 }
 
 func (g GCP) Init() error {
@@ -39,10 +44,55 @@ func (g GCP) Init() error {
 		}
 	*/
 
+	if err := g.CreateServiceAccount("terraform"); err != nil {
+		return err
+	}
+
+	// permissions for the terraform service account on the current project
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, "terraform", "roles/owner"); err != nil {
+		return err
+	}
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, "terraform", "roles/storage.admin"); err != nil {
+		return err
+	}
+
+	// permission for the terraform service account on the parent project
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/compute.imageUser"); err != nil {
+		return err
+	}
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/dns.admin"); err != nil {
+		return err
+	}
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/compute.networkAdmin"); err != nil {
+		return err
+	}
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/iam.serviceAccountUser"); err != nil {
+		return err
+	}
+
+	// permission for the current user on the parent project
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "andrea.simonini@bitrock.it", "roles/iam.serviceAccountUser"); err != nil {
+		return err
+	}
+
+	// create keys for service account
+	kb64, err := g.CreateServiceAccountKeys("terraform", "terraform-sa-keys")
+	if err != nil {
+		return err
+	}
+	k, err := base64.StdEncoding.DecodeString(kb64)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(g.Caravan.WorkdirInfra+"/."+g.Caravan.Name+"-terraform-sa-key.json", k, 0600); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (g GCP) Clean() error {
+	fmt.Printf("cleaning: NOP\n")
 	return nil
 }
 
@@ -94,22 +144,18 @@ func (g GCP) DeleteStateStore(name string) error {
 	}
 	return nil
 }
+
 func (g GCP) EmptyStateStore(name string) error {
-	fmt.Printf("NOP\n")
+	fmt.Printf("empty state store: NOP\n")
 	return nil
 }
 func (g GCP) CreateLock(name string) error {
-	fmt.Printf("NOP\n")
+	fmt.Printf("create lock: NOP\n")
 	return nil
 }
 
 func (g GCP) DeleteLock(name string) error {
-	fmt.Printf("NOP\n")
-	return nil
-}
-
-func (g GCP) GenerateConfig() error {
-	fmt.Printf("NOP\n")
+	fmt.Printf("delete lock: NOP\n")
 	return nil
 }
 
@@ -158,6 +204,7 @@ func (g GCP) CreateProject(id, orgID string) error {
 
 // DeleteProject deletes a project from its project id.
 func (g GCP) DeleteProject(name, organization string) error {
+	fmt.Printf("deleting project: %s\n", name)
 	ctx := context.Background()
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
@@ -312,6 +359,51 @@ func (g GCP) CreateServiceAccountKeys(sa, name string) (key string, err error) {
 	}
 
 	return sak.PrivateKeyData, nil
+}
+
+func (g GCP) AddPolicyBinding(resource, name, sa, role string) error {
+	fmt.Printf("add policy binding: %s %s@%s/%s\n", sa, role, resource, name)
+	ctx := context.Background()
+
+	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
+	if err != nil {
+		return err
+	}
+
+	policy, err := g.GetPolicyBinding(resource, name, sa)
+	if err != nil {
+		return err
+	}
+	policy.Bindings = append(policy.Bindings, &cloudresourcemanager.Binding{Role: role})
+	rb := &cloudresourcemanager.SetIamPolicyRequest{
+		Policy: policy,
+	}
+
+	_, err = cloudresourcemanagerService.Projects.SetIamPolicy(fmt.Sprintf("%s/%s", resource, name), rb).Context(ctx).Do()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g GCP) GetPolicyBinding(resource, name, sa string) (policy *cloudresourcemanager.Policy, err error) {
+	fmt.Printf("get policy binding: %s@%s/%s\n", sa, resource, name)
+	ctx := context.Background()
+
+	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
+	if err != nil {
+		return policy, err
+	}
+
+	gir := &cloudresourcemanager.GetIamPolicyRequest{}
+
+	policy, err = cloudresourcemanagerService.Projects.GetIamPolicy(fmt.Sprintf("%s/%s", resource, name), gir).Context(ctx).Do()
+	if err != nil {
+		return policy, err
+	}
+
+	return policy, nil
 }
 
 func validate(c caravan.Config) error {

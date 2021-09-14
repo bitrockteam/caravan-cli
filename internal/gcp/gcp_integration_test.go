@@ -49,9 +49,8 @@ func TestProject(t *testing.T) {
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
-	//idempotence
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
-		t.Fatalf("unable to delete project %s: %s\n", name, err)
+		t.Fatalf("idempotence: unable to delete project %s: %s\n", name, err)
 	}
 }
 
@@ -87,7 +86,7 @@ func TestStateStore(t *testing.T) {
 func TestServiceAccount(t *testing.T) {
 	uid := strings.Split(uuid.New().String(), "-")[0]
 	name := "name-" + uid
-	c, err := caravan.NewConfigFromScratch("andrea-test-003", "gcp", "europe-west6")
+	c, err := caravan.NewConfigFromScratch("andrea-test-005", "gcp", "europe-west6")
 	if err != nil {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
@@ -112,6 +111,35 @@ func TestServiceAccount(t *testing.T) {
 	if err := g.DeleteServiceAccount(name); err != nil {
 		t.Fatalf("unable to delete service account: %s\n", err)
 	}
+	if err := g.DeleteServiceAccount(name); err != nil {
+		t.Fatalf("unable to delete service account: %s\n", err)
+	}
+}
+
+func TestAddPolicy(t *testing.T) {
+	uid := strings.Split(uuid.New().String(), "-")[0]
+	name := "name-" + uid
+	c, err := caravan.NewConfigFromScratch("andrea-test-008", "gcp", "europe-west6")
+	if err != nil {
+		t.Fatalf("unable to create config: %s\n", err)
+	}
+
+	g, err := gcp.New(*c)
+	if err != nil {
+		t.Fatalf("unable to create GCP: %s\n", err)
+	}
+	if err := g.CreateServiceAccount(name); err != nil {
+		t.Fatalf("unable to create service account: %s\n", err)
+	}
+
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, name, "roles/owner"); err != nil {
+		t.Errorf("unable to add policy binding: %s\n", err)
+	}
+
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, name, "roles/owner"); err != nil {
+		t.Errorf("idempotent: unable to add policy binding: %s\n", err)
+	}
+
 	if err := g.DeleteServiceAccount(name); err != nil {
 		t.Fatalf("unable to delete service account: %s\n", err)
 	}
