@@ -17,7 +17,7 @@ var rootCmd = &cobra.Command{
 	Use:   "caravan",
 	Short: "This tool allow you to deploy and setup a caravan cluster",
 	Long: `With caravan cli you can:
-		- init the required data structures
+		- init the required provider
 		- bake the corresponding images
 		- deploy the infrastructure on the given provider with terraform
 		- destroy the infrastructure

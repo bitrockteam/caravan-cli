@@ -1,8 +1,8 @@
-package aws_test
+package gcp_test
 
 import (
-	"caravan/internal/aws"
 	"caravan/internal/caravan"
+	"caravan/internal/gcp"
 	"testing"
 )
 
@@ -15,16 +15,18 @@ func TestValidate(t *testing.T) {
 
 	tests := []test{
 		{name: "test-me", error: false, desc: "ok"},
-		{name: "test567890123", error: true, desc: "name too long"},
+		{name: "test", error: true, desc: "name shorter than minimum"},
+		{name: "test-me?", error: true, desc: "non supported characters"},
+		{name: "-test-me", error: true, desc: "starting with hypen"},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := caravan.NewConfigFromScratch(tc.name, "aws", "eu-south-1")
+			c, err := caravan.NewConfigFromScratch(tc.name, "gcp", "")
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
-			_, err = aws.New(*c)
+			_, err = gcp.New(*c)
 			if err == nil && tc.error || err != nil && !tc.error {
 				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
 			}

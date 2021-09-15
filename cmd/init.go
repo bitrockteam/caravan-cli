@@ -2,126 +2,62 @@
 package cmd
 
 import (
-	"caravan/internal/aws"
 	"caravan/internal/caravan"
 	"caravan/internal/git"
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 // initCmd represents the init command.
 var initCmd = &cobra.Command{
-	Use:   "init --project=<project name> --provider=<provider>",
-	Short: "Create the needed config and terraform state store",
-	Long: `Initialization of the needed config files and supporting state stores/locking 
-	for terraform. The following optional parameters can be specified:
-	--region
-	--domain
-	optional parameters default respectively to the value defined in the default profile and <project>.com.`,
+	Use:   "init",
+	Short: "Select a provider to initialize",
+	Long:  `Initialization of the needed config files and supporting config for a given provider (project, state stores/locking ...)`,
 	Args: func(cmd *cobra.Command, args []string) error {
-		name, _ := cmd.Flags().GetString("project")
-		provider, _ := cmd.Flags().GetString("provider")
-		region, _ := cmd.Flags().GetString("region")
-
-		_, err := caravan.NewConfigFromScratch(name, provider, region)
-		if err != nil {
-			return fmt.Errorf("error generating config: %w", err)
-		}
-
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) (err error) {
-
-		name, _ := cmd.Flags().GetString("project")
-		provider, _ := cmd.Flags().GetString("provider")
-		region, _ := cmd.Flags().GetString("region")
-
-		c, err := caravan.NewConfigFromFile()
-		if err != nil {
-			// TODO better error checking
-			if !strings.Contains(err.Error(), "no such file or directory") {
-				return err
-			}
-			c, err = caravan.NewConfigFromScratch(name, provider, region)
-			if err != nil {
-				return err
-			}
-		}
-
-		if name != c.Name {
-			fmt.Printf("please run: \"caravan clean --force\" before init a new project")
-			return nil
-		}
-
-		b, _ := cmd.Flags().GetString("branch")
-
-		c.SetBranch(b)
-		if err := c.Save(); err != nil {
-			return err
-		}
-
-		// checkout repos
-		git := git.NewGit("bitrockteam")
-		for _, repo := range c.Repos {
-			err := git.Clone(repo, ".caravan/"+c.Name+"/"+repo, b)
-			if err != nil {
-				fmt.Printf("error: %s\n", err)
-				return err
-			}
-		}
-
-		// init AWS
-		if err := initCloud(c); err != nil {
-			fmt.Printf("error during init: %s\n", err)
-			return err
-		}
-		if c.Status < caravan.InitDone {
-			c.Status = caravan.InitDone
-			if err := c.Save(); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-
-	initCmd.PersistentFlags().String("project", "", "name of project")
-	_ = initCmd.MarkPersistentFlagRequired("project")
-
-	initCmd.PersistentFlags().String("provider", "", "name of cloud provider: aws, gcp, az, oci,..")
-	_ = initCmd.MarkPersistentFlagRequired("provider")
-
-	initCmd.PersistentFlags().String("region", "", "provider target region")
-	initCmd.PersistentFlags().String("branch", "", "branch to checkout on repos")
 }
 
-func initCloud(c *caravan.Config) (err error) {
-	// generate configs and supporting items (bucket and locktable)
+func initProvider(c *caravan.Config, p caravan.Provider) (err error) {
 	fmt.Printf("initializing cloud resources\n")
-	cloud, err := aws.NewAWS(*c)
-	if err != nil {
-		return err
+	if err := p.Init(); err != nil {
+		return fmt.Errorf("error initing provider: %w", err)
 	}
-
-	if err := cloud.GenerateConfig(); err != nil {
+	fmt.Printf("generating terraform config\n")
+	if err := p.GenerateConfig(); err != nil {
 		return fmt.Errorf("error generating config files: %w", err)
 	}
 
-	fmt.Printf("creating bucket: %s\n", c.BucketName)
-	if err := cloud.CreateBucket(c.BucketName); err != nil {
+	fmt.Printf("creating statestore: %s\n", c.StateStoreName)
+	if err := p.CreateStateStore(c.StateStoreName); err != nil {
 		return err
 	}
 
-	fmt.Printf("creating lock table: %s\n", c.TableName)
-	if err := cloud.CreateLockTable(c.TableName); err != nil {
+	fmt.Printf("creating lock: %s\n", c.LockName)
+	if err := p.CreateLock(c.LockName); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func initRepos(c *caravan.Config, b string) (err error) {
+	c.SetBranch(b)
+	if err := c.Save(); err != nil {
+		return fmt.Errorf("unable to save config after setting branch %s: %w", b, err)
+	}
+	// checkout repos
+	git := git.NewGit("bitrockteam")
+	for _, repo := range c.Repos {
+		err := git.Clone(repo, ".caravan/"+c.Name+"/"+repo, b)
+		if err != nil {
+			return fmt.Errorf("unable to clone repo %s: %w", repo, err)
+		}
+	}
 	return nil
 }

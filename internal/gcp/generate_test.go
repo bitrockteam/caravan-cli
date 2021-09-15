@@ -1,8 +1,9 @@
-package aws_test
+package gcp_test
 
 import (
-	"caravan/internal/aws"
 	"caravan/internal/caravan"
+	"caravan/internal/gcp"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -13,10 +14,10 @@ func TestGenerateConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config, _ := caravan.NewConfigFromScratch("test-name", "aws", "eu-south-1")
-	config.SetWorkdir(dir, "aws")
+	config, _ := caravan.NewConfigFromScratch("test-name", "gcp", "europe-west6")
+	config.SetWorkdir(dir, "gcp")
 	_ = config.SetDomain("test.me")
-	aws, _ := aws.New(*config)
+	gcp, _ := gcp.New(*config)
 
 	testCases := []struct {
 		name string
@@ -33,12 +34,12 @@ func TestGenerateConfig(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			gold := filepath.Join("testdata", tc.gold)
-			for _, tmp := range aws.Templates {
+			for _, tmp := range gcp.Templates {
 				if tmp.Name == tc.name {
-					// fmt.Printf("%s\n", tc.name)
-					// fmt.Printf("test: %s\n", tmp.Path)
+					fmt.Printf("%s\n", tc.name)
+					fmt.Printf("test: %s\n", tmp.Path)
 
-					if err := aws.Generate(tmp); err != nil {
+					if err := gcp.Generate(tmp); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)
 					}
 

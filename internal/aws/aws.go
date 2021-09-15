@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,11 +21,14 @@ import (
 type AWS struct {
 	Caravan   caravan.Config
 	AWSConfig aws.Config
-	Templates []Template
+	Templates []caravan.Template
 }
 
-func NewAWS(conf caravan.Config) (a AWS, err error) {
-	a.Caravan = conf
+func New(c caravan.Config) (a AWS, err error) {
+	if err := validate(c); err != nil {
+		return a, err
+	}
+	a = AWS{Caravan: c}
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 
 	if a.Caravan.Region != "" {
@@ -40,10 +44,20 @@ func NewAWS(conf caravan.Config) (a AWS, err error) {
 	}
 	a.Caravan.Region = cfg.Region
 	a.AWSConfig = cfg
+
+	a.Templates = loadTemplates(a)
 	return a, nil
 }
 
-func (a *AWS) CreateBucket(name string) (err error) {
+func (a AWS) Init() error {
+	return nil
+}
+
+func (a AWS) Clean() error {
+	return nil
+}
+
+func (a AWS) CreateStateStore(name string) (err error) {
 	var bae *s3types.BucketAlreadyExists
 	var bao *s3types.BucketAlreadyOwnedByYou
 
@@ -80,7 +94,7 @@ func (a *AWS) CreateBucket(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) EmptyBucket(name string) (err error) {
+func (a AWS) EmptyStateStore(name string) (err error) {
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -127,7 +141,7 @@ func (a *AWS) EmptyBucket(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) DeleteBucket(name string) (err error) {
+func (a AWS) DeleteStateStore(name string) (err error) {
 	var nsb *s3types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
@@ -145,7 +159,7 @@ func (a *AWS) DeleteBucket(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) CreateLockTable(name string) (err error) {
+func (a AWS) CreateLock(name string) (err error) {
 	var riu *dytypes.ResourceInUseException
 
 	retry := 10
@@ -186,7 +200,7 @@ func (a *AWS) CreateLockTable(name string) (err error) {
 	return nil
 }
 
-func (a *AWS) DeleteLockTable(name string) (err error) {
+func (a AWS) DeleteLock(name string) (err error) {
 	var riu *dytypes.ResourceInUseException
 	var rnf *dytypes.ResourceNotFoundException
 
@@ -215,6 +229,20 @@ func (a *AWS) DeleteLockTable(name string) (err error) {
 
 	if i >= retry {
 		return fmt.Errorf("maximum number of retries reached deleting %s: %d", name, retry)
+	}
+	return nil
+}
+
+func validate(c caravan.Config) error {
+	m, err := regexp.MatchString("^[-0-9A-Za-z]{3,12}$", c.Name)
+	if err != nil {
+		return err
+	}
+	if !m {
+		return fmt.Errorf("project name not compliant: must be between 3 and 12 character long, only alphanumerics and hypens (-) are allowed: %s", c.Name)
+	}
+	if strings.Index(c.Name, "-") == 0 {
+		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", c.Name)
 	}
 	return nil
 }

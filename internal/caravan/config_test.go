@@ -2,6 +2,7 @@ package caravan_test
 
 import (
 	"caravan/internal/caravan"
+	"os"
 	"testing"
 )
 
@@ -76,6 +77,8 @@ func TestConfigFromFile(t *testing.T) {
 		if err != nil {
 			t.Errorf("unable to save config to file: %s", err)
 		}
+		defer os.RemoveAll(c.Workdir)
+
 		got, err := caravan.NewConfigFromFile()
 		if err != nil {
 			t.Fatalf("unable to load config from file %s: %s\n", tc.name, err)
