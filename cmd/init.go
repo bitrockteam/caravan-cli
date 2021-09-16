@@ -8,9 +8,7 @@ import (
 	"caravan/internal/git"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/spf13/cobra"
 )
@@ -73,6 +71,10 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if c.Name != name || c.Provider != provider {
+		return fmt.Errorf("please run a clean before changing project name or provider")
+	}
+
 	if err := initRepos(c, branch); err != nil {
 		fmt.Printf("error: %s\n", err)
 		return err
@@ -123,9 +125,15 @@ func initProvider(c *caravan.Config, p caravan.Provider) error {
 		return fmt.Errorf("failed to get templates: %w", err)
 	}
 
-	fmt.Printf("generating terraform config\n")
-	if err := GenerateConfig(c, templates); err != nil {
-		return fmt.Errorf("error generating config files: %w", err)
+	fmt.Printf("generating terraform config files on: %s\n", c.WorkdirProject)
+	if err := os.MkdirAll(c.WorkdirProject, 0777); err != nil {
+		return err
+	}
+	for _, t := range templates {
+		fmt.Printf("generating %v:%s \n", t.Name, t.Path)
+		if err := t.Render(c); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -143,44 +151,6 @@ func initRepos(c *caravan.Config, b string) (err error) {
 		if err != nil {
 			return fmt.Errorf("unable to clone repo %s: %w", repo, err)
 		}
-	}
-	return nil
-}
-
-func GenerateConfig(c *caravan.Config, t []caravan.Template) (err error) {
-	// FIXME: rename to process templates
-	fmt.Printf("generating config files on: %s\n", c.WorkdirProject)
-	if err := os.MkdirAll(c.WorkdirProject, 0777); err != nil {
-		return err
-	}
-
-	for _, t := range t {
-		fmt.Printf("generating %v:%s \n", t.Name, t.Path)
-		if err := Generate(t, c); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func Generate(t caravan.Template, c *caravan.Config) (err error) {
-	// FIXME: rename to render template
-	temp, err := template.New(t.Name).Parse(t.Text)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(t.Path), 0777); err != nil {
-		return err
-	}
-	f, err := os.Create(t.Path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if err := temp.Execute(f, c); err != nil {
-		return err
 	}
 	return nil
 }

@@ -12,12 +12,6 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-type Template struct {
-	Name string
-	Text string
-	Path string
-}
-
 // Config is used to collect the Caravan configuration.
 //
 // Relevant data is collected during status changes and persisted on disk.

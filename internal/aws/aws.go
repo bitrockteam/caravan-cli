@@ -69,7 +69,7 @@ func (a AWS) GetTemplates() ([]caravan.Template, error) {
 		},
 		{
 			Name: "platform-vars",
-			Text: paltformTvVarsTmpl,
+			Text: platformTfVarsTmpl,
 			Path: a.Caravan.WorkdirPlatformVars,
 		},
 		{

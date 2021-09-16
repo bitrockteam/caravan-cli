@@ -21,7 +21,7 @@ tfstate_table_name      = "{{ .LockName }}"
 tfstate_region          = "{{ .Region }}"
 `
 
-	paltformTvVarsTmpl = `
+	platformTfVarsTmpl = `
 vault_endpoint  = "https://vault.{{.Name}}.{{.Domain}}"
 consul_endpoint = "https://consul.{{.Name}}.{{.Domain}}"
 nomad_endpoint  = "https://nomad.{{.Name}}.{{.Domain}}"
