@@ -73,6 +73,10 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	if c.Name != name || c.Provider != provider {
+		return fmt.Errorf("please run a clean before changing project name or provider")
+	}
+
 	if err := initRepos(c, branch); err != nil {
 		fmt.Printf("error: %s\n", err)
 		return err
