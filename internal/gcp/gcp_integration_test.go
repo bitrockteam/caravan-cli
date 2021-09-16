@@ -49,8 +49,9 @@ func TestProject(t *testing.T) {
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
+	//idempotence
 	if err := g.DeleteProject(name, c.GCPOrgID); err != nil {
-		t.Fatalf("idempotence: unable to delete project %s: %s\n", name, err)
+		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
 }
 
