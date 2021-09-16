@@ -49,7 +49,7 @@ to quickly create a Cobra application.`,
 
 		b, _ := cmd.Flags().GetString("branch")
 
-		p, err := aws.New(*c)
+		p, err := aws.New(c)
 		if err != nil {
 			fmt.Printf("error: %s\n", err)
 			return

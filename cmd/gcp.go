@@ -51,7 +51,7 @@ to quickly create a Cobra application.`,
 
 		b, _ := cmd.Flags().GetString("branch")
 
-		p, err := gcp.New(*c)
+		p, err := gcp.New(c)
 		if err != nil {
 			fmt.Printf("error: %s\n", err)
 			return

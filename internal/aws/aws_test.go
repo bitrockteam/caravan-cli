@@ -24,7 +24,7 @@ func TestValidate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
-			_, err = aws.New(*c)
+			_, err = aws.New(c)
 			if err == nil && tc.error || err != nil && !tc.error {
 				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
 			}

@@ -26,7 +26,7 @@ func TestValidate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
-			_, err = gcp.New(*c)
+			_, err = gcp.New(c)
 			if err == nil && tc.error || err != nil && !tc.error {
 				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
 			}

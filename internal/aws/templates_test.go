@@ -1,10 +1,12 @@
 package aws_test
 
 import (
+	"caravan/cmd"
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -16,7 +18,7 @@ func TestGenerateConfig(t *testing.T) {
 	config, _ := caravan.NewConfigFromScratch("test-name", "aws", "eu-south-1")
 	config.SetWorkdir(dir, "aws")
 	_ = config.SetDomain("test.me")
-	aws, _ := aws.New(*config)
+	aws, _ := aws.New(config)
 
 	testCases := []struct {
 		name string
@@ -33,12 +35,13 @@ func TestGenerateConfig(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			gold := filepath.Join("testdata", tc.gold)
-			for _, tmp := range aws.Templates {
+			templates, _ := aws.GetTemplates()
+			for _, tmp := range templates {
 				if tmp.Name == tc.name {
 					// fmt.Printf("%s\n", tc.name)
 					// fmt.Printf("test: %s\n", tmp.Path)
 
-					if err := aws.Generate(tmp); err != nil {
+					if err := cmd.Generate(tmp, aws.Caravan); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)
 					}
 
@@ -51,7 +54,7 @@ func TestGenerateConfig(t *testing.T) {
 						t.Fatalf("error reading current file: %s\n", err)
 					}
 
-					if string(got) != string(want) {
+					if strings.Trim(string(got), "\n") != strings.Trim(string(want), "\n") {
 						t.Errorf("%s <-> %s: mismatch found with golden sample:\n%s\n%s\n", tmp.Path, gold, string(got), string(want))
 					}
 				}

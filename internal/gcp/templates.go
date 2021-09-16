@@ -1,46 +1,17 @@
 package gcp
 
-import (
-	"caravan/internal/caravan"
-	"fmt"
-	"os"
-	"path/filepath"
-	"text/template"
-)
-
-// TODO refactor with common generate code.
-func (g GCP) GenerateConfig() (err error) {
-	fmt.Printf("generating config files on: %s\n", g.Caravan.WorkdirProject)
-	if err := os.MkdirAll(g.Caravan.WorkdirProject, 0777); err != nil {
-		return err
-	}
-
-	for _, t := range g.Templates {
-		fmt.Printf("generating %v:%s \n", t.Name, t.Path)
-		if err := g.Generate(t); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func loadTemplates(g GCP) []caravan.Template {
-	return []caravan.Template{
-		{
-			Name: "baking-vars",
-			Text: `build_on_google        = true
+const (
+	bakingTfVarsTmpl = `
+build_on_google        = true
 build_image_name       = "caravan-centos-image"
 google_project_id      = "{{ .Caravan.Name }}"
 google_account_file    = "YOUR-JSON-KEY"
 google_network_name    = "caravan-gcp-vpc"
 google_subnetwork_name = "caravan-gcp-subnet"
-`,
-			Path: g.Caravan.WorkdirBakingVars,
-		},
-		{
-			Name: "infra-vars",
-			Text: `region                = "{{ .Caravan.Region }}"
+`
+
+	infraTfVarsTmpl = `
+region                = "{{ .Caravan.Region }}"
 zone                  = "{{ .Caravan.Region }}-a"
 project_id            = "{{ .Caravan.Name }}"
 external_domain       = "{{ .Caravan.Domain }}"
@@ -51,36 +22,10 @@ worker_plane_sa_name  = "worker-plane"
 image                 = "projects/{{ .Caravan.ParentProject }}/global/images/family/caravan-centos-image-os"
 parent_dns_project_id = "{{ .Caravan.ParentProject }}"
 parent_dns_zone_name  = "dns-example-zone"
-`,
-			Path: g.Caravan.WorkdirInfraVars,
-		},
-		{
-			Name: "infra-backend",
-			Text: `terraform {
-  backend "gcs" {
-     bucket = "{{ .Caravan.StateStoreName }}"
-     prefix = "infraboot/terraform/state"
-     credentials = ".{{ .Caravan.Name }}-terraform-sa-key.json"
-   }
-}
-`,
-			Path: g.Caravan.WorkdirInfraBackend,
-		},
-		{
-			Name: "platform-backend",
-			Text: `terraform {
-  backend "s3" {
-     bucket = "{{ .Caravan.StateStoreName }}"
-     prefix = "platform/terraform/state"
-     credentials = ".{{ .Caravan.Name }}-terraform-sa-key.json"
-  }
-}
-`,
-			Path: g.Caravan.WorkdirPlatformBackend,
-		},
-		{
-			Name: "platform-vars",
-			Text: `vault_endpoint  = "https://vault.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
+`
+
+	platformTfVarsTmpl = `
+vault_endpoint  = "https://vault.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
 consul_endpoint = "https://consul.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
 nomad_endpoint  = "https://nomad.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
 
@@ -105,12 +50,9 @@ control_plane_role_name            = "control-plane"
 vault_skip_tls_verify = true
 consul_insecure_https = true
 ca_cert_file          = "../caravan-infra-{{ .Caravan.Provider }}/ca_certs.pem"
-`,
-			Path: g.Caravan.WorkdirPlatformVars,
-		},
-		{
-			Name: "application-vars",
-			Text: `
+`
+
+	applicationTfVarsTmpl = `
 vault_endpoint  = "https://vault.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
 consul_endpoint = "https://consul.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
 nomad_endpoint  = "https://nomad.{{ .Caravan.Name }}.{{ .Caravan.Domain }}"
@@ -127,40 +69,32 @@ jenkins_volume_external_id = ""
 vault_skip_tls_verify = true
 consul_insecure_https = true
 ca_cert_file          = "../caravan-infra-{{ .Caravan.Provider }}/ca_certs.pem"
-`,
-			Path: g.Caravan.WorkdirApplicationVars,
-		},
-		{
-			Name: "application-backend",
-			Text: `terraform {
+`
+
+	infraBackendTmpl = `
+  backend "gcs" {
+     bucket = "{{ .Caravan.StateStoreName }}"
+     prefix = "infraboot/terraform/state"
+     credentials = ".{{ .Caravan.Name }}-terraform-sa-key.json"
+   }
+}
+`
+
+	platformBackendTmpl = `
+  backend "s3" {
+     bucket = "{{ .Caravan.StateStoreName }}"
+     prefix = "platform/terraform/state"
+     credentials = ".{{ .Caravan.Name }}-terraform-sa-key.json"
+  }
+}
+`
+	applicationSupportBackendTmpl = `
+terraform {
   backend "gcs" {
      bucket = "{{ .Caravan.StateStoreName }}"
      prefix = "appsupport/terraform/state"
      credentials = ".{{ .Caravan.Name }}-terraform-sa-key.json"
    }
 }
-`,
-			Path: g.Caravan.WorkdirApplicationBackend,
-		},
-	}
-}
-
-func (g GCP) Generate(t caravan.Template) (err error) {
-	temp, err := template.New(t.Name).Parse(t.Text)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(t.Path), 0777); err != nil {
-		return err
-	}
-	f, err := os.Create(t.Path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	if err := temp.Execute(f, g); err != nil {
-		return err
-	}
-	return nil
-}
+`
+)
