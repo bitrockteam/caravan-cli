@@ -1,7 +1,6 @@
 package aws_test
 
 import (
-	"caravan/cmd"
 	"caravan/internal/aws"
 	"caravan/internal/caravan"
 	"io/ioutil"
@@ -41,7 +40,7 @@ func TestGenerateConfig(t *testing.T) {
 					// fmt.Printf("%s\n", tc.name)
 					// fmt.Printf("test: %s\n", tmp.Path)
 
-					if err := cmd.Generate(tmp, aws.Caravan); err != nil {
+					if err := tmp.Render(aws.Caravan); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)
 					}
 

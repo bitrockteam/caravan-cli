@@ -1,7 +1,6 @@
 package gcp_test
 
 import (
-	"caravan/cmd"
 	"caravan/internal/caravan"
 	"caravan/internal/gcp"
 	"io/ioutil"
@@ -42,7 +41,7 @@ func TestGenerateConfig(t *testing.T) {
 					// fmt.Printf("%s\n", tc.name)
 					// fmt.Printf("test: %s\n", tmp.Path)
 
-					if err := cmd.Generate(tmp, gcp.Caravan); err != nil {
+					if err := tmp.Render(gcp.Caravan); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)
 					}
 
