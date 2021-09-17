@@ -38,6 +38,8 @@ func init() {
 func preRunInit(cmd *cobra.Command, args []string) error {
 	provider, _ := cmd.Flags().GetString("provider")
 	switch provider {
+	case "":
+		return nil
 	case caravan.AWS, caravan.GCP:
 		break
 	default:
