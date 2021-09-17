@@ -21,13 +21,14 @@ type GCP struct {
 func New(c *caravan.Config) (g GCP, err error) {
 	g = GCP{}
 
-	home := os.Getenv("HOME")
-	u, err := g.GetUserEmail(filepath.Join(home, ".config/gcloud/configurations/config_default"))
-	if err != nil {
-		return g, err
+	if c.UserEmail == "" {
+		home := os.Getenv("HOME")
+		u, err := g.GetUserEmail(filepath.Join(home, ".config/gcloud/configurations/config_default"))
+		if err != nil {
+			return g, err
+		}
+		c.UserEmail = u
 	}
-	c.UserEmail = u
-
 	g.Caravan = c
 	if err := g.ValidateConfiguration(); err != nil {
 		return g, err
