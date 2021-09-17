@@ -77,6 +77,7 @@ func (g GCP) GetTemplates() ([]caravan.Template, error) {
 }
 
 func (g GCP) ValidateConfiguration() error {
+	// check project name
 	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,15}$", g.Caravan.Name)
 	if err != nil {
 		return err
@@ -86,6 +87,11 @@ func (g GCP) ValidateConfiguration() error {
 	}
 	if strings.Index(g.Caravan.Name, "-") == 0 {
 		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", g.Caravan.Name)
+	}
+
+	// check valid region
+	if g.Caravan.Region != "europe-west6" {
+		return fmt.Errorf("gcp region %s not supported", g.Caravan.Region)
 	}
 	return nil
 }

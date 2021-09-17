@@ -4,6 +4,7 @@ import (
 	"caravan/internal/caravan"
 	"context"
 	"fmt"
+	"net"
 	"regexp"
 	"strings"
 
@@ -22,24 +23,26 @@ type AWS struct {
 func New(c *caravan.Config) (a AWS, err error) {
 	a = AWS{}
 	a.Caravan = c
+
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return a, err
+	}
+	if a.Caravan.Region == "" {
+		a.Caravan.Region = cfg.Region
+	}
+
 	if err := a.ValidateConfiguration(); err != nil {
 		return a, err
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-
-	if a.Caravan.Region != "" {
-		cfg, err = config.LoadDefaultConfig(context.TODO(),
-			config.WithRegion(a.Caravan.Region),
-		)
-	}
+	cfg, err = config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(a.Caravan.Region),
+	)
 	if err != nil {
 		return a, err
 	}
-	if cfg.Region == "" {
-		return a, fmt.Errorf("please provide a region")
-	}
-	a.Caravan.Region = cfg.Region
+
 	a.AWSConfig = cfg
 
 	return a, nil
@@ -86,6 +89,7 @@ func (a AWS) GetTemplates() ([]caravan.Template, error) {
 }
 
 func (a AWS) ValidateConfiguration() error {
+	// check project name
 	m, err := regexp.MatchString("^[-0-9A-Za-z]{3,12}$", a.Caravan.Name)
 	if err != nil {
 		return err
@@ -95,6 +99,13 @@ func (a AWS) ValidateConfiguration() error {
 	}
 	if strings.Index(a.Caravan.Name, "-") == 0 {
 		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", a.Caravan.Name)
+	}
+	// check valid region
+	if a.Caravan.Region == "" {
+		return fmt.Errorf("please provide a region configuration")
+	}
+	if _, err := net.LookupIP(fmt.Sprintf("ec2.%s.amazonaws.com", a.Caravan.Region)); err != nil {
+		return fmt.Errorf("region %s not allowed: %w", a.Caravan.Region, err)
 	}
 	return nil
 }
