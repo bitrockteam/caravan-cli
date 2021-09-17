@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -19,12 +20,18 @@ type GCP struct {
 
 func New(c *caravan.Config) (g GCP, err error) {
 	g = GCP{}
+
+	home := os.Getenv("HOME")
+	u, err := g.GetUserEmail(filepath.Join(home, ".config/gcloud/configurations/config_default"))
+	if err != nil {
+		return g, err
+	}
+	c.UserEmail = u
+
 	g.Caravan = c
 	if err := g.ValidateConfiguration(); err != nil {
 		return g, err
 	}
-
-	// TODO: more setup?
 
 	return g, nil
 }
@@ -84,17 +91,6 @@ func (g GCP) ValidateConfiguration() error {
 }
 
 func (g GCP) InitProvider() error {
-	// assume that the project and billing account are already available
-	/*
-		if err := g.CreateProject(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
-			return err
-		}
-
-		if err := g.SetBillingAccount(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
-			return err
-		}
-	*/
-
 	if err := g.CreateServiceAccount(g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
@@ -122,7 +118,7 @@ func (g GCP) InitProvider() error {
 	}
 
 	// permission for the current user on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "andrea.simonini@bitrock.it", "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 

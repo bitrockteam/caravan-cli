@@ -11,6 +11,7 @@ import (
 	"google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/grpc/status"
+	"gopkg.in/ini.v1"
 )
 
 func (g GCP) CreateStateStore(name string) error {
@@ -308,4 +309,12 @@ func (g GCP) GetPolicyBinding(resource, name, sa string) (policy *cloudresourcem
 	}
 
 	return policy, nil
+}
+
+func (g GCP) GetUserEmail(path string) (string, error) {
+	f, err := ini.Load(path)
+	if err != nil {
+		return "", err
+	}
+	return f.Section("core").Key("account").String(), nil
 }

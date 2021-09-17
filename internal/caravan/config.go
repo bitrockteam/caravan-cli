@@ -53,6 +53,7 @@ type GCPConfig struct {
 	GCPOrgID      string `json:",omitempty"`
 	GCPBillingID  string `json:",omitempty"`
 	ParentProject string `json:",omitempty"`
+	UserEmail     string `json:",omitempty"`
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state
