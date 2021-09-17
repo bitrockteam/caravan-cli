@@ -26,7 +26,8 @@ func (g GCP) CreateStateStore(name string) error {
 	defer cancel()
 
 	storageLocation := &storage.BucketAttrs{
-		Location: g.Caravan.Region,
+		Location:               g.Caravan.Region,
+		PublicAccessPrevention: storage.PublicAccessPreventionEnforced,
 	}
 	bucket := client.Bucket(name)
 	if err := bucket.Create(ctx, g.Caravan.Name, storageLocation); err != nil {
