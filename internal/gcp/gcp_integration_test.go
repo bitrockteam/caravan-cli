@@ -22,7 +22,7 @@ func TestProject(t *testing.T) {
 	c.SetGCPOrgID("55685363496")
 	c.SetGCPBillingID("016290-A416F4-EC4527")
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -63,7 +63,7 @@ func TestStateStore(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -92,7 +92,7 @@ func TestServiceAccount(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -125,7 +125,7 @@ func TestAddPolicy(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
