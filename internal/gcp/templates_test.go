@@ -18,7 +18,11 @@ func TestGenerateConfig(t *testing.T) {
 	config.SetWorkdir(dir, "gcp")
 	_ = config.SetDomain("test.me")
 	config.ParentProject = "parent-project"
-	gcp, _ := gcp.New(config)
+	config.UserEmail = "test.name@test.me"
+	gcp, err := gcp.New(config)
+	if err != nil {
+		t.Fatalf("unable to create gcp: %s", err)
+	}
 
 	testCases := []struct {
 		name string
