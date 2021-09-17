@@ -95,29 +95,29 @@ func (g GCP) InitProvider() error {
 		}
 	*/
 
-	if err := g.CreateServiceAccount("terraform"); err != nil {
+	if err := g.CreateServiceAccount(g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
 
 	// permissions for the terraform service account on the current project
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, "terraform", "roles/owner"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, g.Caravan.ServiceAccount, "roles/owner"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, "terraform", "roles/storage.admin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, g.Caravan.ServiceAccount, "roles/storage.admin"); err != nil {
 		return err
 	}
 
 	// permission for the terraform service account on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/compute.imageUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/compute.imageUser"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/dns.admin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/dns.admin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/compute.networkAdmin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/compute.networkAdmin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
@@ -127,7 +127,7 @@ func (g GCP) InitProvider() error {
 	}
 
 	// create keys for service account
-	kb64, err := g.CreateServiceAccountKeys("terraform", "terraform-sa-keys")
+	kb64, err := g.CreateServiceAccountKeys(g.Caravan.ServiceAccount, g.Caravan.ServiceAccount+"-sa-keys")
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (g GCP) InitProvider() error {
 }
 
 func (g GCP) CleanProvider() error {
-	if err := g.DeleteServiceAccount("terraform"); err != nil {
+	if err := g.DeleteServiceAccount(g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
 	if err := g.DeleteStateStore(g.Caravan.StateStoreName); err != nil {

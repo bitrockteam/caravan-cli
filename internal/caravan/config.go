@@ -45,6 +45,7 @@ type Config struct {
 	NomadToken                string              `json:",omitempty"`
 	VaultURL                  string              `json:",omitempty"`
 	CApath                    string              `json:",omitempty"`
+	ServiceAccount            string              `json:",omitempty"`
 	GCPConfig
 }
 
@@ -70,6 +71,7 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 		Workdir:        wd,
 		WorkdirProject: wd + "/" + name,
 		VaultURL:       "https://vault." + name + "." + "reactive-labs.io",
+		ServiceAccount: name + "-terraform",
 	}
 
 	c.SetWorkdir(wd, provider)
