@@ -14,7 +14,7 @@ import (
 func TestStateStore(t *testing.T) {
 	uid := uuid.New().String()
 	id := strings.Split(uid, "-")[3]
-	aws, err := aws.New(caravan.Config{
+	aws, err := aws.New(&caravan.Config{
 		Name:   "test-" + id,
 		Region: "eu-south-1",
 	})
@@ -38,7 +38,7 @@ func TestStateStore(t *testing.T) {
 func TestEmptyStateStore(t *testing.T) {
 	uid := uuid.New().String()
 	id := strings.Split(uid, "-")[3]
-	aws, err := aws.New(caravan.Config{
+	aws, err := aws.New(&caravan.Config{
 		Name:   "test-" + id,
 		Region: "eu-south-1",
 	})
@@ -59,7 +59,7 @@ func TestEmptyStateStore(t *testing.T) {
 func TestLock(t *testing.T) {
 	uid := uuid.New().String()
 	id := strings.Split(uid, "-")[3]
-	aws, err := aws.New(caravan.Config{
+	aws, err := aws.New(&caravan.Config{
 		Name:   "test-" + id,
 		Region: "eu-south-1",
 	})

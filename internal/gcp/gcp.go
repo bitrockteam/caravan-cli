@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -19,12 +20,19 @@ type GCP struct {
 
 func New(c *caravan.Config) (g GCP, err error) {
 	g = GCP{}
+
+	if c.UserEmail == "" {
+		home := os.Getenv("HOME")
+		u, err := g.GetUserEmail(filepath.Join(home, ".config/gcloud/configurations/config_default"))
+		if err != nil {
+			return g, err
+		}
+		c.UserEmail = u
+	}
 	g.Caravan = c
 	if err := g.ValidateConfiguration(); err != nil {
 		return g, err
 	}
-
-	// TODO: more setup?
 
 	return g, nil
 }
@@ -70,6 +78,7 @@ func (g GCP) GetTemplates() ([]caravan.Template, error) {
 }
 
 func (g GCP) ValidateConfiguration() error {
+	// check project name
 	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,15}$", g.Caravan.Name)
 	if err != nil {
 		return err
@@ -80,54 +89,48 @@ func (g GCP) ValidateConfiguration() error {
 	if strings.Index(g.Caravan.Name, "-") == 0 {
 		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", g.Caravan.Name)
 	}
+
+	// check valid region
+	if g.Caravan.Region != "europe-west6" {
+		return fmt.Errorf("gcp region %s not supported", g.Caravan.Region)
+	}
 	return nil
 }
 
 func (g GCP) InitProvider() error {
-	// assume that the project and billing account are already available
-	/*
-		if err := g.CreateProject(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
-			return err
-		}
-
-		if err := g.SetBillingAccount(g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
-			return err
-		}
-	*/
-
-	if err := g.CreateServiceAccount("terraform"); err != nil {
+	if err := g.CreateServiceAccount(g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
 
 	// permissions for the terraform service account on the current project
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, "terraform", "roles/owner"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, g.Caravan.ServiceAccount, "roles/owner"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, "terraform", "roles/storage.admin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, g.Caravan.ServiceAccount, "roles/storage.admin"); err != nil {
 		return err
 	}
 
 	// permission for the terraform service account on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/compute.imageUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/compute.imageUser"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/dns.admin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/dns.admin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/compute.networkAdmin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/compute.networkAdmin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "terraform", "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
 	// permission for the current user on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "andrea.simonini@bitrock.it", "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
 	// create keys for service account
-	kb64, err := g.CreateServiceAccountKeys("terraform", "terraform-sa-keys")
+	kb64, err := g.CreateServiceAccountKeys(g.Caravan.ServiceAccount, g.Caravan.ServiceAccount+"-sa-keys")
 	if err != nil {
 		return err
 	}
@@ -147,7 +150,7 @@ func (g GCP) InitProvider() error {
 }
 
 func (g GCP) CleanProvider() error {
-	if err := g.DeleteServiceAccount("terraform"); err != nil {
+	if err := g.DeleteServiceAccount(g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
 	if err := g.DeleteStateStore(g.Caravan.StateStoreName); err != nil {

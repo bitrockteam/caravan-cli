@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"os"
 	"path/filepath"
 
@@ -45,6 +44,7 @@ type Config struct {
 	NomadToken                string              `json:",omitempty"`
 	VaultURL                  string              `json:",omitempty"`
 	CApath                    string              `json:",omitempty"`
+	ServiceAccount            string              `json:",omitempty"`
 	GCPConfig
 }
 
@@ -52,6 +52,7 @@ type GCPConfig struct {
 	GCPOrgID      string `json:",omitempty"`
 	GCPBillingID  string `json:",omitempty"`
 	ParentProject string `json:",omitempty"`
+	UserEmail     string `json:",omitempty"`
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state
@@ -70,13 +71,12 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 		Workdir:        wd,
 		WorkdirProject: wd + "/" + name,
 		VaultURL:       "https://vault." + name + "." + "reactive-labs.io",
+		ServiceAccount: name + "-terraform",
+		Region:         region,
 	}
 
 	c.SetWorkdir(wd, provider)
 
-	if region != "" {
-		err = c.setRegion(region)
-	}
 	return c, err
 }
 
@@ -112,15 +112,6 @@ func (c *Config) SetWorkdir(wd, provider string) {
 	c.WorkdirApplicationVars = filepath.Join(c.WorkdirProject, "caravan-application-support", c.Name+"-"+c.Provider+"-cli.tfvars")
 	c.WorkdirApplicationBackend = filepath.Join(c.WorkdirProject, "caravan-application-support", "backend.tf")
 	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
-}
-
-// setRegion validate the region and sets the value.
-func (c *Config) setRegion(region string) (err error) {
-	if isValidRegion(c.Provider, region) {
-		c.Region = region
-		return nil
-	}
-	return fmt.Errorf("please provide a valid region")
 }
 
 func (c *Config) SetDomain(domain string) (err error) {
@@ -195,19 +186,4 @@ func (c *Config) Save() (err error) {
 // isValidDomain checks if the provided string is a valid domain name.
 func isValidDomain(domain string) bool {
 	return govalidator.IsDNSName(domain)
-}
-
-// TODO move to provider
-
-// isValidRegion checks the name of the region for the given provider.
-func isValidRegion(provider, region string) bool {
-	switch provider {
-	case AWS:
-		_, err := net.LookupIP(fmt.Sprintf("ec2.%s.amazonaws.com", region))
-		return err == nil
-	case GCP:
-		return region == "europe-west6"
-	default:
-		return false
-	}
 }

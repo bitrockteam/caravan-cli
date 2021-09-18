@@ -28,21 +28,23 @@ func init() {
 	initCmd.PersistentFlags().String("project", "", "name of project")
 	_ = initCmd.MarkPersistentFlagRequired("project")
 
-	initCmd.PersistentFlags().String("region", "", "region for the deployment")
-
 	initCmd.PersistentFlags().String("provider", "", "cloud provider")
 	_ = initCmd.MarkPersistentFlagRequired("provider")
+
+	initCmd.PersistentFlags().String("region", "", "region for the deployment")
+	initCmd.PersistentFlags().String("parent-project", "", "(GCP only) parent-project")
 }
 
 func preRunInit(cmd *cobra.Command, args []string) error {
 	provider, _ := cmd.Flags().GetString("provider")
 	switch provider {
+	case "":
+		return nil
 	case caravan.AWS, caravan.GCP:
 		break
 	default:
-		return fmt.Errorf("unsupported %s provider", provider)
+		return fmt.Errorf("unsupported provider: %s", provider)
 	}
-
 	return nil
 }
 
@@ -51,6 +53,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	name, _ := cmd.Flags().GetString("project")
 	region, _ := cmd.Flags().GetString("region")
 	branch, _ := cmd.Flags().GetString("branch")
+	parentProject, _ := cmd.Flags().GetString("parent-project")
 
 	c, err := caravan.NewConfigFromFile()
 	if err != nil {
@@ -73,6 +76,13 @@ func executeInit(cmd *cobra.Command, args []string) error {
 
 	if c.Name != name || c.Provider != provider {
 		return fmt.Errorf("please run a clean before changing project name or provider")
+	}
+
+	if provider == caravan.GCP {
+		if parentProject == "" {
+			return fmt.Errorf("parent-project parameter is needed for GCP provider")
+		}
+		c.ParentProject = parentProject
 	}
 
 	if err := initRepos(c, branch); err != nil {
@@ -130,7 +140,7 @@ func initProvider(c *caravan.Config, p caravan.Provider) error {
 		return err
 	}
 	for _, t := range templates {
-		fmt.Printf("generating %v:%s \n", t.Name, t.Path)
+		fmt.Printf("generating %v: %s \n", t.Name, t.Path)
 		if err := t.Render(c); err != nil {
 			return err
 		}

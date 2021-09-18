@@ -22,7 +22,7 @@ func TestProject(t *testing.T) {
 	c.SetGCPOrgID("55685363496")
 	c.SetGCPBillingID("016290-A416F4-EC4527")
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -63,7 +63,7 @@ func TestStateStore(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -92,7 +92,7 @@ func TestServiceAccount(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -125,7 +125,7 @@ func TestAddPolicy(t *testing.T) {
 		t.Fatalf("unable to create config: %s\n", err)
 	}
 
-	g, err := gcp.New(*c)
+	g, err := gcp.New(c)
 	if err != nil {
 		t.Fatalf("unable to create GCP: %s\n", err)
 	}
@@ -143,5 +143,26 @@ func TestAddPolicy(t *testing.T) {
 
 	if err := g.DeleteServiceAccount(name); err != nil {
 		t.Fatalf("unable to delete service account: %s\n", err)
+	}
+}
+
+func TestGetUser(t *testing.T) {
+	c, err := caravan.NewConfigFromScratch("andrea-test-008", "gcp", "europe-west6")
+	if err != nil {
+		t.Fatalf("unable to create config: %s\n", err)
+	}
+
+	g, err := gcp.New(c)
+	if err != nil {
+		t.Fatalf("unable to create GCP: %s\n", err)
+	}
+
+	got, err := g.GetUserEmail("testdata/config_default.golden")
+	if err != nil {
+		t.Errorf("unable to get user mail: %s\n", err)
+	}
+	want := "test.user@test.me"
+	if got != want {
+		t.Errorf("wanted %s got %s\n", want, got)
 	}
 }

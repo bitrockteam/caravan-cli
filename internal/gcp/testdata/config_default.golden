@@ -1,0 +1,4 @@
+[core]
+account = test.user@test.me
+project = test-project
+
