@@ -12,6 +12,10 @@ type Terraform struct {
 	Workdir string
 }
 
+func New() (t *Terraform) {
+	return &Terraform{}
+}
+
 func (t *Terraform) Init(wd string) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()

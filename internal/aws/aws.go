@@ -14,9 +14,6 @@ import (
 
 type AWS struct {
 	caravan.GenericProvider
-	caravan.GenericBake
-	caravan.GenericStatus
-	caravan.GenericDestroy
 	AWSConfig aws.Config
 }
 

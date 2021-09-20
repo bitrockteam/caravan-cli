@@ -12,10 +12,6 @@ import (
 
 type GCP struct {
 	caravan.GenericProvider
-	caravan.GenericBake
-	caravan.GenericStatus
-	caravan.GenericDestroy
-	caravan.GenericDeploy
 }
 
 func New(c *caravan.Config) (g GCP, err error) {

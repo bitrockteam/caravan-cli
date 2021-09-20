@@ -17,7 +17,7 @@ In the following table the support of the corresponding provider for each provid
 
 |  | aws | gcp | az | oci |
 |--|--|--|--|--|
-|init| :heavy_check_mark: | :x: | :x: | :x: |
+|init| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
 |bake| :heavy_check_mark: | :x: | :x: | :x: |
 |up| :heavy_check_mark: | :x: | :x: | :x: | 
 |status| :heavy_check_mark: | :x: | :x: | :x: | 

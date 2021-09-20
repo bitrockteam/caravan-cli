@@ -31,7 +31,6 @@ var upCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
 		if c.Status < caravan.InfraDeployDone {
 			c.Status = caravan.InfraDeployRunning
 			if err := c.Save(); err != nil {
