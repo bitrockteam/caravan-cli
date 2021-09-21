@@ -24,6 +24,5 @@ func getProvider(c *caravan.Config) (caravan.Provider, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("getProvider: %+v\n", p)
 	return p, nil
 }

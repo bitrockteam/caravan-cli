@@ -99,29 +99,30 @@ func (g GCP) InitProvider() error {
 	}
 
 	// permissions for the terraform service account on the current project
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, g.Caravan.ServiceAccount, "roles/owner"); err != nil {
+	member := "serviceAccount:" + g.Caravan.ServiceAccount + "@" + g.Caravan.Name + ".iam.gserviceaccount.com"
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, member, "roles/owner"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, g.Caravan.ServiceAccount, "roles/storage.admin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.Name, member, "roles/storage.admin"); err != nil {
 		return err
 	}
 
 	// permission for the terraform service account on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/compute.imageUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/compute.imageUser"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/dns.admin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/dns.admin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/compute.networkAdmin"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/compute.networkAdmin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.ServiceAccount, "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
 	// permission for the current user on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "user:"+g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
@@ -147,6 +148,9 @@ func (g GCP) InitProvider() error {
 
 func (g GCP) CleanProvider() error {
 	if err := g.DeleteServiceAccount(g.Caravan.ServiceAccount); err != nil {
+		return err
+	}
+	if err := g.EmptyStateStore(g.Caravan.StateStoreName); err != nil {
 		return err
 	}
 	if err := g.DeleteStateStore(g.Caravan.StateStoreName); err != nil {

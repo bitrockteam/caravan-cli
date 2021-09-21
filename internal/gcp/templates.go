@@ -14,6 +14,7 @@ google_subnetwork_name = "caravan-gcp-subnet"
 region                = "{{ .Region }}"
 zone                  = "{{ .Region }}-a"
 project_id            = "{{ .Name }}"
+prefix                = "{{ .Name }}"
 external_domain       = "{{ .Domain }}"
 use_le_staging        = true
 dc_name               = "gcp-dc"
@@ -22,6 +23,7 @@ worker_plane_sa_name  = "worker-plane"
 image                 = "projects/{{ .ParentProject }}/global/images/family/caravan-centos-image-os"
 parent_dns_project_id = "{{ .ParentProject }}"
 parent_dns_zone_name  = "dns-example-zone"
+google_account_file   = ".{{ .Name }}-terraform-sa-key.json"
 `
 
 	platformTfVarsTmpl = `
