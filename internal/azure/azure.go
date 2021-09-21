@@ -4,9 +4,6 @@ import "caravan/internal/caravan"
 
 type Azure struct {
 	caravan.GenericProvider
-	caravan.GenericBake
-	caravan.GenericDeploy
-	caravan.GenericStatus
 }
 
 func (a Azure) GetTemplates() ([]caravan.Template, error) {

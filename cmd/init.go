@@ -2,9 +2,7 @@
 package cmd
 
 import (
-	"caravan/internal/aws"
 	"caravan/internal/caravan"
-	"caravan/internal/gcp"
 	"caravan/internal/git"
 	"fmt"
 	"os"
@@ -103,25 +101,6 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
-}
-
-func getProvider(c *caravan.Config) (caravan.Provider, error) {
-	var p caravan.Provider
-	var err error
-	switch c.Provider {
-	case caravan.AWS:
-		p, err = aws.New(c)
-	case caravan.GCP:
-		p, err = gcp.New(c)
-	// case caravan.Azure:
-	//	p, err = azure.New(c)
-	default:
-		p, err = nil, fmt.Errorf("unknown provider")
-	}
-	if err != nil {
-		return nil, err
-	}
-	return p, nil
 }
 
 func initProvider(c *caravan.Config, p caravan.Provider) error {
