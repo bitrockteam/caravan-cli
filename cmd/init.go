@@ -45,7 +45,7 @@ func preRunInit(cmd *cobra.Command, args []string) error {
 	switch prv {
 	case "":
 		return nil
-	case provider.AWS, provider.GCP:
+	case provider.AWS, provider.GCP, provider.Azure:
 		break
 	default:
 		return fmt.Errorf("unsupported provider: %s", prv)
