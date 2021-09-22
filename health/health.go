@@ -1,4 +1,4 @@
-package caravan
+package health
 
 import (
 	"context"

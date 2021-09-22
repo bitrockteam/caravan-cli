@@ -1,12 +1,15 @@
 package azure
 
-import "caravan/internal/caravan"
+import (
+	"caravan-cli/cli"
+	"caravan-cli/provider"
+)
 
 type Azure struct {
-	caravan.GenericProvider
+	provider.GenericProvider
 }
 
-func (a Azure) GetTemplates() ([]caravan.Template, error) {
+func (a Azure) GetTemplates() ([]cli.Template, error) {
 	panic("implement me")
 }
 
@@ -22,7 +25,7 @@ func (a Azure) InitProvider() error {
 //	panic("implement me")
 // }
 //
-// func (a Azure) Deploy(layer caravan.DeployLayer) error {
+// func (a Azure) Deploy(layer cli.DeployLayer) error {
 //	panic("implement me")
 // }
 

@@ -1,7 +1,7 @@
-package caravan_test
+package config_test
 
 import (
-	"caravan/internal/caravan"
+	caravan "caravan-cli/config"
 	"os"
 	"testing"
 )

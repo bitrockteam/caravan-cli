@@ -6,7 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	caravan "caravan-cli/config"
+	"caravan-cli/health"
 
 	"github.com/spf13/cobra"
 )
@@ -27,7 +29,7 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
-		provider, err := getProvider(c)
+		prv, err := getProvider(c)
 		if err != nil {
 			return err
 		}
@@ -37,7 +39,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := provider.Deploy(caravan.Infrastructure)
+			err := prv.Deploy(cli.Infrastructure)
 			if err != nil {
 				return err
 			}
@@ -77,7 +79,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := provider.Deploy(caravan.Platform)
+			err := prv.Deploy(cli.Platform)
 			if err != nil {
 				return err
 			}
@@ -97,7 +99,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := provider.Deploy(caravan.ApplicationSupport)
+			err := prv.Deploy(cli.ApplicationSupport)
 			if err != nil {
 				return err
 			}
@@ -120,7 +122,7 @@ func init() {
 func checkStatus(c *caravan.Config, tool string, path string, count int) error {
 	fmt.Printf("checking %s status:", tool)
 
-	h := caravan.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CApath)
+	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CApath)
 	for i := 0; i <= count; i++ {
 		if h.Check() {
 			fmt.Printf("OK\n")

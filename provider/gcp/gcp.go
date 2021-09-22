@@ -1,7 +1,9 @@
 package gcp
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	caravan "caravan-cli/config"
+	"caravan-cli/provider"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -11,7 +13,7 @@ import (
 )
 
 type GCP struct {
-	caravan.GenericProvider
+	provider.GenericProvider
 }
 
 func New(c *caravan.Config) (g GCP, err error) {
@@ -33,8 +35,8 @@ func New(c *caravan.Config) (g GCP, err error) {
 	return g, nil
 }
 
-func (g GCP) GetTemplates() ([]caravan.Template, error) {
-	return []caravan.Template{
+func (g GCP) GetTemplates() ([]cli.Template, error) {
+	return []cli.Template{
 		{
 			Name: "baking-vars",
 			Text: bakingTfVarsTmpl,
@@ -75,12 +77,12 @@ func (g GCP) GetTemplates() ([]caravan.Template, error) {
 
 func (g GCP) ValidateConfiguration() error {
 	// check project name
-	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,15}$", g.Caravan.Name)
+	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,20}$", g.Caravan.Name)
 	if err != nil {
 		return err
 	}
 	if !m {
-		return fmt.Errorf("project name not compliant: must be between 6 and 15 characters long, only alphanumerics and hypens (-) are allowed: %s", g.Caravan.Name)
+		return fmt.Errorf("project name not compliant: must be between 6 and 20 characters long, only alphanumerics and hypens (-) are allowed: %s", g.Caravan.Name)
 	}
 	if strings.Index(g.Caravan.Name, "-") == 0 {
 		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", g.Caravan.Name)

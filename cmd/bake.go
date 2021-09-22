@@ -1,8 +1,10 @@
+// Bake generates new VM images for the configured provider.
+//
 // Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/config"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -18,7 +20,7 @@ var bakeCmd = &cobra.Command{
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
 
-		_, err := caravan.NewConfigFromScratch(name, provider, region)
+		_, err := config.NewConfigFromScratch(name, provider, region)
 		if err != nil {
 			return fmt.Errorf("error generating config: %w", err)
 		}
@@ -31,7 +33,7 @@ var bakeCmd = &cobra.Command{
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
 
-		c, err := caravan.NewConfigFromScratch(name, provider, region)
+		c, err := config.NewConfigFromScratch(name, provider, region)
 		if err != nil {
 			return err
 		}

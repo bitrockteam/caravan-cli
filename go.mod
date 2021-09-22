@@ -1,4 +1,4 @@
-module caravan
+module caravan-cli
 
 go 1.16
 
@@ -15,8 +15,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	golang.org/x/tools v0.1.6 // indirect
 	google.golang.org/api v0.50.0
 	google.golang.org/grpc v1.38.0
-	gopkg.in/ini.v1 v1.51.0 // indirect
+	gopkg.in/ini.v1 v1.51.0
 )

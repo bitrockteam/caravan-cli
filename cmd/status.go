@@ -2,7 +2,8 @@
 package cmd
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	caravan "caravan-cli/config"
 	"fmt"
 	"strings"
 
@@ -24,7 +25,8 @@ var statusCmd = &cobra.Command{
 			}
 			return err
 		}
-		c.StatusReport()
+		r := cli.Report{Caravan: c}
+		r.StatusReport()
 
 		return nil
 	},

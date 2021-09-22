@@ -1,8 +1,8 @@
 package aws_test
 
 import (
-	"caravan/internal/aws"
-	"caravan/internal/caravan"
+	caravan "caravan-cli/config"
+	"caravan-cli/provider/aws"
 	"testing"
 )
 

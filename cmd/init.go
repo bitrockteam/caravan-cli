@@ -2,8 +2,9 @@
 package cmd
 
 import (
-	"caravan/internal/caravan"
-	"caravan/internal/git"
+	caravan "caravan-cli/config"
+	"caravan-cli/git"
+	"caravan-cli/provider"
 	"fmt"
 	"os"
 	"strings"
@@ -34,20 +35,20 @@ func init() {
 }
 
 func preRunInit(cmd *cobra.Command, args []string) error {
-	provider, _ := cmd.Flags().GetString("provider")
-	switch provider {
+	prv, _ := cmd.Flags().GetString("provider")
+	switch prv {
 	case "":
 		return nil
-	case caravan.AWS, caravan.GCP:
+	case provider.AWS, provider.GCP:
 		break
 	default:
-		return fmt.Errorf("unsupported provider: %s", provider)
+		return fmt.Errorf("unsupported provider: %s", prv)
 	}
 	return nil
 }
 
 func executeInit(cmd *cobra.Command, args []string) error {
-	provider, _ := cmd.Flags().GetString("provider")
+	prv, _ := cmd.Flags().GetString("provider")
 	name, _ := cmd.Flags().GetString("project")
 	region, _ := cmd.Flags().GetString("region")
 	branch, _ := cmd.Flags().GetString("branch")
@@ -60,7 +61,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 			fmt.Printf("unable to create config from file: %s\n", err)
 			return err
 		}
-		c, err = caravan.NewConfigFromScratch(name, provider, region)
+		c, err = caravan.NewConfigFromScratch(name, prv, region)
 		if err != nil {
 			fmt.Printf("unable to create config from scratch: %s\n", err)
 			return err
@@ -72,11 +73,11 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if c.Name != name || c.Provider != provider {
+	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
 	}
 
-	if provider == caravan.GCP {
+	if prv == provider.GCP {
 		if parentProject == "" {
 			return fmt.Errorf("parent-project parameter is needed for GCP provider")
 		}
@@ -103,7 +104,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func initProvider(c *caravan.Config, p caravan.Provider) error {
+func initProvider(c *caravan.Config, p provider.Provider) error {
 	fmt.Printf("initializing cloud resources\n")
 	if err := p.InitProvider(); err != nil {
 		return fmt.Errorf("error initing provider: %w", err)

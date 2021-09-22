@@ -1,7 +1,7 @@
-package caravan
+package config
 
 import (
-	"caravan/internal/vault"
+	"caravan-cli/vault"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"

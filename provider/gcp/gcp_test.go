@@ -1,8 +1,8 @@
 package gcp_test
 
 import (
-	"caravan/internal/caravan"
-	"caravan/internal/gcp"
+	caravan "caravan-cli/config"
+	"caravan-cli/provider/gcp"
 	"testing"
 )
 

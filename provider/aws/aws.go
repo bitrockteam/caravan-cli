@@ -1,7 +1,9 @@
 package aws
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	caravan "caravan-cli/config"
+	"caravan-cli/provider"
 	"context"
 	"fmt"
 	"net"
@@ -13,7 +15,7 @@ import (
 )
 
 type AWS struct {
-	caravan.GenericProvider
+	provider.GenericProvider
 	AWSConfig aws.Config
 }
 
@@ -45,8 +47,8 @@ func New(c *caravan.Config) (a AWS, err error) {
 	return a, nil
 }
 
-func (a AWS) GetTemplates() ([]caravan.Template, error) {
-	return []caravan.Template{
+func (a AWS) GetTemplates() ([]cli.Template, error) {
+	return []cli.Template{
 		{
 			Name: "baking-vars",
 			Text: bakingTfVarsTmpl,
@@ -141,14 +143,14 @@ func (a AWS) CleanProvider() error {
 	return nil
 }
 
-func (a AWS) Deploy(layer caravan.DeployLayer) error {
+func (a AWS) Deploy(layer cli.DeployLayer) error {
 	switch layer {
-	case caravan.Infrastructure:
-		return caravan.GenericDeployInfra(a.Caravan, []string{"aws_lb.hashicorp_alb", "*"})
-	case caravan.Platform:
-		return caravan.GenericDeployPlatform(a.Caravan, []string{"*"})
-	case caravan.ApplicationSupport:
-		return caravan.GenericDeployApplicationSupport(a.Caravan, []string{"*"})
+	case cli.Infrastructure:
+		return provider.GenericDeployInfra(a.Caravan, []string{"aws_lb.hashicorp_alb", "*"})
+	case cli.Platform:
+		return provider.GenericDeployPlatform(a.Caravan, []string{"*"})
+	case cli.ApplicationSupport:
+		return provider.GenericDeployApplicationSupport(a.Caravan, []string{"*"})
 	default:
 		return fmt.Errorf("unknown Deploy Layer")
 	}

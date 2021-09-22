@@ -2,7 +2,8 @@
 package cmd
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	caravan "caravan-cli/config"
 	"fmt"
 	"os"
 	"strings"
@@ -33,7 +34,7 @@ var cleanCmd = &cobra.Command{
 			c.Force = true
 		}
 
-		provider, err := getProvider(c)
+		prv, err := getProvider(c)
 		if err != nil {
 			return err
 		}
@@ -45,7 +46,7 @@ var cleanCmd = &cobra.Command{
 				return nil
 			}
 
-			if err := provider.Destroy(caravan.ApplicationSupport); err != nil {
+			if err := prv.Destroy(cli.ApplicationSupport); err != nil {
 				return err
 			}
 
@@ -63,7 +64,7 @@ var cleanCmd = &cobra.Command{
 				return nil
 			}
 
-			if err := provider.Destroy(caravan.Platform); err != nil {
+			if err := prv.Destroy(cli.Platform); err != nil {
 				return err
 			}
 
@@ -81,7 +82,7 @@ var cleanCmd = &cobra.Command{
 				return nil
 			}
 
-			if err := provider.Destroy(caravan.Infrastructure); err != nil {
+			if err := prv.Destroy(cli.Infrastructure); err != nil {
 				return err
 			}
 
@@ -92,7 +93,7 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 
-		err = provider.CleanProvider()
+		err = prv.CleanProvider()
 		if err != nil {
 			fmt.Printf("error during clean of cloud resources: %s\n", err)
 			return nil
