@@ -1,15 +1,14 @@
-// Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan-cli/config"
+	"caravan-cli/cli"
 	"caravan-cli/provider"
 	"caravan-cli/provider/aws"
 	"caravan-cli/provider/gcp"
 	"fmt"
 )
 
-func getProvider(c *config.Config) (provider.Provider, error) {
+func getProvider(c *cli.Config) (provider.Provider, error) {
 	var p provider.Provider
 	var err error
 	switch c.Provider {

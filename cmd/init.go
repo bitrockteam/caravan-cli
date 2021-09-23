@@ -1,8 +1,10 @@
+// Init command.
+//
 // Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	caravan "caravan-cli/config"
+	"caravan-cli/cli"
 	"caravan-cli/git"
 	"caravan-cli/provider"
 	"fmt"
@@ -54,14 +56,14 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	branch, _ := cmd.Flags().GetString("branch")
 	parentProject, _ := cmd.Flags().GetString("parent-project")
 
-	c, err := caravan.NewConfigFromFile()
+	c, err := cli.NewConfigFromFile()
 	if err != nil {
 		// TODO better error checking
 		if !strings.Contains(err.Error(), "no such file or directory") {
 			fmt.Printf("unable to create config from file: %s\n", err)
 			return err
 		}
-		c, err = caravan.NewConfigFromScratch(name, prv, region)
+		c, err = cli.NewConfigFromScratch(name, prv, region)
 		if err != nil {
 			fmt.Printf("unable to create config from scratch: %s\n", err)
 			return err
@@ -94,8 +96,8 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if c.Status < caravan.InitDone {
-		c.Status = caravan.InitDone
+	if c.Status < cli.InitDone {
+		c.Status = cli.InitDone
 		if err := c.Save(); err != nil {
 			fmt.Printf("error saving state: %s\n", err)
 		}
@@ -104,7 +106,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func initProvider(c *caravan.Config, p provider.Provider) error {
+func initProvider(c *cli.Config, p provider.Provider) error {
 	fmt.Printf("initializing cloud resources\n")
 	if err := p.InitProvider(); err != nil {
 		return fmt.Errorf("error initing provider: %w", err)
@@ -121,15 +123,17 @@ func initProvider(c *caravan.Config, p provider.Provider) error {
 	}
 	for _, t := range templates {
 		fmt.Printf("generating %v: %s \n", t.Name, t.Path)
-		if err := t.Render(c); err != nil {
-			return err
+		if t.Name != "baking-vars" {
+			if err := t.Render(c); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
-func initRepos(c *caravan.Config, b string) (err error) {
+func initRepos(c *cli.Config, b string) (err error) {
 	c.SetBranch(b)
 	if err := c.Save(); err != nil {
 		return fmt.Errorf("unable to save config after setting branch %s: %w", b, err)

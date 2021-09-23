@@ -1,3 +1,4 @@
+// Git wraps access to git cli.
 package git
 
 import (

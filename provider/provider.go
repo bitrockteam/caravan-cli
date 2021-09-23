@@ -1,3 +1,4 @@
+// Provider interface to manage different cloud providers.
 package provider
 
 import "caravan-cli/cli"

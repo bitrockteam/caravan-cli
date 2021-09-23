@@ -2,25 +2,19 @@ package provider
 
 import (
 	"caravan-cli/cli"
-	caravan "caravan-cli/config"
 	"caravan-cli/terraform"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 )
 
 // GenericProvider is the generic implementation of the Provider interface and holds the Caravan config.
 type GenericProvider struct {
-	Caravan *caravan.Config
+	Caravan *cli.Config
 }
 
 // Bake performs the terraform apply to the caravan-baking repo.
 func (g GenericProvider) Bake() error {
-	if _, err := os.Stat(g.Caravan.WorkdirProject); os.IsNotExist(err) {
-		return fmt.Errorf("please run init before bake")
-	}
-
 	t := terraform.New()
 	if err := t.Init(g.Caravan.WorkdirBaking); err != nil {
 		return err
@@ -46,7 +40,7 @@ func (g GenericProvider) Deploy(layer cli.DeployLayer) error {
 	}
 }
 
-func GenericDeployInfra(c *caravan.Config, targets []string) error {
+func GenericDeployInfra(c *cli.Config, targets []string) error {
 	// Infra
 	fmt.Println("deploying infra")
 	tf := terraform.New()
@@ -62,7 +56,7 @@ func GenericDeployInfra(c *caravan.Config, targets []string) error {
 	return nil
 }
 
-func GenericDeployPlatform(c *caravan.Config, targets []string) error {
+func GenericDeployPlatform(c *cli.Config, targets []string) error {
 	// Platform
 	fmt.Printf("deployng platform\n")
 	tf := terraform.New()
@@ -81,7 +75,7 @@ func GenericDeployPlatform(c *caravan.Config, targets []string) error {
 	return nil
 }
 
-func GenericDeployApplicationSupport(c *caravan.Config, targets []string) error {
+func GenericDeployApplicationSupport(c *cli.Config, targets []string) error {
 	// Application support
 	tf := terraform.New()
 	fmt.Printf("deployng application\n")

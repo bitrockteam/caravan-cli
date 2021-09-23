@@ -1,3 +1,4 @@
+// Vault provides access to the Vault REST APIs.
 package vault
 
 import (
@@ -35,6 +36,8 @@ func New(url string, token string, ca string) (v Vault, err error) {
 		Client: c.Logical(),
 	}, nil
 }
+
+// GetToken retrieves the token from a Vault server.
 func (v Vault) GetToken(path string) (token string, err error) {
 	s, err := v.Client.Read(path)
 	if err != nil {

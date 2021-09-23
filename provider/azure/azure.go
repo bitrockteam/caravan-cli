@@ -1,3 +1,4 @@
+// Microsoft Azure provider.
 package azure
 
 import (

@@ -1,7 +1,7 @@
 package gcp_test
 
 import (
-	caravan "caravan-cli/config"
+	"caravan-cli/cli"
 	"caravan-cli/provider/gcp"
 	"io/ioutil"
 	"path/filepath"
@@ -14,7 +14,7 @@ func TestGenerateConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config, _ := caravan.NewConfigFromScratch("test-name", "gcp", "europe-west6")
+	config, _ := cli.NewConfigFromScratch("test-name", "gcp", "europe-west6")
 	config.SetWorkdir(dir, "gcp")
 	_ = config.SetDomain("test.me")
 	config.ParentProject = "parent-project"

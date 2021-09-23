@@ -1,8 +1,8 @@
+// Amazon Web Services provider.
 package aws
 
 import (
 	"caravan-cli/cli"
-	caravan "caravan-cli/config"
 	"caravan-cli/provider"
 	"context"
 	"fmt"
@@ -19,7 +19,7 @@ type AWS struct {
 	AWSConfig aws.Config
 }
 
-func New(c *caravan.Config) (a AWS, err error) {
+func New(c *cli.Config) (a AWS, err error) {
 	a = AWS{}
 	a.Caravan = c
 
@@ -125,14 +125,14 @@ func (a AWS) CleanProvider() error {
 	fmt.Printf("removing terraform state and locking structures\n")
 
 	if a.Caravan.Force {
-		fmt.Printf("emptying bucket %s\n", a.Caravan.Name+"-caravan-terraform-state")
-		err := a.EmptyStateStore(a.Caravan.Name + "-caravan-terraform-state")
+		fmt.Printf("emptying bucket %s\n", a.Caravan.StateStoreName)
+		err := a.EmptyStateStore(a.Caravan.StateStoreName)
 		if err != nil {
 			return fmt.Errorf("error emptying: %w", err)
 		}
 	}
 
-	if err := a.DeleteStateStore(a.Caravan.Name + "-caravan-terraform-state"); err != nil {
+	if err := a.DeleteStateStore(a.Caravan.StateStoreName); err != nil {
 		return err
 	}
 

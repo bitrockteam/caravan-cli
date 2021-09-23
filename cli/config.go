@@ -1,4 +1,4 @@
-package config
+package cli
 
 import (
 	"caravan-cli/vault"
@@ -11,9 +11,7 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-// Config is used to collect the Caravan configuration.
-//
-// Relevant data is collected during status changes and persisted on disk.
+// Config is the main configuration data structure that is persisted to JSON.
 type Config struct {
 	Name                      string              `json:",omitempty"`
 	Region                    string              `json:",omitempty"`
@@ -59,7 +57,7 @@ type GCPConfig struct {
 // is yet persisted on a local state file.
 func NewConfigFromScratch(name, provider, region string) (c *Config, err error) {
 	wd := ".caravan"
-	repos := []string{"caravan", "caravan-baking", "caravan-platform", "caravan-application-support"}
+	repos := []string{"caravan-platform", "caravan-application-support"}
 
 	c = &Config{
 		Name:           name,
@@ -164,7 +162,7 @@ func (c *Config) SetGCPBillingID(id string) {
 	c.GCPBillingID = id
 }
 
-// Save serializes to json the configuration and a local state store (caravan.state).
+// Save serializes to JSON the configuration and a local state store (caravan.state).
 func (c *Config) Save() (err error) {
 	data, err := json.MarshalIndent(c, "", " ")
 	if err != nil {

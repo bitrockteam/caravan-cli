@@ -1,7 +1,6 @@
 package cli
 
 import (
-	caravan "caravan-cli/config"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -13,7 +12,7 @@ type Template struct {
 	Path string
 }
 
-func (t Template) Render(c *caravan.Config) error {
+func (t Template) Render(c *Config) error {
 	temp, err := template.New(t.Name).Parse(t.Text)
 	if err != nil {
 		return err

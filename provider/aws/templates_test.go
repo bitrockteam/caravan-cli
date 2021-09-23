@@ -1,7 +1,7 @@
 package aws_test
 
 import (
-	caravan "caravan-cli/config"
+	"caravan-cli/cli"
 	"caravan-cli/provider/aws"
 	"io/ioutil"
 	"path/filepath"
@@ -14,7 +14,7 @@ func TestGenerateConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config, _ := caravan.NewConfigFromScratch("test-name", "aws", "eu-south-1")
+	config, _ := cli.NewConfigFromScratch("test-name", "aws", "eu-south-1")
 	config.SetWorkdir(dir, "aws")
 	_ = config.SetDomain("test.me")
 	aws, _ := aws.New(config)

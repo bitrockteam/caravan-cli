@@ -1,8 +1,8 @@
+// Google Cloud Platform provider.
 package gcp
 
 import (
 	"caravan-cli/cli"
-	caravan "caravan-cli/config"
 	"caravan-cli/provider"
 	"encoding/base64"
 	"fmt"
@@ -16,7 +16,7 @@ type GCP struct {
 	provider.GenericProvider
 }
 
-func New(c *caravan.Config) (g GCP, err error) {
+func New(c *cli.Config) (g GCP, err error) {
 	g = GCP{}
 
 	if c.UserEmail == "" {

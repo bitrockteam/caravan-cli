@@ -1,7 +1,6 @@
 package cli
 
 import (
-	caravan "caravan-cli/config"
 	"caravan-cli/health"
 	"fmt"
 	"html/template"
@@ -9,7 +8,7 @@ import (
 )
 
 type Report struct {
-	Caravan *caravan.Config
+	Caravan *Config
 }
 
 func (r *Report) StatusReport() {
