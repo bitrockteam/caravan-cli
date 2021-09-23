@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/iam/v1"
+	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/status"
 	"gopkg.in/ini.v1"
 )
@@ -60,6 +62,59 @@ func (g GCP) DeleteStateStore(name string) error {
 			return nil
 		}
 		return fmt.Errorf("error during bucket %s delete: %w", name, err)
+	}
+	return nil
+}
+
+func (g GCP) WriteStateStore(bucket, object, data string) error {
+	fmt.Printf("getting writer on bucket %s on project: %s\n", bucket, g.Caravan.Name)
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("storage.NewClient: %w", err)
+	}
+	defer client.Close()
+
+	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
+	wc.ContentType = "text/plain"
+	wc.ACL = []storage.ACLRule{{Entity: "user-andrea.simonini@bitrock.it", Role: storage.RoleOwner}}
+	if _, err := wc.Write([]byte(data)); err != nil {
+		if err != nil {
+			return err
+		}
+	}
+	if err := wc.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g GCP) EmptyStateStore(name string) error {
+	fmt.Printf("emptying bucket %s on project: %s\n", name, g.Caravan.Name)
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return fmt.Errorf("storage.NewClient: %w", err)
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*20)
+	defer cancel()
+
+	bucket := client.Bucket(name)
+	it := bucket.Objects(ctx, nil)
+	for {
+		objAttrs, err := it.Next()
+		if err != nil && !errors.Is(err, iterator.Done) {
+			return err
+		}
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err := bucket.Object(objAttrs.Name).Delete(ctx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -266,8 +321,8 @@ func (g GCP) CreateServiceAccountKeys(sa, name string) (key string, err error) {
 	return sak.PrivateKeyData, nil
 }
 
-func (g GCP) AddPolicyBinding(resource, name, sa, role string) error {
-	fmt.Printf("add policy binding: %s %s@%s/%s\n", sa, role, resource, name)
+func (g GCP) AddPolicyBinding(resource, name, member, role string) error {
+	fmt.Printf("add policy binding: %s %s@%s %s\n", member, role, resource, name)
 	ctx := context.Background()
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
@@ -275,11 +330,11 @@ func (g GCP) AddPolicyBinding(resource, name, sa, role string) error {
 		return err
 	}
 
-	policy, err := g.GetPolicyBinding(resource, name, sa)
+	policy, err := g.GetPolicyBinding(resource, name)
 	if err != nil {
 		return err
 	}
-	policy.Bindings = append(policy.Bindings, &cloudresourcemanager.Binding{Role: role})
+	policy.Bindings = append(policy.Bindings, &cloudresourcemanager.Binding{Members: []string{member}, Role: role})
 	rb := &cloudresourcemanager.SetIamPolicyRequest{
 		Policy: policy,
 	}
@@ -292,8 +347,8 @@ func (g GCP) AddPolicyBinding(resource, name, sa, role string) error {
 	return nil
 }
 
-func (g GCP) GetPolicyBinding(resource, name, sa string) (policy *cloudresourcemanager.Policy, err error) {
-	fmt.Printf("get policy binding: %s@%s/%s\n", sa, resource, name)
+func (g GCP) GetPolicyBinding(resource, name string) (policy *cloudresourcemanager.Policy, err error) {
+	// fmt.Printf("get policy binding: %s / %s\n", resource, name)
 	ctx := context.Background()
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
@@ -307,7 +362,6 @@ func (g GCP) GetPolicyBinding(resource, name, sa string) (policy *cloudresourcem
 	if err != nil {
 		return policy, err
 	}
-
 	return policy, nil
 }
 
