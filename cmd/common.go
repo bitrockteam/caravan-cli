@@ -1,22 +1,22 @@
-// Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan/internal/aws"
-	"caravan/internal/caravan"
-	"caravan/internal/gcp"
+	"caravan-cli/cli"
+	"caravan-cli/provider"
+	"caravan-cli/provider/aws"
+	"caravan-cli/provider/gcp"
 	"fmt"
 )
 
-func getProvider(c *caravan.Config) (caravan.Provider, error) {
-	var p caravan.Provider
+func getProvider(c *cli.Config) (provider.Provider, error) {
+	var p provider.Provider
 	var err error
 	switch c.Provider {
-	case caravan.AWS:
+	case provider.AWS:
 		p, err = aws.New(c)
-	case caravan.GCP:
+	case provider.GCP:
 		p, err = gcp.New(c)
-	// case caravan.Azure:
+	// case provider.Azure:
 	//	p, err = azure.New(c)
 	default:
 		p, err = nil, fmt.Errorf("unknown provider")

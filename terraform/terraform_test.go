@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"caravan/internal/terraform"
+	"caravan-cli/terraform"
 )
 
 func TestTerraformInit(t *testing.T) {

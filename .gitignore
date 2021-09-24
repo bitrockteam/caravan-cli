@@ -2,6 +2,6 @@
 .caravan
 .terraform
 *.swp
-/caravan
+/caravan-cli
 .idea
 internal/vault/vault_integration_test.go

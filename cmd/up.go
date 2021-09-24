@@ -1,3 +1,5 @@
+// Up command.
+//
 // Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
@@ -6,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/health"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +20,7 @@ var upCmd = &cobra.Command{
 	Short: "Deploy the caravan infra",
 	Long:  `This commands applies the generated terraform configs and provision the needed infrastructure to deploy a caravan instance`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		c, err := caravan.NewConfigFromFile()
+		c, err := cli.NewConfigFromFile()
 		if err != nil {
 			fmt.Printf("ERR: %s\n", err)
 			if strings.Contains(err.Error(), "no such file or directory") {
@@ -27,22 +30,22 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
-		provider, err := getProvider(c)
+		prv, err := getProvider(c)
 		if err != nil {
 			return err
 		}
-		if c.Status < caravan.InfraDeployDone {
-			c.Status = caravan.InfraDeployRunning
+		if c.Status < cli.InfraDeployDone {
+			c.Status = cli.InfraDeployRunning
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := provider.Deploy(caravan.Infrastructure)
+			err := prv.Deploy(cli.Infrastructure)
 			if err != nil {
 				return err
 			}
 
-			c.Status = caravan.InfraDeployDone
+			c.Status = cli.InfraDeployDone
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
@@ -71,18 +74,18 @@ var upCmd = &cobra.Command{
 		if err := c.Save(); err != nil {
 			return fmt.Errorf("error persisting state: %w", err)
 		}
-		if c.Status < caravan.PlatformDeployDone {
-			c.Status = caravan.PlatformDeployRunning
+		if c.Status < cli.PlatformDeployDone {
+			c.Status = cli.PlatformDeployRunning
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := provider.Deploy(caravan.Platform)
+			err := prv.Deploy(cli.Platform)
 			if err != nil {
 				return err
 			}
 
-			c.Status = caravan.PlatformDeployDone
+			c.Status = cli.PlatformDeployDone
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
@@ -91,18 +94,18 @@ var upCmd = &cobra.Command{
 		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 20); err != nil {
 			return err
 		}
-		if c.Status < caravan.ApplicationDeployDone {
-			c.Status = caravan.ApplicationDeployRunning
+		if c.Status < cli.ApplicationDeployDone {
+			c.Status = cli.ApplicationDeployRunning
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := provider.Deploy(caravan.ApplicationSupport)
+			err := prv.Deploy(cli.ApplicationSupport)
 			if err != nil {
 				return err
 			}
 
-			c.Status = caravan.ApplicationDeployDone
+			c.Status = cli.ApplicationDeployDone
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
@@ -117,10 +120,10 @@ func init() {
 	rootCmd.AddCommand(upCmd)
 }
 
-func checkStatus(c *caravan.Config, tool string, path string, count int) error {
+func checkStatus(c *cli.Config, tool string, path string, count int) error {
 	fmt.Printf("checking %s status:", tool)
 
-	h := caravan.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CApath)
+	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CApath)
 	for i := 0; i <= count; i++ {
 		if h.Check() {
 			fmt.Printf("OK\n")

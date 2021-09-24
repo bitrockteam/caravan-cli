@@ -1,8 +1,10 @@
+// Clean command.
+//
 // Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
 	"fmt"
 	"os"
 	"strings"
@@ -19,8 +21,8 @@ var cleanCmd = &cobra.Command{
 
 		force, _ := cmd.Flags().GetBool("force")
 
-		var c *caravan.Config
-		c, err = caravan.NewConfigFromFile()
+		var c *cli.Config
+		c, err = cli.NewConfigFromFile()
 		if err != nil {
 			// TODO better error handling
 			if !strings.Contains(err.Error(), "no such file or directory") {
@@ -33,73 +35,73 @@ var cleanCmd = &cobra.Command{
 			c.Force = true
 		}
 
-		provider, err := getProvider(c)
+		prv, err := getProvider(c)
 		if err != nil {
 			return err
 		}
 
-		if c.Status >= caravan.ApplicationDeployRunning {
-			c.Status = caravan.ApplicationCleanRunning
+		if c.Status >= cli.ApplicationDeployRunning {
+			c.Status = cli.ApplicationCleanRunning
 			if err := c.Save(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil
 			}
 
-			if err := provider.Destroy(caravan.ApplicationSupport); err != nil {
+			if err := prv.Destroy(cli.ApplicationSupport); err != nil {
 				return err
 			}
 
-			c.Status = caravan.ApplicationCleanDone
+			c.Status = cli.ApplicationCleanDone
 			if err := c.Save(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil
 			}
 		}
 
-		if c.Status >= caravan.PlatformDeployRunning {
-			c.Status = caravan.PlatformCleanRunning
+		if c.Status >= cli.PlatformDeployRunning {
+			c.Status = cli.PlatformCleanRunning
 			if err := c.Save(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil
 			}
 
-			if err := provider.Destroy(caravan.Platform); err != nil {
+			if err := prv.Destroy(cli.Platform); err != nil {
 				return err
 			}
 
-			c.Status = caravan.PlatformCleanDone
+			c.Status = cli.PlatformCleanDone
 			if err := c.Save(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil
 			}
 		}
 
-		if c.Status >= caravan.InfraDeployRunning {
-			c.Status = caravan.InfraCleanRunning
+		if c.Status >= cli.InfraDeployRunning {
+			c.Status = cli.InfraCleanRunning
 			if err := c.Save(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil
 			}
 
-			if err := provider.Destroy(caravan.Infrastructure); err != nil {
+			if err := prv.Destroy(cli.Infrastructure); err != nil {
 				return err
 			}
 
-			c.Status = caravan.InfraCleanDone
+			c.Status = cli.InfraCleanDone
 			if err := c.Save(); err != nil {
 				fmt.Printf("error during config update of config: %s\n", err)
 				return nil
 			}
 		}
 
-		err = provider.CleanProvider()
+		err = prv.CleanProvider()
 		if err != nil {
 			fmt.Printf("error during clean of cloud resources: %s\n", err)
 			return nil
 		}
 		fmt.Printf("removing %s/%s\n", c.Workdir, c.Name)
 
-		os.RemoveAll(c.Workdir + "/" + c.Name)
+		os.RemoveAll(c.WorkdirProject)
 		os.RemoveAll(c.Workdir + "/caravan.state")
 		return nil
 	},

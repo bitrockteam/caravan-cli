@@ -1,4 +1,4 @@
-package caravan
+package cli
 
 import "fmt"
 

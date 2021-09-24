@@ -1,7 +1,7 @@
-package caravan_test
+package cli_test
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
 	"os"
 	"testing"
 )
@@ -21,7 +21,7 @@ func TestConfigFromScratch(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		c, err := caravan.NewConfigFromScratch(tc.name, tc.provider, tc.region)
+		c, err := cli.NewConfigFromScratch(tc.name, tc.provider, tc.region)
 		if err != nil {
 			t.Fatalf("unable to create config: %s\n", err)
 		}
@@ -59,7 +59,7 @@ func TestConfigFromFile(t *testing.T) {
 		{name: "name2", provider: "aws", region: "", domain: "", wantDomain: "reactive-labs.io"},
 	}
 	for _, tc := range tests {
-		c, err := caravan.NewConfigFromScratch(tc.name, tc.provider, tc.region)
+		c, err := cli.NewConfigFromScratch(tc.name, tc.provider, tc.region)
 		if err != nil {
 			t.Fatalf("unable to create config: %s\n", err)
 		}
@@ -79,7 +79,7 @@ func TestConfigFromFile(t *testing.T) {
 		}
 		defer os.RemoveAll(c.Workdir)
 
-		got, err := caravan.NewConfigFromFile()
+		got, err := cli.NewConfigFromFile()
 		if err != nil {
 			t.Fatalf("unable to load config from file %s: %s\n", tc.name, err)
 		}

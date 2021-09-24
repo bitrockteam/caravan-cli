@@ -1,4 +1,5 @@
-package caravan
+// Health checks for deployed platform services.
+package health
 
 import (
 	"context"

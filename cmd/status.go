@@ -1,8 +1,10 @@
+// Status command.
+//
 // Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
 	"fmt"
 	"strings"
 
@@ -16,15 +18,16 @@ var statusCmd = &cobra.Command{
 	Long: `Gets and diplay the current status for caravan both locally and remotely
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := caravan.NewConfigFromFile()
+		c, err := cli.NewConfigFromFile()
 		if err != nil {
 			if strings.Contains(err.Error(), "no such file or directory") {
-				fmt.Printf("project status is missing: %s\n", caravan.InitMissing)
+				fmt.Printf("project status is missing: %s\n", cli.InitMissing)
 				return nil
 			}
 			return err
 		}
-		c.StatusReport()
+		r := cli.Report{Caravan: c}
+		r.StatusReport()
 
 		return nil
 	},

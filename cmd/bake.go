@@ -1,9 +1,14 @@
+// Bake command.
+//
 // Copyright © 2021 Bitrock s.r.l. <devops@bitrock.it>
 package cmd
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/git"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -18,7 +23,7 @@ var bakeCmd = &cobra.Command{
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
 
-		_, err := caravan.NewConfigFromScratch(name, provider, region)
+		_, err := cli.NewConfigFromScratch(name, provider, region)
 		if err != nil {
 			return fmt.Errorf("error generating config: %w", err)
 		}
@@ -30,8 +35,9 @@ var bakeCmd = &cobra.Command{
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
+		branch, _ := cmd.Flags().GetString("branch")
 
-		c, err := caravan.NewConfigFromScratch(name, provider, region)
+		c, err := cli.NewConfigFromScratch(name, provider, region)
 		if err != nil {
 			return err
 		}
@@ -41,7 +47,29 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
-		return p.Bake()
+		git := git.NewGit("bitrockteam")
+		if err := git.Clone("caravan-baking", filepath.Join(c.WorkdirProject, "caravan-baking"), branch); err != nil {
+			return err
+		}
+
+		templates, err := p.GetTemplates()
+		if err != nil {
+			return err
+		}
+		for _, t := range templates {
+			if t.Name == "baking-vars" {
+				if err := t.Render(c); err != nil {
+					return err
+				}
+				break
+			}
+		}
+		if err := p.Bake(); err != nil {
+			return err
+		}
+		os.RemoveAll(filepath.Join(c.WorkdirProject, "caravan-baking"))
+		return nil
+
 	},
 }
 
@@ -51,6 +79,7 @@ func init() {
 	bakeCmd.PersistentFlags().String("project", "", "Project name, used for tagging and namespacing")
 	bakeCmd.PersistentFlags().String("provider", "", "Cloud provider name. Can be on of aws,gcp, ...")
 	bakeCmd.PersistentFlags().String("region", "", "Optional: override default profile region")
+	bakeCmd.PersistentFlags().String("branch", "main", "Optional: define a branch to checkout instead of default")
 
 	_ = bakeCmd.MarkPersistentFlagRequired("project")
 	_ = bakeCmd.MarkPersistentFlagRequired("provider")

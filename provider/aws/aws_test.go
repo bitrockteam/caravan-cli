@@ -1,8 +1,8 @@
 package aws_test
 
 import (
-	"caravan/internal/aws"
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/provider/aws"
 	"testing"
 )
 
@@ -20,7 +20,7 @@ func TestValidate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := caravan.NewConfigFromScratch(tc.name, "aws", "eu-south-1")
+			c, err := cli.NewConfigFromScratch(tc.name, "aws", "eu-south-1")
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}

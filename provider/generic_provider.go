@@ -1,49 +1,48 @@
-package caravan
+package provider
 
 import (
-	"caravan/internal/terraform"
+	"caravan-cli/cli"
+	"caravan-cli/terraform"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 )
 
+// GenericProvider is the generic implementation of the Provider interface and holds the Caravan config.
 type GenericProvider struct {
-	Caravan *Config
+	Caravan *cli.Config
 }
 
+// Bake performs the terraform apply to the caravan-baking repo.
 func (g GenericProvider) Bake() error {
-	if _, err := os.Stat(g.Caravan.WorkdirProject); os.IsNotExist(err) {
-		return fmt.Errorf("please run init before bake")
-	}
-
 	t := terraform.New()
 	if err := t.Init(g.Caravan.WorkdirBaking); err != nil {
 		return err
 	}
 	env := map[string]string{}
-	if err := t.ApplyVarFile(g.Caravan.WorkdirBakingVars, 1200*time.Second, env, "*"); err != nil {
+	if err := t.ApplyVarFile(filepath.Base(g.Caravan.WorkdirBakingVars), 1200*time.Second, env, "*"); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (g GenericProvider) Deploy(layer DeployLayer) error {
+// Depoly executes the corresponding terraform apply for the given layers/caravan repo.
+func (g GenericProvider) Deploy(layer cli.DeployLayer) error {
 	switch layer {
-	case Infrastructure:
+	case cli.Infrastructure:
 		return GenericDeployInfra(g.Caravan, []string{"*"})
-	case Platform:
+	case cli.Platform:
 		return GenericDeployPlatform(g.Caravan, []string{"*"})
-	case ApplicationSupport:
+	case cli.ApplicationSupport:
 		return GenericDeployApplicationSupport(g.Caravan, []string{"*"})
 	default:
 		return fmt.Errorf("unknown Deploy Layer")
 	}
 }
 
-func GenericDeployInfra(c *Config, targets []string) error {
+func GenericDeployInfra(c *cli.Config, targets []string) error {
 	// Infra
-	fmt.Println("deploying platform")
+	fmt.Println("deploying infra")
 	tf := terraform.New()
 	if err := tf.Init(c.WorkdirInfra); err != nil {
 		return err
@@ -57,7 +56,7 @@ func GenericDeployInfra(c *Config, targets []string) error {
 	return nil
 }
 
-func GenericDeployPlatform(c *Config, targets []string) error {
+func GenericDeployPlatform(c *cli.Config, targets []string) error {
 	// Platform
 	fmt.Printf("deployng platform\n")
 	tf := terraform.New()
@@ -76,7 +75,7 @@ func GenericDeployPlatform(c *Config, targets []string) error {
 	return nil
 }
 
-func GenericDeployApplicationSupport(c *Config, targets []string) error {
+func GenericDeployApplicationSupport(c *cli.Config, targets []string) error {
 	// Application support
 	tf := terraform.New()
 	fmt.Printf("deployng application\n")
@@ -95,13 +94,13 @@ func GenericDeployApplicationSupport(c *Config, targets []string) error {
 	return nil
 }
 
-func (g GenericProvider) Destroy(layer DeployLayer) error {
+func (g GenericProvider) Destroy(layer cli.DeployLayer) error {
 	switch layer {
-	case Infrastructure:
+	case cli.Infrastructure:
 		return g.cleanInfra()
-	case Platform:
+	case cli.Platform:
 		return g.cleanPlatform()
-	case ApplicationSupport:
+	case cli.ApplicationSupport:
 		return g.cleanApplication()
 	default:
 		return fmt.Errorf("cannot destroy unknown deploy layer: %d", layer)

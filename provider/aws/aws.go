@@ -1,7 +1,9 @@
+// Amazon Web Services provider.
 package aws
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/provider"
 	"context"
 	"fmt"
 	"net"
@@ -13,11 +15,11 @@ import (
 )
 
 type AWS struct {
-	caravan.GenericProvider
+	provider.GenericProvider
 	AWSConfig aws.Config
 }
 
-func New(c *caravan.Config) (a AWS, err error) {
+func New(c *cli.Config) (a AWS, err error) {
 	a = AWS{}
 	a.Caravan = c
 
@@ -45,8 +47,8 @@ func New(c *caravan.Config) (a AWS, err error) {
 	return a, nil
 }
 
-func (a AWS) GetTemplates() ([]caravan.Template, error) {
-	return []caravan.Template{
+func (a AWS) GetTemplates() ([]cli.Template, error) {
+	return []cli.Template{
 		{
 			Name: "baking-vars",
 			Text: bakingTfVarsTmpl,
@@ -123,14 +125,14 @@ func (a AWS) CleanProvider() error {
 	fmt.Printf("removing terraform state and locking structures\n")
 
 	if a.Caravan.Force {
-		fmt.Printf("emptying bucket %s\n", a.Caravan.Name+"-caravan-terraform-state")
-		err := a.EmptyStateStore(a.Caravan.Name + "-caravan-terraform-state")
+		fmt.Printf("emptying bucket %s\n", a.Caravan.StateStoreName)
+		err := a.EmptyStateStore(a.Caravan.StateStoreName)
 		if err != nil {
 			return fmt.Errorf("error emptying: %w", err)
 		}
 	}
 
-	if err := a.DeleteStateStore(a.Caravan.Name + "-caravan-terraform-state"); err != nil {
+	if err := a.DeleteStateStore(a.Caravan.StateStoreName); err != nil {
 		return err
 	}
 
@@ -141,14 +143,14 @@ func (a AWS) CleanProvider() error {
 	return nil
 }
 
-func (a AWS) Deploy(layer caravan.DeployLayer) error {
+func (a AWS) Deploy(layer cli.DeployLayer) error {
 	switch layer {
-	case caravan.Infrastructure:
-		return caravan.GenericDeployInfra(a.Caravan, []string{"aws_lb.hashicorp_alb", "*"})
-	case caravan.Platform:
-		return caravan.GenericDeployPlatform(a.Caravan, []string{"*"})
-	case caravan.ApplicationSupport:
-		return caravan.GenericDeployApplicationSupport(a.Caravan, []string{"*"})
+	case cli.Infrastructure:
+		return provider.GenericDeployInfra(a.Caravan, []string{"aws_lb.hashicorp_alb", "*"})
+	case cli.Platform:
+		return provider.GenericDeployPlatform(a.Caravan, []string{"*"})
+	case cli.ApplicationSupport:
+		return provider.GenericDeployApplicationSupport(a.Caravan, []string{"*"})
 	default:
 		return fmt.Errorf("unknown Deploy Layer")
 	}

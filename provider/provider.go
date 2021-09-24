@@ -1,12 +1,7 @@
-package caravan
+// Provider interface to manage different cloud providers.
+package provider
 
-type DeployLayer int
-
-const (
-	Infrastructure DeployLayer = iota
-	Platform
-	ApplicationSupport
-)
+import "caravan-cli/cli"
 
 const (
 	AWS = "aws"
@@ -15,7 +10,7 @@ const (
 
 type WithDeploy interface {
 	// Deploy will execute the operations needed to deploy the different stack layers
-	Deploy(DeployLayer) error
+	Deploy(cli.DeployLayer) error
 }
 
 type WithBake interface {
@@ -30,12 +25,12 @@ type WithStatus interface {
 
 type WithDestroy interface {
 	// Destroy will execute the operations needed to destroy the different stack layers
-	Destroy(DeployLayer) error
+	Destroy(cli.DeployLayer) error
 }
 
 type Provider interface {
 	// GetTemplates returns the templates needed by the provider. The caller will handle persistence of the files.
-	GetTemplates() ([]Template, error)
+	GetTemplates() ([]cli.Template, error)
 
 	// ValidateConfiguration performs a check on the configuration provided to the Provider implementation. For example it
 	// might check that the provided instance size is valid
