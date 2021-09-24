@@ -64,11 +64,9 @@ var bakeCmd = &cobra.Command{
 				break
 			}
 		}
-		/*
-			if err := p.Bake(); err != nil {
-				return err
-			}
-		*/
+		if err := p.Bake(); err != nil {
+			return err
+		}
 		os.RemoveAll(filepath.Join(c.WorkdirProject, "caravan-baking"))
 		return nil
 
