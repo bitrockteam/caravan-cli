@@ -62,6 +62,7 @@ type AzureConfig struct {
 	AzureClientSecret         string `json:",omitempty"`
 	AzureTenantID             string `json:",omitempty"`
 	AzureSubscriptionID       string `json:",omitempty"`
+	AzureUseCLI               bool   `json:",omitempty"`
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state

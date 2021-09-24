@@ -11,6 +11,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
+
 	"github.com/spf13/cobra"
 )
 
@@ -23,21 +25,44 @@ var initCmd = &cobra.Command{
 	PersistentPreRunE: preRunInit,
 }
 
+var (
+	// Common.
+	provider = ""
+	name     = ""
+	region   = ""
+	branch   = ""
+
+	// GCP.
+	gcpParentProject = ""
+	gcpDnsZone = ""
+
+	// Azure.
+	azResourceGroup  = ""
+	azSubscriptionID = ""
+	azTenantID       = ""
+	azUseCLI         = false
+)
+
 func init() {
 	rootCmd.AddCommand(initCmd)
 
-	initCmd.PersistentFlags().String("project", "", "name of project")
-	_ = initCmd.MarkPersistentFlagRequired("project")
+	// Common
+	initCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
+	_ = initCmd.MarkPersistentFlagRequired(FlagProject)
+	initCmd.Flags().StringVarP(&provider, FlagProvider, FlagProviderShort, "", "cloud provider")
+	_ = initCmd.MarkPersistentFlagRequired(FlagProvider)
+	initCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "region for the deployment")
+	initCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "", "")
 
-	initCmd.PersistentFlags().String("provider", "", "cloud provider")
-	_ = initCmd.MarkPersistentFlagRequired("provider")
+	// GCP
+	initCmd.Flags().StringVar(&gcpParentProject, FlagGCPParentProject, "", "(GCP only) parent-project")
+	initCmd.Flags().StringVar(&gcpDnsZone, FlagGCPDnsZone, "", "(GCP only) cloud dns zone name")
 
-	initCmd.PersistentFlags().String("domain", "", "DNS domain")
-	_ = initCmd.MarkPersistentFlagRequired("domain")
-
-	initCmd.PersistentFlags().String("region", "", "region for the deployment")
-	initCmd.PersistentFlags().String("parent-project", "", "(GCP only) parent-project")
-	initCmd.PersistentFlags().String("dns-zone", "", "(GCP only) cloud dns zone name")
+	// Azure
+	initCmd.Flags().StringVar(&azResourceGroup, FlagAZResourceGroup, "", "(Azure only) resource group name")
+	initCmd.Flags().StringVar(&azSubscriptionID, FlagAZSubscriptionID, "", "(Azure only) subscription ID")
+	initCmd.Flags().StringVar(&azTenantID, FlagAZTenantID, "", "(Azure only) tenant ID")
+	initCmd.Flags().BoolVar(&azUseCLI, FlagAZLoginViaCLI, false, "(Azure only) login via CLI")
 }
 
 func preRunInit(cmd *cobra.Command, args []string) error {
@@ -60,7 +85,6 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	branch, _ := cmd.Flags().GetString("branch")
 	parentProject, _ := cmd.Flags().GetString("parent-project")
 	domain, _ := cmd.Flags().GetString("domain")
-	dnszone, _ := cmd.Flags().GetString("dns-zone")
 
 	c, err := cli.NewConfigFromFile()
 	if err != nil {
@@ -84,15 +108,9 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
 	}
-	if err := c.SetDomain(domain); err != nil {
+
+	if err = processFlags(c); err != nil {
 		return err
-	}
-	if prv == provider.GCP {
-		if parentProject == "" || dnszone == "" {
-			return fmt.Errorf("parent-project and dns-zone  parameters are needed for GCP provider")
-		}
-		c.ParentProject = parentProject
-		c.GCPDNSZone = dnszone
 	}
 
 	if err := initRepos(c, branch); err != nil {
@@ -154,6 +172,51 @@ func initRepos(c *cli.Config, b string) (err error) {
 		if err != nil {
 			return fmt.Errorf("unable to clone repo %s: %w", repo, err)
 		}
+	}
+	return nil
+}
+
+func processFlags(c *caravan.Config) error {
+	var err error
+
+	if provider == caravan.GCP {
+		requiredFlags := map[string]string{
+			FlagGCPParentProject: gcpParentProject,
+			FlagGCPDnsZone: gcpDnsZone,
+		}
+		for param, value := range requiredFlags {
+			if err2 := mustBeNonEmpty(value, param, caravan.Azure); err2 != nil {
+				err = multierror.Append(err, err2)
+			}
+		}
+
+		c.ParentProject = gcpParentProject
+	}
+
+	if provider == caravan.Azure {
+		requiredFlags := map[string]string{
+			FlagAZResourceGroup:  azResourceGroup,
+			FlagAZSubscriptionID: azSubscriptionID,
+			FlagAZTenantID:       azTenantID,
+		}
+		for param, value := range requiredFlags {
+			if err2 := mustBeNonEmpty(value, param, caravan.Azure); err2 != nil {
+				err = multierror.Append(err, err2)
+			}
+		}
+
+		c.AzureResourceGroup = azResourceGroup
+		c.AzureSubscriptionID = azSubscriptionID
+		c.AzureTenantID = azTenantID
+		c.AzureUseCLI = azUseCLI
+	}
+
+	return err
+}
+
+func mustBeNonEmpty(value, paramName, provider string) error {
+	if value == "" {
+		return fmt.Errorf("--%s flag is needed for %s provider", paramName, provider)
 	}
 	return nil
 }
