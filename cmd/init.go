@@ -27,10 +27,10 @@ var initCmd = &cobra.Command{
 
 var (
 	// Common.
-	provider = ""
-	name     = ""
-	region   = ""
-	branch   = ""
+	prv    = ""
+	name   = ""
+	region = ""
+	branch = ""
 
 	// GCP.
 	gcpParentProject = ""
@@ -49,7 +49,7 @@ func init() {
 	// Common
 	initCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
 	_ = initCmd.MarkPersistentFlagRequired(FlagProject)
-	initCmd.Flags().StringVarP(&provider, FlagProvider, FlagProviderShort, "", "cloud provider")
+	initCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
 	_ = initCmd.MarkPersistentFlagRequired(FlagProvider)
 	initCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "region for the deployment")
 	initCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "", "")
@@ -79,13 +79,6 @@ func preRunInit(cmd *cobra.Command, args []string) error {
 }
 
 func executeInit(cmd *cobra.Command, args []string) error {
-	prv, _ := cmd.Flags().GetString("provider")
-	name, _ := cmd.Flags().GetString("project")
-	region, _ := cmd.Flags().GetString("region")
-	branch, _ := cmd.Flags().GetString("branch")
-	parentProject, _ := cmd.Flags().GetString("parent-project")
-	domain, _ := cmd.Flags().GetString("domain")
-
 	c, err := cli.NewConfigFromFile()
 	if err != nil {
 		// TODO better error checking
@@ -176,16 +169,16 @@ func initRepos(c *cli.Config, b string) (err error) {
 	return nil
 }
 
-func processFlags(c *caravan.Config) error {
+func processFlags(c *cli.Config) error {
 	var err error
 
-	if provider == caravan.GCP {
+	if prv == provider.GCP {
 		requiredFlags := map[string]string{
 			FlagGCPParentProject: gcpParentProject,
 			FlagGCPDnsZone: gcpDnsZone,
 		}
 		for param, value := range requiredFlags {
-			if err2 := mustBeNonEmpty(value, param, caravan.Azure); err2 != nil {
+			if err2 := mustBeNonEmpty(value, param, provider.GCP); err2 != nil {
 				err = multierror.Append(err, err2)
 			}
 		}
@@ -193,14 +186,14 @@ func processFlags(c *caravan.Config) error {
 		c.ParentProject = gcpParentProject
 	}
 
-	if provider == caravan.Azure {
+	if prv == provider.Azure {
 		requiredFlags := map[string]string{
 			FlagAZResourceGroup:  azResourceGroup,
 			FlagAZSubscriptionID: azSubscriptionID,
 			FlagAZTenantID:       azTenantID,
 		}
 		for param, value := range requiredFlags {
-			if err2 := mustBeNonEmpty(value, param, caravan.Azure); err2 != nil {
+			if err2 := mustBeNonEmpty(value, param, provider.Azure); err2 != nil {
 				err = multierror.Append(err, err2)
 			}
 		}

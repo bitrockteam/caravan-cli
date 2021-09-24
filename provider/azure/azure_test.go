@@ -1,8 +1,9 @@
 package azure_test
 
 import (
-	"caravan/internal/azure"
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/provider"
+	"caravan-cli/provider/azure"
 	"testing"
 )
 
@@ -19,7 +20,7 @@ func TestValidate(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.desc, func(t *testing.T) {
-			c, err := caravan.NewConfigFromScratch(tc.name, caravan.Azure, "westeurope")
+			c, err := cli.NewConfigFromScratch(tc.name, provider.Azure, "westeurope")
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}

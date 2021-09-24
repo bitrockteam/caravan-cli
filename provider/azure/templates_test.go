@@ -1,8 +1,9 @@
 package azure_test
 
 import (
-	"caravan/internal/azure"
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/provider"
+	"caravan-cli/provider/azure"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -14,12 +15,12 @@ func TestGenerateConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config, err := caravan.NewConfigFromScratch("test-name", caravan.Azure, "europewest")
+	config, err := cli.NewConfigFromScratch("test-name", provider.Azure, "europewest")
 	if err != nil {
 		t.FailNow()
 	}
 
-	config.SetWorkdir(dir, caravan.Azure)
+	config.SetWorkdir(dir, provider.Azure)
 	_ = config.SetDomain("test.me")
 	config.SetAzureSubscriptionID("111-222-333")
 	config.SetAzureResourceGroup("caravan-test-rg")

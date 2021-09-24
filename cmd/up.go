@@ -123,7 +123,7 @@ func init() {
 func checkStatus(c *cli.Config, tool string, path string, count int) error {
 	fmt.Printf("checking %s status:", tool)
 
-	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CApath)
+	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CAPath)
 	for i := 0; i <= count; i++ {
 		if h.Check() {
 			fmt.Printf("OK\n")

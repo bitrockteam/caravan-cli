@@ -41,28 +41,12 @@ type Config struct {
 	VaultRootToken            string              `json:",omitempty"`
 	NomadToken                string              `json:",omitempty"`
 	VaultURL                  string              `json:",omitempty"`
-	CApath                    string              `json:",omitempty"`
+	CAPath                    string              `json:",omitempty"`
 	ServiceAccount            string              `json:",omitempty"`
 	Datacenter                string              `json:",omitempty"`
 
 	GCPConfig
 	AzureConfig
-}
-
-type AzureConfig struct {
-	AzureBakingSubscriptionID string `json:",omitempty"`
-	AzureBakingResourceGroup  string `json:",omitempty"`
-	AzureBakingClientID       string `json:",omitempty"`
-	AzureBakingClientSecret   string `json:",omitempty"`
-	AzureDNSResourceGroup     string `json:",omitempty"`
-	AzureResourceGroup        string `json:",omitempty"`
-	AzureStorageAccount       string `json:",omitempty"`
-	AzureStorageContainerName string `json:",omitempty"`
-	AzureClientID             string `json:",omitempty"`
-	AzureClientSecret         string `json:",omitempty"`
-	AzureTenantID             string `json:",omitempty"`
-	AzureSubscriptionID       string `json:",omitempty"`
-	AzureUseCLI               bool   `json:",omitempty"`
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state
@@ -122,7 +106,7 @@ func (c *Config) SetWorkdir(wd, provider string) {
 	c.WorkdirApplication = filepath.Join(c.WorkdirProject, "caravan-application-support")
 	c.WorkdirApplicationVars = filepath.Join(c.WorkdirProject, "caravan-application-support", c.Name+"-"+c.Provider+"-cli.tfvars")
 	c.WorkdirApplicationBackend = filepath.Join(c.WorkdirProject, "caravan-application-support", "backend.tf")
-	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
+	c.CAPath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 }
 
 func (c *Config) SetDomain(domain string) (err error) {
@@ -152,7 +136,7 @@ func (c *Config) SetVaultRootToken() error {
 
 // SetNomadToken reads into config the Nomad Token.
 func (c *Config) SetNomadToken() error {
-	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CApath)
+	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CAPath)
 	if err != nil {
 		return err
 	}
@@ -184,49 +168,6 @@ func (c *Config) Save() (err error) {
 		return err
 	}
 	return nil
-}
-
-func (c *Config) SetAzureBakingSubscriptionID(s string) {
-	c.AzureBakingResourceGroup = s
-}
-
-func (c *Config) SetAzureBakingResourceGroup(s string) {
-	c.AzureBakingResourceGroup = s
-}
-
-func (c *Config) SetAzureBakingClientID(s string) {
-	c.AzureBakingClientID = s
-}
-
-func (c *Config) SetAzureBakingClientSecret(s string) {
-	c.AzureBakingClientSecret = s
-}
-
-func (c *Config) SetAzureDNSResourceGroup(s string) {
-	c.AzureDNSResourceGroup = s
-}
-
-func (c *Config) SetAzureResourceGroup(s string) {
-	c.AzureResourceGroup = s
-}
-
-func (c *Config) SetAzureStorageAccount(s string) {
-	c.AzureStorageAccount = s
-}
-func (c *Config) SetAzureStorageContainerName(s string) {
-	c.AzureStorageContainerName = s
-}
-func (c *Config) SetAzureClientID(s string) {
-	c.AzureClientID = s
-}
-func (c *Config) SetAzureClientSecret(s string) {
-	c.AzureClientSecret = s
-}
-func (c *Config) SetAzureTenantID(s string) {
-	c.AzureTenantID = s
-}
-func (c *Config) SetAzureSubscriptionID(s string) {
-	c.AzureSubscriptionID = s
 }
 
 // isValidDomain checks if the provided string is a valid domain name.

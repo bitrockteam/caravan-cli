@@ -2,7 +2,8 @@
 package azure
 
 import (
-	"caravan/internal/caravan"
+	"caravan-cli/cli"
+	"caravan-cli/provider"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -16,7 +17,7 @@ type Azure struct {
 	AzureArmConnection   *arm.Connection
 }
 
-func New(c *caravan.Config) (Azure, error) {
+func New(c *cli.Config) (Azure, error) {
 	a := Azure{}
 	a.Caravan = c
 	if err := a.ValidateConfiguration(); err != nil {
@@ -26,43 +27,43 @@ func New(c *caravan.Config) (Azure, error) {
 }
 
 func (a Azure) GetTemplates() ([]cli.Template, error) {
-	baking := caravan.Template{
+	baking := cli.Template{
 		Name: "baking-vars",
 		Text: bakingTfVarsTmpl,
 		Path: a.Caravan.WorkdirBakingVars,
 	}
-	infra := caravan.Template{
+	infra := cli.Template{
 		Name: "infra-vars",
 		Text: infraTfVarsTmpl,
 		Path: a.Caravan.WorkdirInfraVars,
 	}
-	infraBackend := caravan.Template{
+	infraBackend := cli.Template{
 		Name: "infra-backend",
 		Text: infraBackendTmpl,
 		Path: a.Caravan.WorkdirInfraBackend,
 	}
-	platform := caravan.Template{
+	platform := cli.Template{
 		Name: "platform-vars",
 		Text: platformTfVarsTmpl,
 		Path: a.Caravan.WorkdirPlatformVars,
 	}
-	platformBackend := caravan.Template{
+	platformBackend := cli.Template{
 		Name: "platform-backend",
 		Text: platformBackendTmpl,
 		Path: a.Caravan.WorkdirPlatformBackend,
 	}
-	applicationSupport := caravan.Template{
+	applicationSupport := cli.Template{
 		Name: "application-vars",
 		Text: applicationTfVarsTmpl,
 		Path: a.Caravan.WorkdirApplicationVars,
 	}
-	applicationSupportBackend := caravan.Template{
+	applicationSupportBackend := cli.Template{
 		Name: "application-backend",
 		Text: applicationSupportBackendTmpl,
 		Path: a.Caravan.WorkdirApplicationBackend,
 	}
 
-	return []caravan.Template{
+	return []cli.Template{
 		baking,
 		infra,
 		infraBackend,
@@ -208,11 +209,11 @@ func (a Azure) Bake() error {
 	panic("implement me")
 }
 
-func (a Azure) Deploy(layer caravan.DeployLayer) error {
+func (a Azure) Deploy(layer cli.DeployLayer) error {
 	panic("implement me")
 }
 
-func (a Azure) Destroy(layer caravan.DeployLayer) error {
+func (a Azure) Destroy(layer cli.DeployLayer) error {
 	panic("implement me")
 }
 
