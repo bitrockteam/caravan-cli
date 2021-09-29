@@ -49,7 +49,7 @@ func GenericDeployInfra(c *cli.Config, targets []string) error {
 	}
 	env := map[string]string{}
 	for _, target := range targets {
-		if err := tf.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 600*time.Second, env, target); err != nil {
+		if err := tf.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 1200*time.Second, env, target); err != nil {
 			return fmt.Errorf("error doing terraform apply: %w", err)
 		}
 	}
@@ -118,7 +118,7 @@ func (g GenericProvider) cleanInfra() (err error) {
 	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirInfraVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
-			return nil
+			return err
 		}
 	}
 	return nil
@@ -138,7 +138,7 @@ func (g GenericProvider) cleanPlatform() (err error) {
 	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirPlatformVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
-			return nil
+			return err
 		}
 	}
 	return nil
@@ -158,7 +158,7 @@ func (g GenericProvider) cleanApplication() (err error) {
 	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirApplicationVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
-			return nil
+			return err
 		}
 	}
 	return nil

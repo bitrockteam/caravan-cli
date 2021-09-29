@@ -77,12 +77,12 @@ func (g GCP) GetTemplates() ([]cli.Template, error) {
 
 func (g GCP) ValidateConfiguration() error {
 	// check project name
-	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,20}$", g.Caravan.Name)
+	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,25}$", g.Caravan.Name)
 	if err != nil {
 		return err
 	}
 	if !m {
-		return fmt.Errorf("project name not compliant: must be between 6 and 20 characters long, only alphanumerics and hypens (-) are allowed: %s", g.Caravan.Name)
+		return fmt.Errorf("project name not compliant: must be between 6 and 25 characters long, only alphanumerics and hypens (-) are allowed: %s", g.Caravan.Name)
 	}
 	if strings.Index(g.Caravan.Name, "-") == 0 {
 		return fmt.Errorf("project name not compliant: cannot start with hyphen (-): %s", g.Caravan.Name)

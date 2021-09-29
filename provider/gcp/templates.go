@@ -5,7 +5,6 @@ const (
 build_on_google        = true
 build_image_name       = "caravan-centos-image"
 google_project_id      = "{{ .Name }}"
-google_account_file    = "YOUR-JSON-KEY"
 google_network_name    = "caravan-gcp-vpc"
 google_subnetwork_name = "caravan-gcp-subnet"
 `
@@ -22,7 +21,7 @@ control_plane_sa_name = "control-plane"
 worker_plane_sa_name  = "worker-plane"
 image                 = "projects/{{ .ParentProject }}/global/images/family/caravan-centos-image-os"
 parent_dns_project_id = "{{ .ParentProject }}"
-parent_dns_zone_name  = "dns-example-zone"
+parent_dns_zone_name  = "{{ .GCPDNSZone }}"
 google_account_file   = ".{{ .Name }}-terraform-sa-key.json"
 `
 

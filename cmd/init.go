@@ -32,8 +32,12 @@ func init() {
 	initCmd.PersistentFlags().String("provider", "", "cloud provider")
 	_ = initCmd.MarkPersistentFlagRequired("provider")
 
+	initCmd.PersistentFlags().String("domain", "", "DNS domain")
+	_ = initCmd.MarkPersistentFlagRequired("domain")
+
 	initCmd.PersistentFlags().String("region", "", "region for the deployment")
 	initCmd.PersistentFlags().String("parent-project", "", "(GCP only) parent-project")
+	initCmd.PersistentFlags().String("dns-zone", "", "(GCP only) cloud dns zone name")
 }
 
 func preRunInit(cmd *cobra.Command, args []string) error {
@@ -55,6 +59,8 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	region, _ := cmd.Flags().GetString("region")
 	branch, _ := cmd.Flags().GetString("branch")
 	parentProject, _ := cmd.Flags().GetString("parent-project")
+	domain, _ := cmd.Flags().GetString("domain")
+	dnszone, _ := cmd.Flags().GetString("dns-zone")
 
 	c, err := cli.NewConfigFromFile()
 	if err != nil {
@@ -78,12 +84,15 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
 	}
-
+	if err := c.SetDomain(domain); err != nil {
+		return err
+	}
 	if prv == provider.GCP {
-		if parentProject == "" {
-			return fmt.Errorf("parent-project parameter is needed for GCP provider")
+		if parentProject == "" || dnszone == "" {
+			return fmt.Errorf("parent-project and dns-zone  parameters are needed for GCP provider")
 		}
 		c.ParentProject = parentProject
+		c.GCPDNSZone = dnszone
 	}
 
 	if err := initRepos(c, branch); err != nil {

@@ -17,6 +17,7 @@ func TestGenerateConfig(t *testing.T) {
 	config, _ := cli.NewConfigFromScratch("test-name", "gcp", "europe-west6")
 	config.SetWorkdir(dir, "gcp")
 	_ = config.SetDomain("test.me")
+	config.GCPDNSZone = "dns-zone"
 	config.ParentProject = "parent-project"
 	config.UserEmail = "test.name@test.me"
 	gcp, err := gcp.New(config)
