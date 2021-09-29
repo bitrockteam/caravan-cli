@@ -43,6 +43,8 @@ type Config struct {
 	VaultURL                  string              `json:",omitempty"`
 	CApath                    string              `json:",omitempty"`
 	ServiceAccount            string              `json:",omitempty"`
+	Datacenter                string              `json:",omitempty"`
+
 	GCPConfig
 }
 
@@ -63,6 +65,7 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 		WorkdirProject: wd + "/" + name,
 		VaultURL:       "https://vault." + name + "." + "reactive-labs.io",
 		ServiceAccount: name + "-terraform",
+		Datacenter:     provider + "dc",
 		Region:         region,
 	}
 

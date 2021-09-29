@@ -52,12 +52,12 @@ func (r *Report) VaultVersion() string {
 }
 
 func (r *Report) ConsulCheck() bool {
-	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath)
+	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath, r.Caravan.Datacenter)
 	return co.Check()
 }
 
 func (r *Report) ConsulVersion() string {
-	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath)
+	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath, r.Caravan.Datacenter)
 	return co.Version()
 }
 func (r *Report) NomadCheck() bool {
