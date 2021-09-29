@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -153,30 +154,49 @@ func (a Azure) CreateRoleAssignment(subscriptionID, scope, roleName, principalID
 }
 
 func (a Azure) CreateServicePrincipal(tenantID, name string) (string, string, error) {
+	appID := ""
+	objectID, secret, err := a.CheckServicePrincipal(tenantID, name)
+	var errNoApp *NoAzureApplicationError
+	var errNoSP *NoAzureServicePrincipalError
+
+	if err != nil {
+		fmt.Printf("service principal [%s] already existing", name)
+		return *objectID, *secret, nil
+	} else if ok := errors.As(err, errNoApp); ok {
+		fmt.Println(errNoApp.Error())
+	} else if ok := errors.As(err, errNoSP); ok {
+		fmt.Println(errNoSP.Error())
+		appID = errNoSP.appID
+	} else {
+		return "", "", err
+	}
+
 	c := graphrbac.NewServicePrincipalsClient(tenantID)
 	c.Authorizer = a.AzureGraphAuthorizer
 	c2 := graphrbac.NewApplicationsClient(tenantID)
 	c2.Authorizer = a.AzureGraphAuthorizer
 	ctx := context.TODO()
 
-	secret := uuid.NewV1().String()
-
-	fmt.Printf("creating ad application with name [%s]\n", name)
-	app, err := c2.Create(ctx, graphrbac.ApplicationCreateParameters{
-		DisplayName:             to.StringPtr(name),
-		AvailableToOtherTenants: to.BoolPtr(false),
-	})
-	if err != nil {
-		return "", "", err
+	newSecret := uuid.NewV1().String()
+	if appID == "" {
+		fmt.Printf("creating ad application with name [%s]\n", name)
+		app, err := c2.Create(ctx, graphrbac.ApplicationCreateParameters{
+			DisplayName:             to.StringPtr(name),
+			AvailableToOtherTenants: to.BoolPtr(false),
+		})
+		if err != nil {
+			return "", "", err
+		}
+		appID = *app.AppID
 	}
 
 	fmt.Printf("creating ad service principal for application [%s]\n", name)
 	time.Now().Add(time.Hour * 24 * 365)
 	sp, err := c.Create(ctx, graphrbac.ServicePrincipalCreateParameters{
-		AppID:          app.AppID,
+		AppID:          &appID,
 		AccountEnabled: to.BoolPtr(true),
 		PasswordCredentials: &[]graphrbac.PasswordCredential{{
-			Value:     to.StringPtr(secret),
+			Value:     to.StringPtr(newSecret),
 			StartDate: &date.Time{Time: time.Now()},
 			EndDate:   &date.Time{Time: time.Now().Add(time.Hour * 24 * 365)},
 		}},
@@ -184,13 +204,56 @@ func (a Azure) CreateServicePrincipal(tenantID, name string) (string, string, er
 	if err != nil {
 		return "", "", err
 	}
+	objectID = sp.ObjectID
 
 	// FIXME: LOL, works on my machine with this. Basically there's a sync issue and the service principal is not properly
 	//  propagated within Azure. Adding this sleep we increase the possibility of the SP being available for other API
 	//  calls. Note: adding a c.Get(x,x) does not solve the problem, given it is immediately available with that API anyway.
 	// time.Sleep(60 * time.Second)
 
-	return *sp.ObjectID, secret, nil
+	return *objectID, newSecret, nil
+}
+
+func (a Azure) CheckServicePrincipal(tenantID, name string) (*string, *string, error) {
+	c := graphrbac.NewServicePrincipalsClient(tenantID)
+	c.Authorizer = a.AzureGraphAuthorizer
+	c2 := graphrbac.NewApplicationsClient(tenantID)
+	c2.Authorizer = a.AzureGraphAuthorizer
+	ctx := context.TODO()
+
+	filterQuery := fmt.Sprintf("displayName eq '%s'", name)
+
+	res, err := c2.List(ctx, filterQuery)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = res.NextWithContext(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	apps := res.Values()
+	if len(apps) == 0 {
+		return nil, nil, fmt.Errorf("no application existing with name [%s]", name)
+	}
+
+	res2, err := c.List(ctx, filterQuery)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = res2.NextWithContext(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	sps := res2.Values()
+	if len(sps) == 0 {
+		return nil, nil, fmt.Errorf("no service principal found with name [%s]", name)
+	}
+
+	sp := sps[0]
+	objID := sp.ObjectID
+	secret := (*sp.PasswordCredentials)[0].Value
+
+	return objID, secret, nil
 }
 
 // CreateADPermission az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 1cda74f2-2616-4834-b122-5cb1b07f8a59=Role.
