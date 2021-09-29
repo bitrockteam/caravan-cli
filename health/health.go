@@ -33,7 +33,10 @@ func NewHealth(u, ca string) Health {
 }
 
 func (h Health) Check() bool {
-	resp, err := Get(h.url, h.caFile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := Get(ctx, h.url, h.caFile)
 	if err != nil {
 		return false
 	}
@@ -58,7 +61,10 @@ func NewVaultHealth(u, ca string) VaultHealth {
 }
 
 func (v VaultHealth) Check() string {
-	resp, err := Get(v.url, v.caFile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := Get(ctx, v.url, v.caFile)
 	if err != nil {
 		return "error"
 	}
@@ -73,7 +79,10 @@ func (v VaultHealth) Check() string {
 }
 
 func (v VaultHealth) Version() string {
-	resp, err := Get(v.url, v.caFile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := Get(ctx, v.url, v.caFile)
 	if err != nil {
 		fmt.Printf("error: %s", err)
 		return ""
@@ -89,7 +98,7 @@ func (v VaultHealth) Version() string {
 	var r VaultResponse
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		fmt.Printf("body: %s error: %s\n", body, err)
+		fmt.Printf("unmarshal: %s error: %s\n", body, err)
 		return ""
 	}
 	return r.Version
@@ -100,16 +109,19 @@ type ConsulHealth struct {
 	caFile string
 }
 
-func NewConsulHealth(u, ca string) ConsulHealth {
+func NewConsulHealth(u, ca string, dc string) ConsulHealth {
 	return ConsulHealth{
 		// TODO use better endpoint when available
-		url:    u + "ui/aws-dc/services",
+		url:    u + "ui/" + dc + "/services",
 		caFile: ca,
 	}
 }
 
 func (c ConsulHealth) Check() bool {
-	resp, err := Get(c.url, c.caFile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := Get(ctx, c.url, c.caFile)
 	if err != nil {
 		return false
 	}
@@ -119,15 +131,19 @@ func (c ConsulHealth) Check() bool {
 
 func (c ConsulHealth) Version() string {
 	// TODO make more robust (change endpoint)
-	resp, err := Get(c.url, c.caFile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := Get(ctx, c.url, c.caFile)
 	if err != nil {
-		fmt.Printf("error: %s", err)
+		fmt.Printf("error getting response: %s", err)
 		return ""
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("error: %s", err)
+		fmt.Printf("body: %s error: %s", body, err)
+		fmt.Printf("error reading response: %s", err)
 		return ""
 	}
 
@@ -153,7 +169,10 @@ func NewNomadHealth(u, ca string) NomadHealth {
 }
 
 func (n NomadHealth) Check() bool {
-	resp, err := Get(n.url, n.caFile)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	resp, err := Get(ctx, n.url, n.caFile)
 	if err != nil {
 		return false
 	}
@@ -163,12 +182,10 @@ func (n NomadHealth) Check() bool {
 
 func (n NomadHealth) Version() string {
 	// TODO find endpoint
-	return "not found"
+	return "missing endpoint"
 }
 
-func Get(url, ca string) (resp *http.Response, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func Get(ctx context.Context, url, ca string) (resp *http.Response, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return resp, err
