@@ -3,10 +3,13 @@ package gcp_test
 import (
 	"caravan-cli/cli"
 	"caravan-cli/provider/gcp"
+	"context"
 	"testing"
 )
 
 func TestValidate(t *testing.T) {
+	ctx := context.Background()
+
 	type test struct {
 		name   string
 		error  bool
@@ -28,7 +31,7 @@ func TestValidate(t *testing.T) {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
 			c.UserEmail = "test.name@test.me"
-			_, err = gcp.New(c)
+			_, err = gcp.New(ctx, c)
 			if err == nil && tc.error || err != nil && !tc.error {
 				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
 			}

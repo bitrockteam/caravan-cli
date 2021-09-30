@@ -4,6 +4,7 @@ package gcp
 import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -16,7 +17,7 @@ type GCP struct {
 	provider.GenericProvider
 }
 
-func New(c *cli.Config) (g GCP, err error) {
+func New(ctx context.Context, c *cli.Config) (g GCP, err error) {
 	g = GCP{}
 
 	if c.UserEmail == "" {
@@ -28,14 +29,14 @@ func New(c *cli.Config) (g GCP, err error) {
 		c.UserEmail = u
 	}
 	g.Caravan = c
-	if err := g.ValidateConfiguration(); err != nil {
+	if err := g.ValidateConfiguration(ctx); err != nil {
 		return g, err
 	}
 
 	return g, nil
 }
 
-func (g GCP) GetTemplates() ([]cli.Template, error) {
+func (g GCP) GetTemplates(ctx context.Context) ([]cli.Template, error) {
 	return []cli.Template{
 		{
 			Name: "baking-vars",
@@ -75,7 +76,7 @@ func (g GCP) GetTemplates() ([]cli.Template, error) {
 	}, nil
 }
 
-func (g GCP) ValidateConfiguration() error {
+func (g GCP) ValidateConfiguration(ctx context.Context) error {
 	// check project name
 	m, err := regexp.MatchString("^[-0-9A-Za-z]{6,25}$", g.Caravan.Name)
 	if err != nil {
@@ -95,41 +96,41 @@ func (g GCP) ValidateConfiguration() error {
 	return nil
 }
 
-func (g GCP) InitProvider() error {
-	if err := g.CreateServiceAccount(g.Caravan.ServiceAccount); err != nil {
+func (g GCP) InitProvider(ctx context.Context) error {
+	if err := g.CreateServiceAccount(ctx, g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
 
 	// permissions for the terraform service account on the current project
 	member := "serviceAccount:" + g.Caravan.ServiceAccount + "@" + g.Caravan.Name + ".iam.gserviceaccount.com"
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, member, "roles/owner"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.Name, member, "roles/owner"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.Name, member, "roles/storage.admin"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.Name, member, "roles/storage.admin"); err != nil {
 		return err
 	}
 
 	// permission for the terraform service account on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/compute.imageUser"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/compute.imageUser"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/dns.admin"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/dns.admin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/compute.networkAdmin"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/compute.networkAdmin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, member, "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
 	// permission for the current user on the parent project
-	if err := g.AddPolicyBinding("projects", g.Caravan.ParentProject, "user:"+g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, "user:"+g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
 	// create keys for service account
-	kb64, err := g.CreateServiceAccountKeys(g.Caravan.ServiceAccount, g.Caravan.ServiceAccount+"-sa-keys")
+	kb64, err := g.CreateServiceAccountKeys(ctx, g.Caravan.ServiceAccount, g.Caravan.ServiceAccount+"-sa-keys")
 	if err != nil {
 		return err
 	}
@@ -141,21 +142,21 @@ func (g GCP) InitProvider() error {
 		return err
 	}
 
-	if err := g.CreateStateStore(g.Caravan.StateStoreName); err != nil {
+	if err := g.CreateStateStore(ctx, g.Caravan.StateStoreName); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (g GCP) CleanProvider() error {
-	if err := g.DeleteServiceAccount(g.Caravan.ServiceAccount); err != nil {
+func (g GCP) CleanProvider(ctx context.Context) error {
+	if err := g.DeleteServiceAccount(ctx, g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
-	if err := g.EmptyStateStore(g.Caravan.StateStoreName); err != nil {
+	if err := g.EmptyStateStore(ctx, g.Caravan.StateStoreName); err != nil {
 		return err
 	}
-	if err := g.DeleteStateStore(g.Caravan.StateStoreName); err != nil {
+	if err := g.DeleteStateStore(ctx, g.Caravan.StateStoreName); err != nil {
 		return err
 	}
 

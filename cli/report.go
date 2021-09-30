@@ -2,6 +2,7 @@ package cli
 
 import (
 	"caravan-cli/health"
+	"context"
 	"html/template"
 	"os"
 
@@ -42,31 +43,31 @@ Nomad	URL: 		https://nomad.{{.Caravan.Name }}.{{.Caravan.Domain}}
 	}
 }
 
-func (r *Report) VaultCheck() string {
+func (r *Report) VaultCheck(ctx context.Context) string {
 	v := health.NewVaultHealth("https://vault."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
-	return v.Check()
+	return v.Check(ctx)
 }
 
-func (r *Report) VaultVersion() string {
+func (r *Report) VaultVersion(ctx context.Context) string {
 	v := health.NewVaultHealth("https://vault."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
-	return v.Version()
+	return v.Version(ctx)
 }
 
-func (r *Report) ConsulCheck() bool {
+func (r *Report) ConsulCheck(ctx context.Context) bool {
 	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath, r.Caravan.Datacenter)
-	return co.Check()
+	return co.Check(ctx)
 }
 
-func (r *Report) ConsulVersion() string {
+func (r *Report) ConsulVersion(ctx context.Context) string {
 	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath, r.Caravan.Datacenter)
-	return co.Version()
+	return co.Version(ctx)
 }
-func (r *Report) NomadCheck() bool {
+func (r *Report) NomadCheck(ctx context.Context) bool {
 	n := health.NewNomadHealth("https://nomad."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
-	return n.Check()
+	return n.Check(ctx)
 }
 
-func (r *Report) NomadVersion() string {
+func (r *Report) NomadVersion(ctx context.Context) string {
 	n := health.NewNomadHealth("https://nomad."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
-	return n.Version()
+	return n.Version(ctx)
 }

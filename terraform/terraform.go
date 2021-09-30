@@ -19,8 +19,8 @@ func New() (t *Terraform) {
 	return &Terraform{}
 }
 
-func (t *Terraform) Init(wd string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+func (t *Terraform) Init(ctx context.Context, wd string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, 100*time.Second)
 	defer cancel()
 
 	t.Workdir = wd
@@ -37,8 +37,8 @@ func (t *Terraform) Init(wd string) (err error) {
 	return nil
 }
 
-func (t Terraform) ApplyVarMap(config map[string]string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+func (t Terraform) ApplyVarMap(ctx context.Context, config map[string]string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, 100*time.Second)
 	defer cancel()
 
 	args := []string{}
@@ -60,8 +60,8 @@ func (t Terraform) ApplyVarMap(config map[string]string) (err error) {
 	return nil
 }
 
-func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[string]string, target string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+func (t Terraform) ApplyVarFile(ctx context.Context, file string, timeout time.Duration, env map[string]string, target string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	args := []string{}
@@ -87,8 +87,8 @@ func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[stri
 	return nil
 }
 
-func (t Terraform) Destroy(file string, env map[string]string) (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 600*time.Second)
+func (t Terraform) Destroy(ctx context.Context, file string, env map[string]string) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, 600*time.Second)
 	defer cancel()
 
 	args := []string{}

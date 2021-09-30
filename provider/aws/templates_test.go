@@ -3,6 +3,7 @@ package aws_test
 import (
 	"caravan-cli/cli"
 	"caravan-cli/provider/aws"
+	"context"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 )
 
 func TestGenerateConfig(t *testing.T) {
+	ctx := context.Background()
 	dir, err := ioutil.TempDir("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -17,7 +19,7 @@ func TestGenerateConfig(t *testing.T) {
 	config, _ := cli.NewConfigFromScratch("test-name", "aws", "eu-south-1")
 	config.SetWorkdir(dir, "aws")
 	_ = config.SetDomain("test.me")
-	aws, _ := aws.New(config)
+	aws, _ := aws.New(ctx, config)
 
 	testCases := []struct {
 		name string
@@ -34,7 +36,7 @@ func TestGenerateConfig(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			gold := filepath.Join("testdata", tc.gold)
-			templates, _ := aws.GetTemplates()
+			templates, _ := aws.GetTemplates(ctx)
 			for _, tmp := range templates {
 				if tmp.Name == tc.name {
 					// log.Info().Msgf("%s\n", tc.name)

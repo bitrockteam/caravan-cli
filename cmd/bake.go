@@ -44,7 +44,7 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
-		p, err := getProvider(c)
+		p, err := getProvider(ctx, c)
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
-		templates, err := p.GetTemplates()
+		templates, err := p.GetTemplates(ctx)
 		if err != nil {
 			return err
 		}
@@ -66,7 +66,7 @@ var bakeCmd = &cobra.Command{
 				break
 			}
 		}
-		if err := p.Bake(); err != nil {
+		if err := p.Bake(ctx); err != nil {
 			return err
 		}
 		os.RemoveAll(filepath.Join(c.WorkdirProject, "caravan-baking"))

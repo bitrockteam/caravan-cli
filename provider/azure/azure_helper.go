@@ -43,15 +43,15 @@ func NewHelper(useCLI bool) (*Helper, error) {
 }
 
 // CreateResourceGroup az group create --name "$RESOURCE_GROUP" --location "$LOCATION".
-func (a Helper) CreateResourceGroup(resourceGroupName, subscriptionID, location string) error {
-	if err := a.checkResourceGroup(resourceGroupName, subscriptionID); err == nil {
+func (a Helper) CreateResourceGroup(ctx context.Context, resourceGroupName, subscriptionID, location string) error {
+	if err := a.checkResourceGroup(ctx, resourceGroupName, subscriptionID); err == nil {
 		log.Info().Msgf("resource group [%s] already exists\n", resourceGroupName)
 		return nil
 	}
 
 	log.Info().Msgf("creating resource group [%s] in location [%s]\n", resourceGroupName, location)
 	c := armresources.NewResourceGroupsClient(a.AzureArmConnection, subscriptionID)
-	ctx := context.TODO()
+
 	_, err := c.CreateOrUpdate(
 		ctx,
 		resourceGroupName,
@@ -63,10 +63,10 @@ func (a Helper) CreateResourceGroup(resourceGroupName, subscriptionID, location 
 	return err
 }
 
-func (a Helper) checkResourceGroup(resourceGroupName, subscriptionID string) error {
+func (a Helper) checkResourceGroup(ctx context.Context, resourceGroupName, subscriptionID string) error {
 	log.Info().Msgf("checking existence of resource group [%s]\n", resourceGroupName)
 	c := armresources.NewResourceGroupsClient(a.AzureArmConnection, subscriptionID)
-	ctx := context.TODO()
+
 	res, err := c.CheckExistence(ctx, resourceGroupName, nil)
 	if err != nil {
 		return err
@@ -79,14 +79,14 @@ func (a Helper) checkResourceGroup(resourceGroupName, subscriptionID string) err
 }
 
 // CreateStorageAccount az storage account create --name "$STORAGE_ACCOUNT" --resource-group "$RESOURCE_GROUP" --location "$LOCATION" --tags "owner=$OWNER".
-func (a Helper) CreateStorageAccount(subscriptionID, storageAccountName, resourceGroupName, location string) error {
-	if err := a.checkStorageAccount(subscriptionID, storageAccountName, resourceGroupName); err == nil {
+func (a Helper) CreateStorageAccount(ctx context.Context, subscriptionID, storageAccountName, resourceGroupName, location string) error {
+	if err := a.checkStorageAccount(ctx, subscriptionID, storageAccountName, resourceGroupName); err == nil {
 		log.Info().Msgf("storage account [%s] already exists\n", storageAccountName)
 		return nil
 	}
 
 	c := armstorage.NewStorageAccountsClient(a.AzureArmConnection, subscriptionID)
-	ctx := context.TODO()
+
 	res, err := c.CheckNameAvailability(ctx, armstorage.StorageAccountCheckNameAvailabilityParameters{
 		Name: to.StringPtr(storageAccountName),
 		Type: to.StringPtr("Microsoft.Storage/storageAccounts"),
@@ -126,10 +126,10 @@ func (a Helper) CreateStorageAccount(subscriptionID, storageAccountName, resourc
 	return nil
 }
 
-func (a Helper) checkStorageAccount(subscriptionID, storageAccountName, resourceGroupName string) error {
+func (a Helper) checkStorageAccount(ctx context.Context, subscriptionID, storageAccountName, resourceGroupName string) error {
 	log.Info().Msgf("checking existence of storage account [%s] in resource group [%s]\n", storageAccountName, resourceGroupName)
 	c := armstorage.NewStorageAccountsClient(a.AzureArmConnection, subscriptionID)
-	ctx := context.TODO()
+
 	if _, err := c.GetProperties(ctx, resourceGroupName, storageAccountName, nil); err != nil {
 		return NoAzureStorageAccountError{name: storageAccountName}
 	} else {
@@ -138,23 +138,23 @@ func (a Helper) checkStorageAccount(subscriptionID, storageAccountName, resource
 }
 
 // CreateStorageContainer az storage container create --name "$CONTAINER_NAME" --resource-group "$RESOURCE_GROUP" --account-name "$STORAGE_ACCOUNT".
-func (a Helper) CreateStorageContainer(subscriptionID, resourceGroupName, storageAccountName, containerName string) error {
-	if err := a.checkStorageContainer(subscriptionID, resourceGroupName, storageAccountName, containerName); err == nil {
+func (a Helper) CreateStorageContainer(ctx context.Context, subscriptionID, resourceGroupName, storageAccountName, containerName string) error {
+	if err := a.checkStorageContainer(ctx, subscriptionID, resourceGroupName, storageAccountName, containerName); err == nil {
 		log.Info().Msgf("storage account container [%s] already exists\n", containerName)
 		return nil
 	}
 
 	log.Info().Msgf("creating storage account container [%s] in [%s]\n", containerName, storageAccountName)
 	c := armstorage.NewBlobContainersClient(a.AzureArmConnection, subscriptionID)
-	ctx := context.TODO()
+
 	_, err := c.Create(ctx, resourceGroupName, storageAccountName, containerName, armstorage.BlobContainer{}, nil)
 	return err
 }
 
-func (a Helper) checkStorageContainer(subscriptionID, resourceGroupName, storageAccountName, containerName string) error {
+func (a Helper) checkStorageContainer(ctx context.Context, subscriptionID, resourceGroupName, storageAccountName, containerName string) error {
 	log.Info().Msgf("checking existence storage account container [%s] in [%s]\n", containerName, storageAccountName)
 	c := armstorage.NewBlobContainersClient(a.AzureArmConnection, subscriptionID)
-	ctx := context.TODO()
+
 	if _, err := c.Get(ctx, resourceGroupName, storageAccountName, containerName, nil); err != nil {
 		return NoAzureStorageContainerError{
 			name:           containerName,
@@ -166,9 +166,8 @@ func (a Helper) checkStorageContainer(subscriptionID, resourceGroupName, storage
 }
 
 // CreateRoleAssignment az role assignment create --scope "/subscriptions/${SUBSCRIPTION_ID}" --role "User Access Administrator" --assignee "$CLIENT_ID".
-func (a Helper) CreateRoleAssignment(subscriptionID, scope, roleName, principalID string) error {
+func (a Helper) CreateRoleAssignment(ctx context.Context, subscriptionID, scope, roleName, principalID string) error {
 	log.Info().Msgf("creating role assignment for principal [%s] with role [%s] and scope [%s]\n", principalID, roleName, scope)
-	ctx := context.TODO()
 
 	c := armauthorization.NewRoleAssignmentsClient(a.AzureArmConnection, subscriptionID)
 	c2 := armauthorization.NewRoleDefinitionsClient(a.AzureArmConnection)
@@ -182,7 +181,7 @@ func (a Helper) CreateRoleAssignment(subscriptionID, scope, roleName, principalI
 
 	log.Info().Msgf("using role definition [%s]\n", to.String(roleDefID))
 
-	if err := a.checkRoleAssignment(subscriptionID, scope, *roleDefID, principalID); err == nil {
+	if err := a.checkRoleAssignment(ctx, subscriptionID, scope, *roleDefID, principalID); err == nil {
 		log.Info().Msgf("role definition [%s] already assigned to principal [%s] with scope [%s]\n", roleName, principalID, scope)
 		return nil
 	}
@@ -202,8 +201,7 @@ func (a Helper) CreateRoleAssignment(subscriptionID, scope, roleName, principalI
 	return err
 }
 
-func (a Helper) checkRoleAssignment(subscriptionID, scope, roleDefID, principalID string) error {
-	ctx := context.TODO()
+func (a Helper) checkRoleAssignment(ctx context.Context, subscriptionID, scope, roleDefID, principalID string) error {
 	c := armauthorization.NewRoleAssignmentsClient(a.AzureArmConnection, subscriptionID)
 
 	res := c.ListForScope(scope, &armauthorization.RoleAssignmentsListForScopeOptions{
@@ -224,9 +222,9 @@ func (a Helper) checkRoleAssignment(subscriptionID, scope, roleDefID, principalI
 	}
 }
 
-func (a Helper) CreateServicePrincipal(tenantID, name string) (string, string, error) {
+func (a Helper) CreateServicePrincipal(ctx context.Context, tenantID, name string) (string, string, error) {
 	appID := ""
-	objectID, secret, err := a.checkServicePrincipal(tenantID, name)
+	objectID, secret, err := a.checkServicePrincipal(ctx, tenantID, name)
 	var errNoApp *NoAzureApplicationError
 	var errNoSP *NoAzureServicePrincipalError
 
@@ -246,7 +244,6 @@ func (a Helper) CreateServicePrincipal(tenantID, name string) (string, string, e
 	c.Authorizer = a.AzureGraphAuthorizer
 	c2 := graphrbac.NewApplicationsClient(tenantID)
 	c2.Authorizer = a.AzureGraphAuthorizer
-	ctx := context.TODO()
 
 	newSecret := uuid.NewV1().String()
 	if appID == "" {
@@ -285,12 +282,11 @@ func (a Helper) CreateServicePrincipal(tenantID, name string) (string, string, e
 	return *objectID, newSecret, nil
 }
 
-func (a Helper) checkServicePrincipal(tenantID, name string) (*string, *string, error) {
+func (a Helper) checkServicePrincipal(ctx context.Context, tenantID, name string) (*string, *string, error) {
 	c := graphrbac.NewServicePrincipalsClient(tenantID)
 	c.Authorizer = a.AzureGraphAuthorizer
 	c2 := graphrbac.NewApplicationsClient(tenantID)
 	c2.Authorizer = a.AzureGraphAuthorizer
-	ctx := context.TODO()
 
 	filterQuery := fmt.Sprintf("displayName eq '%s'", name)
 
@@ -334,11 +330,11 @@ func (a Helper) checkServicePrincipal(tenantID, name string) (*string, *string, 
 }
 
 // CreateADPermission az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 1cda74f2-2616-4834-b122-5cb1b07f8a59=Role.
-func (a Helper) CreateADPermission(tenantID, clientID, scope string) error {
+func (a Helper) CreateADPermission(ctx context.Context, tenantID, clientID, scope string) error {
 	log.Info().Msgf("creating ad permission for client [%s] with scope [%s]\n", clientID, scope)
 	c := graphrbac.NewOAuth2PermissionGrantClient(tenantID)
 	c.Authorizer = a.AzureGraphAuthorizer
-	ctx := context.TODO()
+
 	_, err := c.Create(ctx, &graphrbac.OAuth2PermissionGrant{
 		ClientID:   to.StringPtr(clientID),
 		ResourceID: to.StringPtr("00000002-0000-0000-c000-000000000000"),

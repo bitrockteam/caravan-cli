@@ -35,7 +35,7 @@ var cleanCmd = &cobra.Command{
 			c.Force = true
 		}
 
-		prv, err := getProvider(c)
+		prv, err := getProvider(ctx, c)
 		if err != nil {
 			return err
 		}
@@ -47,7 +47,7 @@ var cleanCmd = &cobra.Command{
 				return nil
 			}
 
-			if err := prv.Destroy(cli.ApplicationSupport); err != nil {
+			if err := prv.Destroy(ctx, cli.ApplicationSupport); err != nil {
 				return err
 			}
 
@@ -65,7 +65,7 @@ var cleanCmd = &cobra.Command{
 				return nil
 			}
 
-			if err := prv.Destroy(cli.Platform); err != nil {
+			if err := prv.Destroy(ctx, cli.Platform); err != nil {
 				return err
 			}
 
@@ -83,7 +83,7 @@ var cleanCmd = &cobra.Command{
 				return nil
 			}
 
-			if err := prv.Destroy(cli.Infrastructure); err != nil {
+			if err := prv.Destroy(ctx, cli.Infrastructure); err != nil {
 				return err
 			}
 
@@ -94,7 +94,7 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 
-		err = prv.CleanProvider()
+		err = prv.CleanProvider(ctx)
 		if err != nil {
 			log.Error().Msgf("error during clean of cloud resources: %s\n", err)
 			return nil

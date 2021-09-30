@@ -1,6 +1,7 @@
 package terraform_test
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -9,6 +10,7 @@ import (
 )
 
 func TestTerraformInit(t *testing.T) {
+	ctx := context.Background()
 	dir, err := ioutil.TempDir("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -16,7 +18,7 @@ func TestTerraformInit(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	tf := terraform.Terraform{}
-	if err := tf.Init(dir); err != nil {
+	if err := tf.Init(ctx, dir); err != nil {
 		t.Errorf("error during terraform init: %s", err)
 	}
 	if tf.Workdir != dir {
