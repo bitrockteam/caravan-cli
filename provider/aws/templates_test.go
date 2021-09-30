@@ -37,8 +37,8 @@ func TestGenerateConfig(t *testing.T) {
 			templates, _ := aws.GetTemplates()
 			for _, tmp := range templates {
 				if tmp.Name == tc.name {
-					// fmt.Printf("%s\n", tc.name)
-					// fmt.Printf("test: %s\n", tmp.Path)
+					// log.Info().Msgf("%s\n", tc.name)
+					// log.Info().Msgf("test: %s\n", tmp.Path)
 
 					if err := tmp.Render(aws.Caravan); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)

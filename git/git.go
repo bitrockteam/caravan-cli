@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/rs/zerolog/log"
+
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 )
@@ -19,7 +21,7 @@ func NewGit(org string) (g Git) {
 }
 
 func (g Git) Clone(name, dest, branch string) (err error) {
-	fmt.Printf("cloning repo %s/%s to %s - branch: %s\n", g.org, name, dest, branch)
+	log.Info().Msgf("cloning repo %s/%s to %s - branch: %s\n", g.org, name, dest, branch)
 
 	repo, err := git.PlainClone("./"+dest, false, &git.CloneOptions{
 		URL:      "https://github.com/" + g.org + "/" + name,

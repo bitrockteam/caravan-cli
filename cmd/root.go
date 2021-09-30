@@ -3,14 +3,21 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile  string
+	logLevel string
+	jsonLogs bool
+)
 
 // rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
@@ -25,7 +32,8 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
-	SilenceUsage: true,
+	SilenceUsage:      true,
+	PersistentPreRunE: rootPreRun,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -42,6 +50,8 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.caravan.yaml)")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "log level to be used")
+	rootCmd.PersistentFlags().BoolVar(&jsonLogs, "json-logs", false, "log in JSON format (default to pretty console format)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -69,4 +79,26 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func setUpLogs(out io.Writer, level zerolog.Level, humanLogs bool) error {
+	zerolog.SetGlobalLevel(level)
+	if humanLogs {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: out})
+	}
+	return nil
+}
+
+func rootPreRun(cmd *cobra.Command, args []string) error {
+	level, err := zerolog.ParseLevel(logLevel)
+	if err != nil {
+		return fmt.Errorf("%s is not a valid log level: %w", logLevel, err)
+	}
+
+	if err = setUpLogs(os.Stdout, level, !jsonLogs); err != nil {
+		return err
+	}
+
+	log.Info().Msg("Logger initialized")
+	return nil
 }

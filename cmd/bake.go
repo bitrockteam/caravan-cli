@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +20,7 @@ var bakeCmd = &cobra.Command{
 	Use:   "bake",
 	Short: "Generate (bake) up to date VM images for caravan",
 	Long:  `Baked images are available for usage in the selected provider's registry provided region.`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
@@ -30,7 +32,7 @@ var bakeCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Println("bake called")
+		log.Debug().Msgf("bake called")
 
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")

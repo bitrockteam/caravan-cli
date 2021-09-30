@@ -2,9 +2,10 @@ package cli
 
 import (
 	"caravan-cli/health"
-	"fmt"
 	"html/template"
 	"os"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Report struct {
@@ -33,11 +34,11 @@ Nomad	URL: 		https://nomad.{{.Caravan.Name }}.{{.Caravan.Domain}}
 `)
 
 	if err != nil {
-		fmt.Printf("error parsing report: %s\n", err)
+		log.Error().Msgf("error parsing report: %s\n", err)
 	}
 
 	if err := t.Execute(os.Stdout, r); err != nil {
-		fmt.Printf("error executing report: %s\n", err)
+		log.Error().Msgf("error executing report: %s\n", err)
 	}
 }
 
