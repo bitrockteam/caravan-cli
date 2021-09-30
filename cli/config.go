@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/asaskevich/govalidator"
 )
 
@@ -145,7 +147,7 @@ func (c *Config) SetNomadToken() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("setting nomad token: %s\n", t)
+	log.Info().Msgf("setting nomad token: %s\n", t)
 	c.NomadToken = t
 
 	return nil

@@ -6,12 +6,13 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Checker interface {
@@ -84,21 +85,21 @@ func (v VaultHealth) Version() string {
 
 	resp, err := Get(ctx, v.url, v.caFile)
 	if err != nil {
-		fmt.Printf("error: %s", err)
+		log.Error().Msgf("error: %s", err)
 		return ""
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("body: %s error: %s", body, err)
+		log.Error().Msgf("body: %s error: %s", body, err)
 		return ""
 	}
 
 	var r VaultResponse
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		fmt.Printf("unmarshal: %s error: %s\n", body, err)
+		log.Error().Msgf("unmarshal: %s error: %s\n", body, err)
 		return ""
 	}
 	return r.Version
@@ -136,14 +137,14 @@ func (c ConsulHealth) Version() string {
 
 	resp, err := Get(ctx, c.url, c.caFile)
 	if err != nil {
-		fmt.Printf("error getting response: %s", err)
+		log.Error().Msgf("error getting response: %s", err)
 		return ""
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("body: %s error: %s", body, err)
-		fmt.Printf("error reading response: %s", err)
+		log.Error().Msgf("body: %s error: %s", body, err)
+		log.Error().Msgf("error reading response: %s", err)
 		return ""
 	}
 

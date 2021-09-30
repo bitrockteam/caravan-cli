@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +32,7 @@ var bakeCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Println("bake called")
+		log.Debug().Msgf("bake called")
 
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")

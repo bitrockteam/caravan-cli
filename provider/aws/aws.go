@@ -10,6 +10,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 )
@@ -111,21 +113,21 @@ func (a AWS) ValidateConfiguration() error {
 
 func (a AWS) InitProvider() error {
 	if err := a.CreateStateStore(a.Caravan.StateStoreName); err != nil {
-		fmt.Printf("failed to create state store")
+		log.Error().Msgf("failed to create state store")
 		return err
 	}
 	if err := a.CreateLock(a.Caravan.LockName); err != nil {
-		fmt.Printf("failed to create lock")
+		log.Error().Msgf("failed to create lock")
 		return err
 	}
 	return nil
 }
 
 func (a AWS) CleanProvider() error {
-	fmt.Printf("removing terraform state and locking structures\n")
+	log.Info().Msgf("removing terraform state and locking structures\n")
 
 	if a.Caravan.Force {
-		fmt.Printf("emptying bucket %s\n", a.Caravan.StateStoreName)
+		log.Info().Msgf("emptying bucket %s\n", a.Caravan.StateStoreName)
 		err := a.EmptyStateStore(a.Caravan.StateStoreName)
 		if err != nil {
 			return fmt.Errorf("error emptying: %w", err)

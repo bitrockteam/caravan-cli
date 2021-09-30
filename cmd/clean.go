@@ -5,10 +5,10 @@ package cmd
 
 import (
 	"caravan-cli/cli"
-	"fmt"
 	"os"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +28,7 @@ var cleanCmd = &cobra.Command{
 			if !strings.Contains(err.Error(), "no such file or directory") {
 				return err
 			}
-			fmt.Printf("all clean\n")
+			log.Info().Msgf("all clean\n")
 			return nil
 		}
 		if force {
@@ -43,7 +43,7 @@ var cleanCmd = &cobra.Command{
 		if c.Status >= cli.ApplicationDeployRunning {
 			c.Status = cli.ApplicationCleanRunning
 			if err := c.Save(); err != nil {
-				fmt.Printf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s\n", err)
 				return nil
 			}
 
@@ -53,7 +53,7 @@ var cleanCmd = &cobra.Command{
 
 			c.Status = cli.ApplicationCleanDone
 			if err := c.Save(); err != nil {
-				fmt.Printf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s\n", err)
 				return nil
 			}
 		}
@@ -61,7 +61,7 @@ var cleanCmd = &cobra.Command{
 		if c.Status >= cli.PlatformDeployRunning {
 			c.Status = cli.PlatformCleanRunning
 			if err := c.Save(); err != nil {
-				fmt.Printf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s\n", err)
 				return nil
 			}
 
@@ -71,7 +71,7 @@ var cleanCmd = &cobra.Command{
 
 			c.Status = cli.PlatformCleanDone
 			if err := c.Save(); err != nil {
-				fmt.Printf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s\n", err)
 				return nil
 			}
 		}
@@ -79,7 +79,7 @@ var cleanCmd = &cobra.Command{
 		if c.Status >= cli.InfraDeployRunning {
 			c.Status = cli.InfraCleanRunning
 			if err := c.Save(); err != nil {
-				fmt.Printf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s\n", err)
 				return nil
 			}
 
@@ -89,17 +89,17 @@ var cleanCmd = &cobra.Command{
 
 			c.Status = cli.InfraCleanDone
 			if err := c.Save(); err != nil {
-				fmt.Printf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s\n", err)
 				return nil
 			}
 		}
 
 		err = prv.CleanProvider()
 		if err != nil {
-			fmt.Printf("error during clean of cloud resources: %s\n", err)
+			log.Error().Msgf("error during clean of cloud resources: %s\n", err)
 			return nil
 		}
-		fmt.Printf("removing %s/%s\n", c.Workdir, c.Name)
+		log.Info().Msgf("removing %s/%s\n", c.Workdir, c.Name)
 
 		os.RemoveAll(c.WorkdirProject)
 		os.RemoveAll(c.Workdir + "/caravan.state")

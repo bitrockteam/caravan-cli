@@ -12,17 +12,17 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
-
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
 // initCmd represents the init command.
 var initCmd = &cobra.Command{
-	Use:               "init",
-	Short:             "Select a provider to initialize",
-	Long:              `Initialization of the needed config files and supporting config for a given provider (project, state stores/locking ...)`,
-	RunE:              executeInit,
-	PersistentPreRunE: preRunInit,
+	Use:     "init",
+	Short:   "Select a provider to initialize",
+	Long:    `Initialization of the needed config files and supporting config for a given provider (project, state stores/locking ...)`,
+	RunE:    executeInit,
+	PreRunE: preRunInit,
 }
 
 var (
@@ -83,19 +83,14 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		// TODO better error checking
 		if !strings.Contains(err.Error(), "no such file or directory") {
-			fmt.Printf("unable to create config from file: %s\n", err)
+			log.Error().Msgf("unable to create config from file: %s\n", err)
 			return err
 		}
 		c, err = cli.NewConfigFromScratch(name, prv, region)
 		if err != nil {
-			fmt.Printf("unable to create config from scratch: %s\n", err)
+			log.Error().Msgf("unable to create config from scratch: %s\n", err)
 			return err
 		}
-	}
-
-	p, err := getProvider(c)
-	if err != nil {
-		return err
 	}
 
 	if c.Name != name || c.Provider != prv {
@@ -106,20 +101,25 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	p, err := getProvider(c)
+	if err != nil {
+		return err
+	}
+
 	if err := initRepos(c, branch); err != nil {
-		fmt.Printf("error: %s\n", err)
+		log.Error().Msgf("error: %s\n", err)
 		return err
 	}
 
 	if err := initProvider(c, p); err != nil {
-		fmt.Printf("error during init: %s\n", err)
+		log.Error().Msgf("error during init: %s\n", err)
 		return err
 	}
 
 	if c.Status < cli.InitDone {
 		c.Status = cli.InitDone
 		if err := c.Save(); err != nil {
-			fmt.Printf("error saving state: %s\n", err)
+			log.Error().Msgf("error saving state: %s\n", err)
 		}
 	}
 
@@ -127,7 +127,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 }
 
 func initProvider(c *cli.Config, p provider.Provider) error {
-	fmt.Printf("initializing cloud resources\n")
+	log.Info().Msgf("initializing cloud resources\n")
 	if err := p.InitProvider(); err != nil {
 		return fmt.Errorf("error initing provider: %w", err)
 	}
@@ -137,12 +137,12 @@ func initProvider(c *cli.Config, p provider.Provider) error {
 		return fmt.Errorf("failed to get templates: %w", err)
 	}
 
-	fmt.Printf("generating terraform config files on: %s\n", c.WorkdirProject)
+	log.Info().Msgf("generating terraform config files on: %s\n", c.WorkdirProject)
 	if err := os.MkdirAll(c.WorkdirProject, 0777); err != nil {
 		return err
 	}
 	for _, t := range templates {
-		fmt.Printf("generating %v: %s \n", t.Name, t.Path)
+		log.Info().Msgf("generating %v: %s \n", t.Name, t.Path)
 		if t.Name != "baking-vars" {
 			if err := t.Render(c); err != nil {
 				return err

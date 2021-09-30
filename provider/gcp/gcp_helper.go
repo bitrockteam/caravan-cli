@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/cloudbilling/v1"
 	"google.golang.org/api/cloudresourcemanager/v3"
@@ -17,7 +19,7 @@ import (
 )
 
 func (g GCP) CreateStateStore(name string) error {
-	fmt.Printf("creating bucket %s on project: %s\n", name, g.Caravan.Name)
+	log.Info().Msgf("creating bucket %s on project: %s\n", name, g.Caravan.Name)
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -44,7 +46,7 @@ func (g GCP) CreateStateStore(name string) error {
 }
 
 func (g GCP) DeleteStateStore(name string) error {
-	fmt.Printf("deleting bucket %s on project: %s\n", name, g.Caravan.Name)
+	log.Info().Msgf("deleting bucket %s on project: %s\n", name, g.Caravan.Name)
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -67,7 +69,7 @@ func (g GCP) DeleteStateStore(name string) error {
 }
 
 func (g GCP) WriteStateStore(bucket, object, data string) error {
-	fmt.Printf("getting writer on bucket %s on project: %s\n", bucket, g.Caravan.Name)
+	log.Info().Msgf("getting writer on bucket %s on project: %s\n", bucket, g.Caravan.Name)
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -91,7 +93,7 @@ func (g GCP) WriteStateStore(bucket, object, data string) error {
 }
 
 func (g GCP) EmptyStateStore(name string) error {
-	fmt.Printf("emptying bucket %s on project: %s\n", name, g.Caravan.Name)
+	log.Info().Msgf("emptying bucket %s on project: %s\n", name, g.Caravan.Name)
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -164,7 +166,7 @@ func (g GCP) CreateProject(id, orgID string) error {
 
 // DeleteProject deletes a project from its project id.
 func (g GCP) DeleteProject(name, organization string) error {
-	fmt.Printf("deleting project: %s\n", name)
+	log.Info().Msgf("deleting project: %s\n", name)
 	ctx := context.Background()
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
@@ -226,12 +228,12 @@ func (g GCP) GetProject(name, organization string) (p *cloudresourcemanager.Proj
 	if len(resp.Projects) != 1 {
 		return p, fmt.Errorf("unable to uniquely identify project: %s (%d)", name, len(resp.Projects))
 	}
-	// fmt.Printf("found project: %v\n", resp.Projects[0])
+	// log.Info().Msgf("found project: %v\n", resp.Projects[0])
 	return resp.Projects[0], nil
 }
 
 func (g GCP) SetBillingAccount(name, bai string) (err error) {
-	fmt.Printf("Setting Billing account: %s\n", bai)
+	log.Info().Msgf("Setting Billing account: %s\n", bai)
 	ctx := context.Background()
 
 	cloudbillingservice, err := cloudbilling.NewService(ctx)
@@ -253,7 +255,7 @@ func (g GCP) SetBillingAccount(name, bai string) (err error) {
 }
 
 func (g GCP) CreateServiceAccount(name string) (err error) {
-	fmt.Printf("Create service account: %s\n", name)
+	log.Info().Msgf("Create service account: %s\n", name)
 	ctx := context.Background()
 
 	iamservice, err := iam.NewService(ctx)
@@ -280,7 +282,7 @@ func (g GCP) CreateServiceAccount(name string) (err error) {
 }
 
 func (g GCP) DeleteServiceAccount(name string) (err error) {
-	fmt.Printf("delete service account: %s\n", name)
+	log.Info().Msgf("delete service account: %s\n", name)
 	ctx := context.Background()
 
 	iamservice, err := iam.NewService(ctx)
@@ -301,7 +303,7 @@ func (g GCP) DeleteServiceAccount(name string) (err error) {
 }
 
 func (g GCP) CreateServiceAccountKeys(sa, name string) (key string, err error) {
-	fmt.Printf("create service account keys: %s\n", name)
+	log.Info().Msgf("create service account keys: %s\n", name)
 	ctx := context.Background()
 
 	iamservice, err := iam.NewService(ctx)
@@ -322,7 +324,7 @@ func (g GCP) CreateServiceAccountKeys(sa, name string) (key string, err error) {
 }
 
 func (g GCP) AddPolicyBinding(resource, name, member, role string) error {
-	fmt.Printf("add policy binding: %s %s@%s %s\n", member, role, resource, name)
+	log.Info().Msgf("add policy binding: %s %s@%s %s\n", member, role, resource, name)
 	ctx := context.Background()
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
@@ -348,7 +350,7 @@ func (g GCP) AddPolicyBinding(resource, name, member, role string) error {
 }
 
 func (g GCP) GetPolicyBinding(resource, name string) (policy *cloudresourcemanager.Policy, err error) {
-	// fmt.Printf("get policy binding: %s / %s\n", resource, name)
+	// log.Info().Msgf("get policy binding: %s / %s\n", resource, name)
 	ctx := context.Background()
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)

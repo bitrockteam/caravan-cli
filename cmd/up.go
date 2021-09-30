@@ -11,6 +11,8 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/health"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -22,9 +24,9 @@ var upCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		c, err := cli.NewConfigFromFile()
 		if err != nil {
-			fmt.Printf("ERR: %s\n", err)
+			log.Error().Msgf("ERR: %s\n", err)
 			if strings.Contains(err.Error(), "no such file or directory") {
-				fmt.Printf("please run init")
+				log.Info().Msgf("please run init")
 				return nil
 			}
 			return err
@@ -50,7 +52,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 		}
-		fmt.Printf("[%s] deployment of infrastructure completed\n", c.Status)
+		log.Info().Msgf("[%s] deployment of infrastructure completed\n", c.Status)
 
 		if err := checkStatus(c, "vault", "/v1/sys/leader", 30); err != nil {
 			return err
@@ -90,7 +92,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 		}
-		fmt.Printf("[%s] deployment of platform completed\n", c.Status)
+		log.Info().Msgf("[%s] deployment of platform completed\n", c.Status)
 		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 20); err != nil {
 			return err
 		}
@@ -110,7 +112,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 		}
-		fmt.Printf("[%s] deployment of application completed\n", c.Status)
+		log.Info().Msgf("[%s] deployment of application completed\n", c.Status)
 
 		return nil
 	},
@@ -121,20 +123,20 @@ func init() {
 }
 
 func checkStatus(c *cli.Config, tool string, path string, count int) error {
-	fmt.Printf("checking %s status:", tool)
+	log.Info().Msgf("checking %s status:", tool)
 
 	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CAPath)
 	for i := 0; i <= count; i++ {
 		if h.Check() {
-			fmt.Printf("OK\n")
+			log.Info().Msgf("OK\n")
 			break
 		}
 		if i >= count {
-			fmt.Printf("KO\n")
+			log.Warn().Msgf("KO\n")
 			return fmt.Errorf("timeout waiting for %s to be available", tool)
 		}
 		time.Sleep(6 * time.Second)
-		fmt.Printf(".")
+		log.Info().Msgf(".")
 	}
 	return nil
 }

@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Terraform struct {
@@ -22,7 +24,7 @@ func (t *Terraform) Init(wd string) (err error) {
 	defer cancel()
 
 	t.Workdir = wd
-	fmt.Printf("running init on workdir: %s\n", t.Workdir)
+	log.Info().Msgf("running init on workdir: %s\n", t.Workdir)
 	cmd := exec.CommandContext(ctx, "terraform", "init")
 	cmd.Dir = t.Workdir
 
@@ -45,7 +47,7 @@ func (t Terraform) ApplyVarMap(config map[string]string) (err error) {
 	for k, v := range config {
 		args = append(args, fmt.Sprintf("-var=%s=%s", k, v))
 	}
-	fmt.Printf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
+	log.Info().Msgf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 
@@ -69,7 +71,7 @@ func (t Terraform) ApplyVarFile(file string, timeout time.Duration, env map[stri
 	if target != "*" {
 		args = append(args, "-target="+target)
 	}
-	fmt.Printf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
+	log.Info().Msgf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 	cmd.Env = os.Environ()
@@ -93,7 +95,7 @@ func (t Terraform) Destroy(file string, env map[string]string) (err error) {
 	args = append(args, "destroy")
 	args = append(args, "-auto-approve")
 	args = append(args, "-var-file="+file)
-	fmt.Printf("running destroy on workdir: %s with args: %s\n", t.Workdir, args)
+	log.Info().Msgf("running destroy on workdir: %s with args: %s\n", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 	cmd.Env = os.Environ()
