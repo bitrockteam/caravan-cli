@@ -20,8 +20,8 @@ func TestGenerateConfig(t *testing.T) {
 	config.SetWorkdir(dir, "gcp")
 	_ = config.SetDomain("test.me")
 	config.GCPDNSZone = "dns-zone"
-	config.ParentProject = "parent-project"
-	config.UserEmail = "test.name@test.me"
+	config.GCPParentProject = "parent-project"
+	config.GCPUserEmail = "test.name@test.me"
 	gcp, err := gcp.New(ctx, config)
 	if err != nil {
 		t.Fatalf("unable to create gcp: %s", err)

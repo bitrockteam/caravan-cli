@@ -1,11 +1,11 @@
 package cli
 
 type GCPConfig struct {
-	GCPOrgID      string `json:",omitempty"`
-	GCPBillingID  string `json:",omitempty"`
-	ParentProject string `json:",omitempty"`
-	UserEmail     string `json:",omitempty"`
-	GCPDNSZone    string `json:",omitempty"`
+	GCPOrgID         string `json:",omitempty"`
+	GCPBillingID     string `json:",omitempty"`
+	GCPParentProject string `json:",omitempty"`
+	GCPUserEmail     string `json:",omitempty"`
+	GCPDNSZone       string `json:",omitempty"`
 }
 
 func (g *GCPConfig) SetGCPOrgID(id string) {

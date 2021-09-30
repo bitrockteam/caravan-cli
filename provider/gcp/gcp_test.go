@@ -30,8 +30,10 @@ func TestValidate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
-			c.UserEmail = "test.name@test.me"
+
+			c.GCPUserEmail = "test.name@test.me"
 			_, err = gcp.New(ctx, c)
+
 			if err == nil && tc.error || err != nil && !tc.error {
 				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
 			}

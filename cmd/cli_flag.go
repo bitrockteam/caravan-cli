@@ -11,6 +11,8 @@ const (
 	FlagRegionShort   CliFlag = "r"
 	FlagBranch        CliFlag = "branch"
 	FlagBranchShort   CliFlag = "b"
+	FlagDomain        CliFlag = "domain"
+	FlagDomainShort   CliFlag = "d"
 
 	FlagGCPParentProject CliFlag = "gcp-parent-project"
 	FlagGCPDnsZone       CliFlag = "gcp-dns-zone"
