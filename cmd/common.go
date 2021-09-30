@@ -4,6 +4,7 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
 	"caravan-cli/provider/aws"
+	"caravan-cli/provider/azure"
 	"caravan-cli/provider/gcp"
 	"fmt"
 )
@@ -16,8 +17,8 @@ func getProvider(c *cli.Config) (provider.Provider, error) {
 		p, err = aws.New(c)
 	case provider.GCP:
 		p, err = gcp.New(c)
-	// case provider.Azure:
-	//	p, err = azure.New(c)
+	case provider.Azure:
+		p, err = azure.New(c)
 	default:
 		p, err = nil, fmt.Errorf("unknown provider")
 	}

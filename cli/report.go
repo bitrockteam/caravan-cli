@@ -42,30 +42,30 @@ Nomad	URL: 		https://nomad.{{.Caravan.Name }}.{{.Caravan.Domain}}
 }
 
 func (r *Report) VaultCheck() string {
-	v := health.NewVaultHealth("https://vault."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath)
+	v := health.NewVaultHealth("https://vault."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
 	return v.Check()
 }
 
 func (r *Report) VaultVersion() string {
-	v := health.NewVaultHealth("https://vault."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath)
+	v := health.NewVaultHealth("https://vault."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
 	return v.Version()
 }
 
 func (r *Report) ConsulCheck() bool {
-	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath, r.Caravan.Datacenter)
+	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath, r.Caravan.Datacenter)
 	return co.Check()
 }
 
 func (r *Report) ConsulVersion() string {
-	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath, r.Caravan.Datacenter)
+	co := health.NewConsulHealth("https://consul."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath, r.Caravan.Datacenter)
 	return co.Version()
 }
 func (r *Report) NomadCheck() bool {
-	n := health.NewNomadHealth("https://nomad."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath)
+	n := health.NewNomadHealth("https://nomad."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
 	return n.Check()
 }
 
 func (r *Report) NomadVersion() string {
-	n := health.NewNomadHealth("https://nomad."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CApath)
+	n := health.NewNomadHealth("https://nomad."+r.Caravan.Name+"."+r.Caravan.Domain+"/", r.Caravan.CAPath)
 	return n.Version()
 }

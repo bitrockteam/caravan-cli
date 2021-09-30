@@ -41,11 +41,12 @@ type Config struct {
 	VaultRootToken            string              `json:",omitempty"`
 	NomadToken                string              `json:",omitempty"`
 	VaultURL                  string              `json:",omitempty"`
-	CApath                    string              `json:",omitempty"`
+	CAPath                    string              `json:",omitempty"`
 	ServiceAccount            string              `json:",omitempty"`
 	Datacenter                string              `json:",omitempty"`
 
 	GCPConfig
+	AzureConfig
 }
 
 // NewConfigFromScratch is used to construct a minimal configuration when no state
@@ -105,7 +106,7 @@ func (c *Config) SetWorkdir(wd, provider string) {
 	c.WorkdirApplication = filepath.Join(c.WorkdirProject, "caravan-application-support")
 	c.WorkdirApplicationVars = filepath.Join(c.WorkdirProject, "caravan-application-support", c.Name+"-"+c.Provider+"-cli.tfvars")
 	c.WorkdirApplicationBackend = filepath.Join(c.WorkdirProject, "caravan-application-support", "backend.tf")
-	c.CApath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
+	c.CAPath = filepath.Join(c.WorkdirInfra, "ca_certs.pem")
 }
 
 func (c *Config) SetDomain(domain string) (err error) {
@@ -135,7 +136,7 @@ func (c *Config) SetVaultRootToken() error {
 
 // SetNomadToken reads into config the Nomad Token.
 func (c *Config) SetNomadToken() error {
-	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CApath)
+	v, err := vault.New(c.VaultURL, c.VaultRootToken, c.CAPath)
 	if err != nil {
 		return err
 	}

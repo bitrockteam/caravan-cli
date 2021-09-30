@@ -4,8 +4,9 @@ package provider
 import "caravan-cli/cli"
 
 const (
-	AWS = "aws"
-	GCP = "gcp"
+	AWS   = "aws"
+	GCP   = "gcp"
+	Azure = "azure"
 )
 
 type WithDeploy interface {
