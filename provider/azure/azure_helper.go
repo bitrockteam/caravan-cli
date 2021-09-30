@@ -71,7 +71,7 @@ func (a Helper) checkResourceGroup(resourceGroupName, subscriptionID string) err
 	}
 
 	if res.RawResponse.StatusCode != 204 {
-		return fmt.Errorf("resource group [%s] not existing", resourceGroupName)
+		return NoAzureResourceGroupError{name: resourceGroupName}
 	}
 	return nil
 }
@@ -128,8 +128,11 @@ func (a Helper) checkStorageAccount(subscriptionID, storageAccountName, resource
 	fmt.Printf("checking existence of storage account [%s] in resource group [%s]\n", storageAccountName, resourceGroupName)
 	c := armstorage.NewStorageAccountsClient(a.AzureArmConnection, subscriptionID)
 	ctx := context.TODO()
-	_, err := c.GetProperties(ctx, resourceGroupName, storageAccountName, nil)
-	return err
+	if _, err := c.GetProperties(ctx, resourceGroupName, storageAccountName, nil); err != nil {
+		return NoAzureStorageAccountError{name: storageAccountName}
+	} else {
+		return nil
+	}
 }
 
 // CreateStorageContainer az storage container create --name "$CONTAINER_NAME" --resource-group "$RESOURCE_GROUP" --account-name "$STORAGE_ACCOUNT".
@@ -150,8 +153,14 @@ func (a Helper) checkStorageContainer(subscriptionID, resourceGroupName, storage
 	fmt.Printf("checking existence storage account container [%s] in [%s]\n", containerName, storageAccountName)
 	c := armstorage.NewBlobContainersClient(a.AzureArmConnection, subscriptionID)
 	ctx := context.TODO()
-	_, err := c.Get(ctx, resourceGroupName, storageAccountName, containerName, nil)
-	return err
+	if _, err := c.Get(ctx, resourceGroupName, storageAccountName, containerName, nil); err != nil {
+		return NoAzureStorageContainerError{
+			name:           containerName,
+			storageAccount: storageAccountName,
+		}
+	} else {
+		return nil
+	}
 }
 
 // CreateRoleAssignment az role assignment create --scope "/subscriptions/${SUBSCRIPTION_ID}" --role "User Access Administrator" --assignee "$CLIENT_ID".
@@ -171,17 +180,12 @@ func (a Helper) CreateRoleAssignment(subscriptionID, scope, roleName, principalI
 
 	fmt.Printf("using role definition [%s]\n", to.String(roleDefID))
 
-	res2 := c.ListForScope(scope, &armauthorization.RoleAssignmentsListForScopeOptions{
-		Filter: to.StringPtr(fmt.Sprintf("roleDefinitionID eq '%s' && principalId eq '%s'", *roleDefID, principalID)),
-	})
-	if res2.Err() != nil {
-		return res2.Err()
-	}
-	res2.NextPage(ctx)
-	if len(res2.PageResponse().Value) != 0 {
+	if err := a.checkRoleAssignment(subscriptionID, scope, *roleDefID, principalID); err == nil {
+		fmt.Printf("role definition [%s] already assigned to principal [%s] with scope [%s]\n", roleName, principalID, scope)
 		return nil
 	}
 
+	fmt.Printf("assigning role definition [%s] to principal [%s] with scope [%s]\n", roleName, principalID, scope)
 	_, err := c.Create(
 		ctx,
 		scope,
@@ -194,6 +198,28 @@ func (a Helper) CreateRoleAssignment(subscriptionID, scope, roleName, principalI
 			}}, nil)
 
 	return err
+}
+
+func (a Helper) checkRoleAssignment(subscriptionID, scope, roleDefID, principalID string) error {
+	ctx := context.TODO()
+	c := armauthorization.NewRoleAssignmentsClient(a.AzureArmConnection, subscriptionID)
+
+	res := c.ListForScope(scope, &armauthorization.RoleAssignmentsListForScopeOptions{
+		Filter: to.StringPtr(fmt.Sprintf("roleDefinitionID eq '%s' && principalId eq '%s'", roleDefID, principalID)),
+	})
+	if res.Err() != nil {
+		return res.Err()
+	}
+	res.NextPage(ctx)
+	if len(res.PageResponse().Value) != 0 {
+		return nil
+	} else {
+		return NoAzureRoleAssignmentError{
+			roleDefinitionID: roleDefID,
+			principalID:      principalID,
+			scope:            scope,
+		}
+	}
 }
 
 func (a Helper) CreateServicePrincipal(tenantID, name string) (string, string, error) {
@@ -272,11 +298,11 @@ func (a Helper) checkServicePrincipal(tenantID, name string) (*string, *string, 
 	}
 	err = res.NextWithContext(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, NoAzureApplicationError{name: name}
 	}
 	apps := res.Values()
 	if len(apps) == 0 {
-		return nil, nil, fmt.Errorf("no application existing with name [%s]", name)
+		return nil, nil, NoAzureApplicationError{name: name}
 	}
 
 	res2, err := c.List(ctx, filterQuery)
@@ -285,11 +311,17 @@ func (a Helper) checkServicePrincipal(tenantID, name string) (*string, *string, 
 	}
 	err = res2.NextWithContext(ctx)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, NoAzureServicePrincipalError{
+			name:  name,
+			appID: *(apps[0].AppID),
+		}
 	}
 	sps := res2.Values()
 	if len(sps) == 0 {
-		return nil, nil, fmt.Errorf("no service principal found with name [%s]", name)
+		return nil, nil, NoAzureServicePrincipalError{
+			name:  name,
+			appID: *(apps[0].AppID),
+		}
 	}
 
 	sp := sps[0]
