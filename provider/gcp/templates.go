@@ -19,8 +19,8 @@ use_le_staging        = true
 dc_name               = "gcp-dc"
 control_plane_sa_name = "control-plane"
 worker_plane_sa_name  = "worker-plane"
-image                 = "projects/{{ .ParentProject }}/global/images/family/caravan-centos-image-os"
-parent_dns_project_id = "{{ .ParentProject }}"
+image                 = "projects/{{ .GCPParentProject }}/global/images/family/caravan-centos-image-os"
+parent_dns_project_id = "{{ .GCPParentProject }}"
 parent_dns_zone_name  = "{{ .GCPDNSZone }}"
 google_account_file   = ".{{ .Name }}-terraform-sa-key.json"
 `

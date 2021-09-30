@@ -63,12 +63,10 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 		StateStoreName: name + "-caravan-terraform-state",
 		LockName:       name + "-caravan-terraform-state-lock",
 		Repos:          repos,
-		Domain:         "reactive-labs.io",
 		Workdir:        wd,
 		WorkdirProject: wd + "/" + name,
-		VaultURL:       "https://vault." + name + "." + "reactive-labs.io",
 		ServiceAccount: name + "-terraform",
-		Datacenter:     provider + "dc",
+		Datacenter:     provider + "-dc",
 		Region:         region,
 	}
 
@@ -113,10 +111,10 @@ func (c *Config) SetWorkdir(wd, provider string) {
 
 func (c *Config) SetDomain(domain string) (err error) {
 	if isValidDomain(domain) {
+		c.VaultURL = "https://vault." + c.Name + "." + c.Domain
 		c.Domain = domain
 		return nil
 	}
-	c.VaultURL = "https://vault." + c.Name + "." + c.Domain
 	return fmt.Errorf("please provide a valid domain name")
 }
 

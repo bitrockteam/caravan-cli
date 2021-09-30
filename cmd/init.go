@@ -31,6 +31,7 @@ var (
 	name   = ""
 	region = ""
 	branch = ""
+	domain = ""
 
 	// GCP.
 	gcpParentProject = ""
@@ -51,6 +52,9 @@ func init() {
 	_ = initCmd.MarkPersistentFlagRequired(FlagProject)
 	initCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
 	_ = initCmd.MarkPersistentFlagRequired(FlagProvider)
+	initCmd.Flags().StringVarP(&domain, FlagDomain, FlagDomainShort, "", "")
+	_ = initCmd.MarkPersistentFlagRequired(FlagDomain)
+
 	initCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "region for the deployment")
 	initCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "", "")
 
@@ -95,6 +99,10 @@ func executeInit(cmd *cobra.Command, args []string) error {
 
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
+	}
+
+	if err := c.SetDomain(domain); err != nil {
+		return fmt.Errorf("error setting domain: %w", err)
 	}
 
 	if err = processFlags(c); err != nil {
@@ -183,7 +191,7 @@ func processFlags(c *cli.Config) error {
 			}
 		}
 
-		c.ParentProject = gcpParentProject
+		c.GCPParentProject = gcpParentProject
 		c.GCPDNSZone = gcpDNSZone
 	}
 

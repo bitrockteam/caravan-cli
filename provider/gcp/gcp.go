@@ -20,13 +20,13 @@ type GCP struct {
 func New(ctx context.Context, c *cli.Config) (g GCP, err error) {
 	g = GCP{}
 
-	if c.UserEmail == "" {
+	if c.GCPUserEmail == "" {
 		home := os.Getenv("HOME")
 		u, err := g.GetUserEmail(filepath.Join(home, ".config/gcloud/configurations/config_default"))
 		if err != nil {
 			return g, err
 		}
-		c.UserEmail = u
+		c.GCPUserEmail = u
 	}
 	g.Caravan = c
 	if err := g.ValidateConfiguration(ctx); err != nil {
@@ -111,21 +111,21 @@ func (g GCP) InitProvider(ctx context.Context) error {
 	}
 
 	// permission for the terraform service account on the parent project
-	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/compute.imageUser"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, member, "roles/compute.imageUser"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/dns.admin"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, member, "roles/dns.admin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/compute.networkAdmin"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, member, "roles/compute.networkAdmin"); err != nil {
 		return err
 	}
-	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, member, "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, member, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 
 	// permission for the current user on the parent project
-	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.ParentProject, "user:"+g.Caravan.UserEmail, "roles/iam.serviceAccountUser"); err != nil {
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, "user:"+g.Caravan.GCPUserEmail, "roles/iam.serviceAccountUser"); err != nil {
 		return err
 	}
 

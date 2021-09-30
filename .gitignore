@@ -4,4 +4,3 @@
 *.swp
 /caravan-cli
 .idea
-internal/vault/vault_integration_test.go
