@@ -4,6 +4,7 @@ package azure
 import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
+	"context"
 	"fmt"
 )
 
@@ -12,11 +13,11 @@ type Azure struct {
 	AzureHelper *Helper
 }
 
-func New(c *cli.Config) (Azure, error) {
+func New(ctx context.Context, c *cli.Config) (Azure, error) {
 	a := Azure{}
 	var err error
 	a.Caravan = c
-	if err = a.ValidateConfiguration(); err != nil {
+	if err = a.ValidateConfiguration(ctx); err != nil {
 		return a, err
 	}
 	if a.AzureHelper, err = NewHelper(a.Caravan.AzureUseCLI); err != nil {
@@ -25,7 +26,7 @@ func New(c *cli.Config) (Azure, error) {
 	return a, nil
 }
 
-func (a Azure) GetTemplates() ([]cli.Template, error) {
+func (a Azure) GetTemplates(ctx context.Context) ([]cli.Template, error) {
 	baking := cli.Template{
 		Name: "baking-vars",
 		Text: bakingTfVarsTmpl,
@@ -73,21 +74,21 @@ func (a Azure) GetTemplates() ([]cli.Template, error) {
 	}, nil
 }
 
-func (a Azure) ValidateConfiguration() error {
+func (a Azure) ValidateConfiguration(ctx context.Context) error {
 	//TODO: implement me
 	return nil
 }
 
-func (a Azure) InitProvider() error {
+func (a Azure) InitProvider(ctx context.Context) error {
 	var err error
-	err = a.AzureHelper.CreateResourceGroup(a.Caravan.AzureResourceGroup, a.Caravan.AzureSubscriptionID, a.Caravan.Region)
+	err = a.AzureHelper.CreateResourceGroup(ctx, a.Caravan.AzureResourceGroup, a.Caravan.AzureSubscriptionID, a.Caravan.Region)
 	if err != nil {
 		return err
 	}
 
 	//TODO: create storage account (prefix)sa
 	saName := fmt.Sprintf("crv%ssa", a.Caravan.Name)
-	err = a.AzureHelper.CreateStorageAccount(a.Caravan.AzureSubscriptionID, saName, a.Caravan.AzureResourceGroup, a.Caravan.Region)
+	err = a.AzureHelper.CreateStorageAccount(ctx, a.Caravan.AzureSubscriptionID, saName, a.Caravan.AzureResourceGroup, a.Caravan.Region)
 	if err != nil {
 		return err
 	}
@@ -95,20 +96,21 @@ func (a Azure) InitProvider() error {
 
 	//TODO: create storage container tfstate
 	containerName := "tfstate"
-	err = a.AzureHelper.CreateStorageContainer(a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup, a.Caravan.AzureStorageAccount, containerName)
+	err = a.AzureHelper.CreateStorageContainer(ctx, a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup, a.Caravan.AzureStorageAccount, containerName)
 	if err != nil {
 		return err
 	}
 	a.Caravan.SetAzureStorageContainerName(containerName)
 
 	//TODO: create service principal (prefix)-tf-sp Contributor on the RG + ParentRG
-	clientID, clientSecret, err := a.AzureHelper.CreateServicePrincipal(a.Caravan.AzureTenantID, fmt.Sprintf("%s-tf-sp", a.Caravan.Name))
+	clientID, clientSecret, err := a.AzureHelper.CreateServicePrincipal(ctx, a.Caravan.AzureTenantID, fmt.Sprintf("%s-tf-sp", a.Caravan.Name))
 	if err != nil {
 		return err
 	}
 	a.Caravan.SetAzureClientID(clientID)
 	a.Caravan.SetAzureClientSecret(clientSecret)
 	err = a.AzureHelper.CreateRoleAssignment(
+		ctx,
 		a.Caravan.AzureSubscriptionID,
 		fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup),
 		"Contributor",
@@ -119,6 +121,7 @@ func (a Azure) InitProvider() error {
 	}
 	if a.Caravan.AzureDNSResourceGroup != a.Caravan.AzureResourceGroup {
 		err = a.AzureHelper.CreateRoleAssignment(
+			ctx,
 			a.Caravan.AzureSubscriptionID,
 			fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureDNSResourceGroup),
 			"Contributor",
@@ -130,6 +133,7 @@ func (a Azure) InitProvider() error {
 	}
 	if a.Caravan.AzureBakingResourceGroup != a.Caravan.AzureResourceGroup {
 		err = a.AzureHelper.CreateRoleAssignment(
+			ctx,
 			a.Caravan.AzureSubscriptionID,
 			fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureBakingResourceGroup),
 			"Contributor",
@@ -143,19 +147,19 @@ func (a Azure) InitProvider() error {
 
 	// # Grant Application.ReadWrite.All
 	// az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 1cda74f2-2616-4834-b122-5cb1b07f8a59=Role
-	err = a.AzureHelper.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "ReadWrite.All")
+	err = a.AzureHelper.CreateADPermission(ctx, a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "ReadWrite.All")
 	if err != nil {
 		return err
 	}
 	// # Grant User.Read
 	// az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 311a71cc-e848-46a1-bdf8-97ff7156d8e6=Scope
-	err = a.AzureHelper.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "User.Read")
+	err = a.AzureHelper.CreateADPermission(ctx, a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "User.Read")
 	if err != nil {
 		return err
 	}
 	// # Grant Directory.ReadWrite.All
 	// az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 78c8a3c8-a07e-4b9e-af1b-b5ccab50a175=Role
-	err = a.AzureHelper.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "Directory.ReadWrite.All")
+	err = a.AzureHelper.CreateADPermission(ctx, a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "Directory.ReadWrite.All")
 	if err != nil {
 		return err
 	}
@@ -165,6 +169,7 @@ func (a Azure) InitProvider() error {
 
 	//TODO: allow access to backend for TF
 	err = a.AzureHelper.CreateRoleAssignment(
+		ctx,
 		a.Caravan.AzureSubscriptionID,
 		fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup),
 		"Storage Blob Data Contributor",
@@ -176,6 +181,7 @@ func (a Azure) InitProvider() error {
 
 	//TODO: allow assigning roles to other entites for TF
 	err = a.AzureHelper.CreateRoleAssignment(
+		ctx,
 		a.Caravan.AzureSubscriptionID,
 		fmt.Sprintf("/subscriptions/%s", a.Caravan.AzureSubscriptionID),
 		"User Access Administrator",
@@ -193,23 +199,23 @@ func (a Azure) InitProvider() error {
 	return nil
 }
 
-func (a Azure) Bake() error {
+func (a Azure) Bake(ctx context.Context) error {
 	panic("implement me")
 }
 
-func (a Azure) Deploy(layer cli.DeployLayer) error {
+func (a Azure) Deploy(ctx context.Context, layer cli.DeployLayer) error {
 	panic("implement me")
 }
 
-func (a Azure) Destroy(layer cli.DeployLayer) error {
+func (a Azure) Destroy(ctx context.Context, layer cli.DeployLayer) error {
 	panic("implement me")
 }
 
-func (a Azure) CleanProvider() error {
+func (a Azure) CleanProvider(ctx context.Context) error {
 	//TODO: implement me
 	return nil
 }
 
-func (a Azure) Status() error {
+func (a Azure) Status(ctx context.Context) error {
 	panic("implement me")
 }

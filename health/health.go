@@ -33,8 +33,8 @@ func NewHealth(u, ca string) Health {
 	}
 }
 
-func (h Health) Check() bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (h Health) Check(ctx context.Context) bool {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := Get(ctx, h.url, h.caFile)
@@ -61,8 +61,8 @@ func NewVaultHealth(u, ca string) VaultHealth {
 	}
 }
 
-func (v VaultHealth) Check() string {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (v VaultHealth) Check(ctx context.Context) string {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := Get(ctx, v.url, v.caFile)
@@ -79,8 +79,8 @@ func (v VaultHealth) Check() string {
 	return "none"
 }
 
-func (v VaultHealth) Version() string {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (v VaultHealth) Version(ctx context.Context) string {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := Get(ctx, v.url, v.caFile)
@@ -118,8 +118,8 @@ func NewConsulHealth(u, ca string, dc string) ConsulHealth {
 	}
 }
 
-func (c ConsulHealth) Check() bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (c ConsulHealth) Check(ctx context.Context) bool {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := Get(ctx, c.url, c.caFile)
@@ -130,9 +130,9 @@ func (c ConsulHealth) Check() bool {
 	return resp.StatusCode == 200
 }
 
-func (c ConsulHealth) Version() string {
+func (c ConsulHealth) Version(ctx context.Context) string {
 	// TODO make more robust (change endpoint)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := Get(ctx, c.url, c.caFile)
@@ -169,8 +169,8 @@ func NewNomadHealth(u, ca string) NomadHealth {
 	}
 }
 
-func (n NomadHealth) Check() bool {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (n NomadHealth) Check(ctx context.Context) bool {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	resp, err := Get(ctx, n.url, n.caFile)
@@ -181,7 +181,7 @@ func (n NomadHealth) Check() bool {
 	return resp.StatusCode == 200
 }
 
-func (n NomadHealth) Version() string {
+func (n NomadHealth) Version(ctx context.Context) string {
 	// TODO find endpoint
 	return "missing endpoint"
 }

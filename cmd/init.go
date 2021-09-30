@@ -101,7 +101,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	p, err := getProvider(c)
+	p, err := getProvider(ctx, c)
 	if err != nil {
 		return err
 	}
@@ -128,11 +128,11 @@ func executeInit(cmd *cobra.Command, args []string) error {
 
 func initProvider(c *cli.Config, p provider.Provider) error {
 	log.Info().Msgf("initializing cloud resources\n")
-	if err := p.InitProvider(); err != nil {
+	if err := p.InitProvider(ctx); err != nil {
 		return fmt.Errorf("error initing provider: %w", err)
 	}
 
-	templates, err := p.GetTemplates()
+	templates, err := p.GetTemplates(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get templates: %w", err)
 	}

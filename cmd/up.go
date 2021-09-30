@@ -32,7 +32,7 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
-		prv, err := getProvider(c)
+		prv, err := getProvider(ctx, c)
 		if err != nil {
 			return err
 		}
@@ -42,7 +42,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := prv.Deploy(cli.Infrastructure)
+			err := prv.Deploy(ctx, cli.Infrastructure)
 			if err != nil {
 				return err
 			}
@@ -82,7 +82,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := prv.Deploy(cli.Platform)
+			err := prv.Deploy(ctx, cli.Platform)
 			if err != nil {
 				return err
 			}
@@ -102,7 +102,7 @@ var upCmd = &cobra.Command{
 				return fmt.Errorf("error persisting state: %w", err)
 			}
 
-			err := prv.Deploy(cli.ApplicationSupport)
+			err := prv.Deploy(ctx, cli.ApplicationSupport)
 			if err != nil {
 				return err
 			}
@@ -127,7 +127,7 @@ func checkStatus(c *cli.Config, tool string, path string, count int) error {
 
 	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CAPath)
 	for i := 0; i <= count; i++ {
-		if h.Check() {
+		if h.Check(ctx) {
 			log.Info().Msgf("OK\n")
 			break
 		}

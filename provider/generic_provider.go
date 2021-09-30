@@ -3,6 +3,7 @@ package provider
 import (
 	"caravan-cli/cli"
 	"caravan-cli/terraform"
+	"context"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -14,53 +15,53 @@ type GenericProvider struct {
 }
 
 // Bake performs the terraform apply to the caravan-baking repo.
-func (g GenericProvider) Bake() error {
+func (g GenericProvider) Bake(ctx context.Context) error {
 	t := terraform.New()
-	if err := t.Init(g.Caravan.WorkdirBaking); err != nil {
+	if err := t.Init(ctx, g.Caravan.WorkdirBaking); err != nil {
 		return err
 	}
 	env := map[string]string{}
-	if err := t.ApplyVarFile(filepath.Base(g.Caravan.WorkdirBakingVars), 1200*time.Second, env, "*"); err != nil {
+	if err := t.ApplyVarFile(ctx, filepath.Base(g.Caravan.WorkdirBakingVars), 1200*time.Second, env, "*"); err != nil {
 		return err
 	}
 	return nil
 }
 
 // Depoly executes the corresponding terraform apply for the given layers/caravan repo.
-func (g GenericProvider) Deploy(layer cli.DeployLayer) error {
+func (g GenericProvider) Deploy(ctx context.Context, layer cli.DeployLayer) error {
 	switch layer {
 	case cli.Infrastructure:
-		return GenericDeployInfra(g.Caravan, []string{"*"})
+		return GenericDeployInfra(ctx, g.Caravan, []string{"*"})
 	case cli.Platform:
-		return GenericDeployPlatform(g.Caravan, []string{"*"})
+		return GenericDeployPlatform(ctx, g.Caravan, []string{"*"})
 	case cli.ApplicationSupport:
-		return GenericDeployApplicationSupport(g.Caravan, []string{"*"})
+		return GenericDeployApplicationSupport(ctx, g.Caravan, []string{"*"})
 	default:
 		return fmt.Errorf("unknown Deploy Layer")
 	}
 }
 
-func GenericDeployInfra(c *cli.Config, targets []string) error {
+func GenericDeployInfra(ctx context.Context, c *cli.Config, targets []string) error {
 	// Infra
 	fmt.Println("deploying infra")
 	tf := terraform.New()
-	if err := tf.Init(c.WorkdirInfra); err != nil {
+	if err := tf.Init(ctx, c.WorkdirInfra); err != nil {
 		return err
 	}
 	env := map[string]string{}
 	for _, target := range targets {
-		if err := tf.ApplyVarFile(filepath.Base(c.WorkdirInfraVars), 1200*time.Second, env, target); err != nil {
+		if err := tf.ApplyVarFile(ctx, filepath.Base(c.WorkdirInfraVars), 1200*time.Second, env, target); err != nil {
 			return fmt.Errorf("error doing terraform apply: %w", err)
 		}
 	}
 	return nil
 }
 
-func GenericDeployPlatform(c *cli.Config, targets []string) error {
+func GenericDeployPlatform(ctx context.Context, c *cli.Config, targets []string) error {
 	// Platform
 	fmt.Printf("deployng platform\n")
 	tf := terraform.New()
-	if err := tf.Init(c.WorkdirPlatform); err != nil {
+	if err := tf.Init(ctx, c.WorkdirPlatform); err != nil {
 		return err
 	}
 	env := map[string]string{
@@ -68,18 +69,18 @@ func GenericDeployPlatform(c *cli.Config, targets []string) error {
 		"NOMAD_TOKEN": c.NomadToken,
 	}
 	for _, target := range targets {
-		if err := tf.ApplyVarFile(filepath.Base(c.WorkdirPlatformVars), 600*time.Second, env, target); err != nil {
+		if err := tf.ApplyVarFile(ctx, filepath.Base(c.WorkdirPlatformVars), 600*time.Second, env, target); err != nil {
 			return fmt.Errorf("error doing terraform apply: %w", err)
 		}
 	}
 	return nil
 }
 
-func GenericDeployApplicationSupport(c *cli.Config, targets []string) error {
+func GenericDeployApplicationSupport(ctx context.Context, c *cli.Config, targets []string) error {
 	// Application support
 	tf := terraform.New()
 	fmt.Printf("deployng application\n")
-	if err := tf.Init(c.WorkdirApplication); err != nil {
+	if err := tf.Init(ctx, c.WorkdirApplication); err != nil {
 		return err
 	}
 	env := map[string]string{
@@ -87,35 +88,35 @@ func GenericDeployApplicationSupport(c *cli.Config, targets []string) error {
 		"NOMAD_TOKEN": c.NomadToken,
 	}
 	for _, target := range targets {
-		if err := tf.ApplyVarFile(filepath.Base(c.WorkdirApplicationVars), 600*time.Second, env, target); err != nil {
+		if err := tf.ApplyVarFile(ctx, filepath.Base(c.WorkdirApplicationVars), 600*time.Second, env, target); err != nil {
 			return fmt.Errorf("error doing terraform apply: %w", err)
 		}
 	}
 	return nil
 }
 
-func (g GenericProvider) Destroy(layer cli.DeployLayer) error {
+func (g GenericProvider) Destroy(ctx context.Context, layer cli.DeployLayer) error {
 	switch layer {
 	case cli.Infrastructure:
-		return g.cleanInfra()
+		return g.cleanInfra(ctx)
 	case cli.Platform:
-		return g.cleanPlatform()
+		return g.cleanPlatform(ctx)
 	case cli.ApplicationSupport:
-		return g.cleanApplication()
+		return g.cleanApplication(ctx)
 	default:
 		return fmt.Errorf("cannot destroy unknown deploy layer: %d", layer)
 	}
 }
 
-func (g GenericProvider) cleanInfra() (err error) {
+func (g GenericProvider) cleanInfra(ctx context.Context) (err error) {
 	fmt.Printf("removing terraform infrastructure\n")
 	tf := terraform.New()
-	err = tf.Init(g.Caravan.WorkdirInfra)
+	err = tf.Init(ctx, g.Caravan.WorkdirInfra)
 	if err != nil {
 		return err
 	}
 	env := map[string]string{}
-	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirInfraVars), env); err != nil {
+	if err := tf.Destroy(ctx, filepath.Base(g.Caravan.WorkdirInfraVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
 			return err
@@ -124,10 +125,10 @@ func (g GenericProvider) cleanInfra() (err error) {
 	return nil
 }
 
-func (g GenericProvider) cleanPlatform() (err error) {
+func (g GenericProvider) cleanPlatform(ctx context.Context) (err error) {
 	fmt.Printf("removing terraform platform\n")
 	tf := terraform.New()
-	err = tf.Init(g.Caravan.WorkdirPlatform)
+	err = tf.Init(ctx, g.Caravan.WorkdirPlatform)
 	if err != nil {
 		return err
 	}
@@ -135,7 +136,7 @@ func (g GenericProvider) cleanPlatform() (err error) {
 		"VAULT_TOKEN": g.Caravan.VaultRootToken,
 		"NOMAD_TOKEN": g.Caravan.NomadToken,
 	}
-	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirPlatformVars), env); err != nil {
+	if err := tf.Destroy(ctx, filepath.Base(g.Caravan.WorkdirPlatformVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
 			return err
@@ -144,10 +145,10 @@ func (g GenericProvider) cleanPlatform() (err error) {
 	return nil
 }
 
-func (g GenericProvider) cleanApplication() (err error) {
+func (g GenericProvider) cleanApplication(ctx context.Context) (err error) {
 	fmt.Printf("removing terraform application\n")
 	tf := terraform.New()
-	err = tf.Init(g.Caravan.WorkdirApplicationVars)
+	err = tf.Init(ctx, g.Caravan.WorkdirApplicationVars)
 	if err != nil {
 		return err
 	}
@@ -155,7 +156,7 @@ func (g GenericProvider) cleanApplication() (err error) {
 		"VAULT_TOKEN": g.Caravan.VaultRootToken,
 		"NOMAD_TOKEN": g.Caravan.NomadToken,
 	}
-	if err := tf.Destroy(filepath.Base(g.Caravan.WorkdirApplicationVars), env); err != nil {
+	if err := tf.Destroy(ctx, filepath.Base(g.Caravan.WorkdirApplicationVars), env); err != nil {
 		fmt.Printf("error during destroy of cloud resources: %s\n", err)
 		if !g.Caravan.Force {
 			return err
@@ -164,6 +165,6 @@ func (g GenericProvider) cleanApplication() (err error) {
 	return nil
 }
 
-func (g GenericProvider) Status() error {
+func (g GenericProvider) Status(ctx context.Context) error {
 	panic("implement me")
 }

@@ -2,9 +2,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
+	"syscall"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/rs/zerolog"
@@ -17,6 +20,7 @@ var (
 	cfgFile  string
 	logLevel string
 	jsonLogs bool
+	ctx      context.Context
 )
 
 // rootCmd represents the base command when called without any subcommands.
@@ -89,6 +93,24 @@ func setUpLogs(out io.Writer, level zerolog.Level, humanLogs bool) error {
 	return nil
 }
 
+func setUpContext() error {
+	sigChannel := make(chan os.Signal, 1)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(context.Background())
+	signal.Notify(sigChannel, os.Interrupt, syscall.SIGTERM)
+	go handleSignal(sigChannel, cancel)
+	return nil
+}
+
+func handleSignal(sigChannel chan os.Signal, cancel context.CancelFunc) {
+	for s := range sigChannel {
+		if s == syscall.SIGTERM {
+			log.Debug().Msgf("Received SIGTERM, shutting down...")
+			cancel()
+		}
+	}
+}
+
 func rootPreRun(cmd *cobra.Command, args []string) error {
 	level, err := zerolog.ParseLevel(logLevel)
 	if err != nil {
@@ -98,7 +120,8 @@ func rootPreRun(cmd *cobra.Command, args []string) error {
 	if err = setUpLogs(os.Stdout, level, !jsonLogs); err != nil {
 		return err
 	}
-
-	log.Info().Msg("Logger initialized")
+	if err = setUpContext(); err != nil {
+		return err
+	}
 	return nil
 }

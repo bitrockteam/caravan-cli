@@ -4,6 +4,7 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
 	"caravan-cli/provider/azure"
+	"context"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,7 @@ import (
 )
 
 func TestGenerateConfig(t *testing.T) {
+	ctx := context.Background()
 	dir, err := ioutil.TempDir("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +34,7 @@ func TestGenerateConfig(t *testing.T) {
 	config.SetAzureTenantID("my-tenant-111")
 	config.SetAzureClientID("client1")
 	config.SetAzureClientSecret("pass1")
-	az, _ := azure.New(config)
+	az, _ := azure.New(ctx, config)
 
 	testCases := []struct {
 		name string
@@ -50,7 +52,7 @@ func TestGenerateConfig(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			gold := filepath.Join("testdata", tc.gold)
-			templates, _ := az.GetTemplates()
+			templates, _ := az.GetTemplates(ctx)
 			for _, tmp := range templates {
 				if tmp.Name == tc.name {
 					// log.Info().Msgf("%s\n", tc.name)
