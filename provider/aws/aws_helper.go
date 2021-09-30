@@ -14,14 +14,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-func (a AWS) CreateStateStore(name string) (err error) {
+func (a AWS) CreateStateStore(ctx context.Context, name string) (err error) {
 	var bae *types.BucketAlreadyExists
 	var bao *types.BucketAlreadyOwnedByYou
 
 	svc := s3.NewFromConfig(a.AWSConfig)
 
 	_, err = svc.CreateBucket(
-		context.TODO(),
+		ctx,
 		&s3.CreateBucketInput{
 			Bucket: aws2.String(name),
 			CreateBucketConfiguration: &types.CreateBucketConfiguration{
@@ -36,7 +36,7 @@ func (a AWS) CreateStateStore(name string) (err error) {
 	}
 
 	_, err = svc.PutBucketVersioning(
-		context.TODO(),
+		ctx,
 		&s3.PutBucketVersioningInput{
 			Bucket: aws2.String(name),
 			VersioningConfiguration: &types.VersioningConfiguration{
@@ -51,12 +51,12 @@ func (a AWS) CreateStateStore(name string) (err error) {
 	return nil
 }
 
-func (a AWS) EmptyStateStore(name string) (err error) {
+func (a AWS) EmptyStateStore(ctx context.Context, name string) (err error) {
 	var nsb *types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
 	vers, err := svc.ListObjectVersions(
-		context.TODO(),
+		ctx,
 		&s3.ListObjectVersionsInput{
 			Bucket: &name,
 		})
@@ -69,7 +69,7 @@ func (a AWS) EmptyStateStore(name string) (err error) {
 
 	for _, k := range vers.Versions {
 		_, err := svc.DeleteObject(
-			context.TODO(),
+			ctx,
 			&s3.DeleteObjectInput{
 				Bucket:    &name,
 				Key:       k.Key,
@@ -83,7 +83,7 @@ func (a AWS) EmptyStateStore(name string) (err error) {
 	}
 	for _, k := range vers.DeleteMarkers {
 		_, err := svc.DeleteObject(
-			context.TODO(),
+			ctx,
 			&s3.DeleteObjectInput{
 				Bucket:    &name,
 				Key:       k.Key,
@@ -98,12 +98,12 @@ func (a AWS) EmptyStateStore(name string) (err error) {
 	return nil
 }
 
-func (a AWS) DeleteStateStore(name string) (err error) {
+func (a AWS) DeleteStateStore(ctx context.Context, name string) (err error) {
 	var nsb *types.NoSuchBucket
 
 	svc := s3.NewFromConfig(a.AWSConfig)
 	_, err = svc.DeleteBucket(
-		context.TODO(),
+		ctx,
 		&s3.DeleteBucketInput{
 			Bucket: &name,
 		})
@@ -116,7 +116,7 @@ func (a AWS) DeleteStateStore(name string) (err error) {
 	return nil
 }
 
-func (a AWS) CreateLock(name string) (err error) {
+func (a AWS) CreateLock(ctx context.Context, name string) (err error) {
 	var riu *types2.ResourceInUseException
 
 	retry := 10
@@ -125,7 +125,7 @@ func (a AWS) CreateLock(name string) (err error) {
 	i := 0
 	for i = 0; i <= retry; i++ {
 		_, err = svc.CreateTable(
-			context.TODO(),
+			ctx,
 			&dynamodb.CreateTableInput{
 				TableName: aws2.String(name),
 				KeySchema: []types2.KeySchemaElement{
@@ -157,7 +157,7 @@ func (a AWS) CreateLock(name string) (err error) {
 	return nil
 }
 
-func (a AWS) DeleteLock(name string) (err error) {
+func (a AWS) DeleteLock(ctx context.Context, name string) (err error) {
 	var riu *types2.ResourceInUseException
 	var rnf *types2.ResourceNotFoundException
 
@@ -167,7 +167,7 @@ func (a AWS) DeleteLock(name string) (err error) {
 	i := 0
 	for i = 0; i <= retry; i++ {
 		_, err = svc.DeleteTable(
-			context.TODO(),
+			ctx,
 			&dynamodb.DeleteTableInput{
 				TableName: aws2.String(name),
 			})

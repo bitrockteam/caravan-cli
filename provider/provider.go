@@ -1,7 +1,10 @@
 // Provider interface to manage different cloud providers.
 package provider
 
-import "caravan-cli/cli"
+import (
+	"caravan-cli/cli"
+	"context"
+)
 
 const (
 	AWS   = "aws"
@@ -11,34 +14,34 @@ const (
 
 type WithDeploy interface {
 	// Deploy will execute the operations needed to deploy the different stack layers
-	Deploy(cli.DeployLayer) error
+	Deploy(context.Context, cli.DeployLayer) error
 }
 
 type WithBake interface {
 	// Bake will execute the image baking procedures
-	Bake() error
+	Bake(context.Context) error
 }
 
 type WithStatus interface {
 	// Status will output the current state of Caravan
-	Status() error
+	Status(context.Context) error
 }
 
 type WithDestroy interface {
 	// Destroy will execute the operations needed to destroy the different stack layers
-	Destroy(cli.DeployLayer) error
+	Destroy(context.Context, cli.DeployLayer) error
 }
 
 type Provider interface {
 	// GetTemplates returns the templates needed by the provider. The caller will handle persistence of the files.
-	GetTemplates() ([]cli.Template, error)
+	GetTemplates(context.Context) ([]cli.Template, error)
 
 	// ValidateConfiguration performs a check on the configuration provided to the Provider implementation. For example it
 	// might check that the provided instance size is valid
-	ValidateConfiguration() error
+	ValidateConfiguration(context.Context) error
 
 	// InitProvider creates baseline resources like state stores, lock, projects, etc...
-	InitProvider() error
+	InitProvider(context.Context) error
 
 	WithBake
 
@@ -47,7 +50,7 @@ type Provider interface {
 	WithDestroy
 
 	// CleanProvider deletes cloud resources created during InitProvider
-	CleanProvider() error
+	CleanProvider(context.Context) error
 
 	WithStatus
 

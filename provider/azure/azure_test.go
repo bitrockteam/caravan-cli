@@ -4,11 +4,13 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
 	"caravan-cli/provider/azure"
+	"context"
 	"os"
 	"testing"
 )
 
 func TestValidate(t *testing.T) {
+	ctx := context.Background()
 	type test struct {
 		name  string
 		error bool
@@ -26,7 +28,7 @@ func TestValidate(t *testing.T) {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
 			withAzureEnvVariables(func() {
-				_, err = azure.New(c)
+				_, err = azure.New(ctx, c)
 				if err == nil && tc.error || err != nil && !tc.error {
 					t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
 				}

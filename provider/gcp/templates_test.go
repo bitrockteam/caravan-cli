@@ -3,6 +3,7 @@ package gcp_test
 import (
 	"caravan-cli/cli"
 	"caravan-cli/provider/gcp"
+	"context"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 )
 
 func TestGenerateConfig(t *testing.T) {
+	ctx := context.Background()
 	dir, err := ioutil.TempDir("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -20,7 +22,7 @@ func TestGenerateConfig(t *testing.T) {
 	config.GCPDNSZone = "dns-zone"
 	config.ParentProject = "parent-project"
 	config.UserEmail = "test.name@test.me"
-	gcp, err := gcp.New(config)
+	gcp, err := gcp.New(ctx, config)
 	if err != nil {
 		t.Fatalf("unable to create gcp: %s", err)
 	}
@@ -40,7 +42,7 @@ func TestGenerateConfig(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			gold := filepath.Join("testdata", tc.gold)
-			templates, _ := gcp.GetTemplates()
+			templates, _ := gcp.GetTemplates(ctx)
 			for _, tmp := range templates {
 				if tmp.Name == tc.name {
 					// log.Info().Msgf("%s\n", tc.name)
