@@ -20,7 +20,7 @@ var bakeCmd = &cobra.Command{
 	Use:   "bake",
 	Short: "Generate (bake) up to date VM images for caravan",
 	Long:  `Baked images are available for usage in the selected provider's registry provided region.`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		name, _ := cmd.Flags().GetString("project")
 		provider, _ := cmd.Flags().GetString("provider")
 		region, _ := cmd.Flags().GetString("region")
