@@ -5,22 +5,21 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
 	"fmt"
-
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
 )
 
 type Azure struct {
 	provider.GenericProvider
-	AzureGraphAuthorizer autorest.Authorizer
-	AzureArmConnection   *arm.Connection
+	AzureHelper *Helper
 }
 
 func New(c *cli.Config) (Azure, error) {
 	a := Azure{}
+	var err error
 	a.Caravan = c
-	if err := a.ValidateConfiguration(); err != nil {
+	if err = a.ValidateConfiguration(); err != nil {
+		return a, err
+	}
+	if a.AzureHelper, err = NewHelper(a.Caravan.AzureUseCLI); err != nil {
 		return a, err
 	}
 	return a, nil
@@ -80,26 +79,15 @@ func (a Azure) ValidateConfiguration() error {
 }
 
 func (a Azure) InitProvider() error {
-	conn, err := a.SetupConnection(a.Caravan.AzureUseCLI)
-	if err != nil {
-		return err
-	}
-	a.AzureArmConnection = conn
-
-	graphAuth, err := a.SetupAuthorizationWithResource(a.Caravan.AzureUseCLI, azure.PublicCloud.GraphEndpoint)
-	if err != nil {
-		return err
-	}
-	a.AzureGraphAuthorizer = graphAuth
-
-	err = a.CreateResourceGroup(a.Caravan.AzureResourceGroup, a.Caravan.AzureSubscriptionID, a.Caravan.Region)
+	var err error
+	err = a.AzureHelper.CreateResourceGroup(a.Caravan.AzureResourceGroup, a.Caravan.AzureSubscriptionID, a.Caravan.Region)
 	if err != nil {
 		return err
 	}
 
 	//TODO: create storage account (prefix)sa
 	saName := fmt.Sprintf("crv%ssa", a.Caravan.Name)
-	err = a.CreateStorageAccount(a.Caravan.AzureSubscriptionID, saName, a.Caravan.AzureResourceGroup, a.Caravan.Region)
+	err = a.AzureHelper.CreateStorageAccount(a.Caravan.AzureSubscriptionID, saName, a.Caravan.AzureResourceGroup, a.Caravan.Region)
 	if err != nil {
 		return err
 	}
@@ -107,20 +95,20 @@ func (a Azure) InitProvider() error {
 
 	//TODO: create storage container tfstate
 	containerName := "tfstate"
-	err = a.CreateStorageContainer(a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup, a.Caravan.AzureStorageAccount, containerName)
+	err = a.AzureHelper.CreateStorageContainer(a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup, a.Caravan.AzureStorageAccount, containerName)
 	if err != nil {
 		return err
 	}
 	a.Caravan.SetAzureStorageContainerName(containerName)
 
 	//TODO: create service principal (prefix)-tf-sp Contributor on the RG + ParentRG
-	clientID, clientSecret, err := a.CreateServicePrincipal(a.Caravan.AzureTenantID, fmt.Sprintf("%s-tf-sp", a.Caravan.Name))
+	clientID, clientSecret, err := a.AzureHelper.CreateServicePrincipal(a.Caravan.AzureTenantID, fmt.Sprintf("%s-tf-sp", a.Caravan.Name))
 	if err != nil {
 		return err
 	}
 	a.Caravan.SetAzureClientID(clientID)
 	a.Caravan.SetAzureClientSecret(clientSecret)
-	err = a.CreateRoleAssignment(
+	err = a.AzureHelper.CreateRoleAssignment(
 		a.Caravan.AzureSubscriptionID,
 		fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup),
 		"Contributor",
@@ -130,7 +118,7 @@ func (a Azure) InitProvider() error {
 		return err
 	}
 	if a.Caravan.AzureDNSResourceGroup != a.Caravan.AzureResourceGroup {
-		err = a.CreateRoleAssignment(
+		err = a.AzureHelper.CreateRoleAssignment(
 			a.Caravan.AzureSubscriptionID,
 			fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureDNSResourceGroup),
 			"Contributor",
@@ -141,7 +129,7 @@ func (a Azure) InitProvider() error {
 		}
 	}
 	if a.Caravan.AzureBakingResourceGroup != a.Caravan.AzureResourceGroup {
-		err = a.CreateRoleAssignment(
+		err = a.AzureHelper.CreateRoleAssignment(
 			a.Caravan.AzureSubscriptionID,
 			fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureBakingResourceGroup),
 			"Contributor",
@@ -155,19 +143,19 @@ func (a Azure) InitProvider() error {
 
 	// # Grant Application.ReadWrite.All
 	// az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 1cda74f2-2616-4834-b122-5cb1b07f8a59=Role
-	err = a.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "ReadWrite.All")
+	err = a.AzureHelper.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "ReadWrite.All")
 	if err != nil {
 		return err
 	}
 	// # Grant User.Read
 	// az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 311a71cc-e848-46a1-bdf8-97ff7156d8e6=Scope
-	err = a.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "User.Read")
+	err = a.AzureHelper.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "User.Read")
 	if err != nil {
 		return err
 	}
 	// # Grant Directory.ReadWrite.All
 	// az ad app permission add --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000 --api-permissions 78c8a3c8-a07e-4b9e-af1b-b5ccab50a175=Role
-	err = a.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "Directory.ReadWrite.All")
+	err = a.AzureHelper.CreateADPermission(a.Caravan.AzureTenantID, a.Caravan.AzureClientID, "Directory.ReadWrite.All")
 	if err != nil {
 		return err
 	}
@@ -176,7 +164,7 @@ func (a Azure) InitProvider() error {
 	// az ad app permission grant --id "${CLIENT_ID}" --api 00000002-0000-0000-c000-000000000000
 
 	//TODO: allow access to backend for TF
-	err = a.CreateRoleAssignment(
+	err = a.AzureHelper.CreateRoleAssignment(
 		a.Caravan.AzureSubscriptionID,
 		fmt.Sprintf("/subscriptions/%s/resourceGroups/%s", a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup),
 		"Storage Blob Data Contributor",
@@ -187,7 +175,7 @@ func (a Azure) InitProvider() error {
 	}
 
 	//TODO: allow assigning roles to other entites for TF
-	err = a.CreateRoleAssignment(
+	err = a.AzureHelper.CreateRoleAssignment(
 		a.Caravan.AzureSubscriptionID,
 		fmt.Sprintf("/subscriptions/%s", a.Caravan.AzureSubscriptionID),
 		"User Access Administrator",

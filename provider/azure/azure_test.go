@@ -4,6 +4,7 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/provider"
 	"caravan-cli/provider/azure"
+	"os"
 	"testing"
 )
 
@@ -24,10 +25,26 @@ func TestValidate(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unable to create config: %s\n", err)
 			}
-			_, err = azure.New(c)
-			if err == nil && tc.error || err != nil && !tc.error {
-				t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
-			}
+			withAzureEnvVariables(func() {
+				_, err = azure.New(c)
+				if err == nil && tc.error || err != nil && !tc.error {
+					t.Errorf("something wen wrong: want %t but got %s", tc.error, err)
+				}
+			})
 		})
 	}
+}
+
+func withAzureEnvVariables(f func()) {
+	env := map[string]string{
+		"AZURE_CLIENT_ID": "dummy",
+		"AZURE_TENANT_ID": "dummy",
+		"AZURE_USERNAME":  "dummy",
+		"AZURE_PASSWORD":  "dummy",
+	}
+	for k, v := range env {
+		os.Setenv(k, v)
+		defer os.Unsetenv(k)
+	}
+	f()
 }
