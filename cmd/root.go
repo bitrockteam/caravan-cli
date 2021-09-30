@@ -51,7 +51,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.caravan.yaml)")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "log level to be used")
-	rootCmd.PersistentFlags().BoolVar(&jsonLogs, "json-logs", false, "log in JSON format")
+	rootCmd.PersistentFlags().BoolVar(&jsonLogs, "json-logs", false, "log in JSON format (default to pretty console format)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
