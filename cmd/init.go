@@ -184,6 +184,7 @@ func processFlags(c *cli.Config) error {
 		}
 
 		c.ParentProject = gcpParentProject
+		c.GCPDNSZone = gcpDNSZone
 	}
 
 	if prv == provider.Azure {
