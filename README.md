@@ -19,10 +19,10 @@ In the following table the support of the corresponding provider for each provid
 |--|--|--|--|--|
 |init| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
 |bake| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
-|up| :heavy_check_mark: | :x: | :x: | :x: | 
+|up| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | 
 |status| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | 
 |update| :x: | :x: | :x: | :x: | 
-|clean| :heavy_check_mark: | :x: | :x: | :x: | 
+|clean| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | 
 
 ## Usage
 A typical session is as follows:

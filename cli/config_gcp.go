@@ -5,6 +5,7 @@ type GCPConfig struct {
 	GCPBillingID  string `json:",omitempty"`
 	ParentProject string `json:",omitempty"`
 	UserEmail     string `json:",omitempty"`
+	GCPDNSZone    string `json:",omitempty"`
 }
 
 func (g *GCPConfig) SetGCPOrgID(id string) {
