@@ -18,9 +18,6 @@ var cleanCmd = &cobra.Command{
 	Short: "Cleanup the needed config and terraform state store",
 	Long:  `Deletion of the config files and supporting state stores/locking for terraform created during either up or init.`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-
-		force, _ := cmd.Flags().GetBool("force")
-
 		var c *cli.Config
 		c, err = cli.NewConfigFromFile()
 		if err != nil {
@@ -110,5 +107,5 @@ var cleanCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(cleanCmd)
 
-	cleanCmd.PersistentFlags().Bool("force", false, "force cleanup of S3 bucket")
+	cleanCmd.PersistentFlags().BoolVarP(&force, FlagForce, FlagForceShort, false, "force cleanup of S3 bucket")
 }
