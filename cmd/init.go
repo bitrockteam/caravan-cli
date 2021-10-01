@@ -25,35 +25,17 @@ var initCmd = &cobra.Command{
 	PreRunE: preRunInit,
 }
 
-var (
-	// Common.
-	prv    = ""
-	name   = ""
-	region = ""
-	branch = ""
-	domain = ""
-
-	// GCP.
-	gcpParentProject = ""
-	gcpDNSZone       = ""
-
-	// Azure.
-	azResourceGroup  = ""
-	azSubscriptionID = ""
-	azTenantID       = ""
-	azUseCLI         = false
-)
-
 func init() {
 	rootCmd.AddCommand(initCmd)
 
 	// Common
 	initCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
-	_ = initCmd.MarkPersistentFlagRequired(FlagProject)
 	initCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
-	_ = initCmd.MarkPersistentFlagRequired(FlagProvider)
 	initCmd.Flags().StringVarP(&domain, FlagDomain, FlagDomainShort, "", "")
-	_ = initCmd.MarkPersistentFlagRequired(FlagDomain)
+
+	_ = initCmd.MarkFlagRequired(FlagProject)
+	_ = initCmd.MarkFlagRequired(FlagProvider)
+	_ = initCmd.MarkFlagRequired(FlagDomain)
 
 	initCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "region for the deployment")
 	initCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "", "")
@@ -70,7 +52,6 @@ func init() {
 }
 
 func preRunInit(cmd *cobra.Command, args []string) error {
-	prv, _ := cmd.Flags().GetString("provider")
 	switch prv {
 	case "":
 		return nil

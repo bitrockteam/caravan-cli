@@ -21,11 +21,7 @@ var bakeCmd = &cobra.Command{
 	Short: "Generate (bake) up to date VM images for caravan",
 	Long:  `Baked images are available for usage in the selected provider's registry provided region.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		name, _ := cmd.Flags().GetString("project")
-		provider, _ := cmd.Flags().GetString("provider")
-		region, _ := cmd.Flags().GetString("region")
-
-		_, err := cli.NewConfigFromScratch(name, provider, region)
+		_, err := cli.NewConfigFromScratch(name, prv, region)
 		if err != nil {
 			return fmt.Errorf("error generating config: %w", err)
 		}
@@ -34,12 +30,7 @@ var bakeCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		log.Debug().Msgf("bake called")
 
-		name, _ := cmd.Flags().GetString("project")
-		provider, _ := cmd.Flags().GetString("provider")
-		region, _ := cmd.Flags().GetString("region")
-		branch, _ := cmd.Flags().GetString("branch")
-
-		c, err := cli.NewConfigFromScratch(name, provider, region)
+		c, err := cli.NewConfigFromScratch(name, prv, region)
 		if err != nil {
 			return err
 		}
@@ -78,11 +69,11 @@ var bakeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(bakeCmd)
 
-	bakeCmd.PersistentFlags().String("project", "", "Project name, used for tagging and namespacing")
-	bakeCmd.PersistentFlags().String("provider", "", "Cloud provider name. Can be on of aws,gcp, ...")
-	bakeCmd.PersistentFlags().String("region", "", "Optional: override default profile region")
-	bakeCmd.PersistentFlags().String("branch", "main", "Optional: define a branch to checkout instead of default")
+	bakeCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
+	bakeCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
+	bakeCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "optional: override default profile region")
+	bakeCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "main", "optional: define a branch to checkout instead of default")
 
-	_ = bakeCmd.MarkPersistentFlagRequired("project")
-	_ = bakeCmd.MarkPersistentFlagRequired("provider")
+	_ = bakeCmd.MarkFlagRequired(FlagProject)
+	_ = bakeCmd.MarkFlagRequired(FlagProvider)
 }

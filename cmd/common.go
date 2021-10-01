@@ -10,6 +10,26 @@ import (
 	"fmt"
 )
 
+var (
+	// Common.
+	prv    = ""
+	name   = ""
+	region = ""
+	branch = ""
+	domain = ""
+	force  bool
+
+	// GCP.
+	gcpParentProject = ""
+	gcpDNSZone       = ""
+
+	// Azure.
+	azResourceGroup  = ""
+	azSubscriptionID = ""
+	azTenantID       = ""
+	azUseCLI         = false
+)
+
 func getProvider(ctx context.Context, c *cli.Config) (provider.Provider, error) {
 	var p provider.Provider
 	var err error
