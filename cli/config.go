@@ -78,13 +78,14 @@ func NewConfigFromScratch(name, provider, region string) (c *Config, err error) 
 // NewConfigFromFile constructs a configuration from  the content of the state file (caravan.state).
 func NewConfigFromFile() (c *Config, err error) {
 	wd := ".caravan"
-	b, err := ioutil.ReadFile(filepath.Join(wd, "caravan.state"))
-	if err != nil {
-		return c, err
+	var b []byte
+
+	if b, err = ioutil.ReadFile(filepath.Join(wd, "caravan.state")); err != nil {
+		return c, ConfigFileNotFound{Err: err}
 	}
 
-	if err := json.Unmarshal(b, &c); err != nil {
-		return c, err
+	if err = json.Unmarshal(b, &c); err != nil {
+		return c, ConfigFileUnreadable{Err: err}
 	}
 	return c, nil
 }

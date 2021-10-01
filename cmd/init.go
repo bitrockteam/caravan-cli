@@ -7,9 +7,9 @@ import (
 	"caravan-cli/cli"
 	"caravan-cli/git"
 	"caravan-cli/provider"
+	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog/log"
@@ -66,14 +66,14 @@ func preRunInit(cmd *cobra.Command, args []string) error {
 func executeInit(cmd *cobra.Command, args []string) error {
 	c, err := cli.NewConfigFromFile()
 	if err != nil {
-		// TODO better error checking
-		if !strings.Contains(err.Error(), "no such file or directory") {
+		if errors.As(err, &cli.ConfigFileNotFound{}) {
+			c, err = cli.NewConfigFromScratch(name, prv, region)
+			if err != nil {
+				log.Error().Msgf("unable to create config from scratch: %s\n", err)
+				return err
+			}
+		} else {
 			log.Error().Msgf("unable to create config from file: %s\n", err)
-			return err
-		}
-		c, err = cli.NewConfigFromScratch(name, prv, region)
-		if err != nil {
-			log.Error().Msgf("unable to create config from scratch: %s\n", err)
 			return err
 		}
 	}
