@@ -5,8 +5,8 @@ package cmd
 
 import (
 	"caravan-cli/cli"
+	"errors"
 	"os"
-	"strings"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -21,12 +21,11 @@ var cleanCmd = &cobra.Command{
 		var c *cli.Config
 		c, err = cli.NewConfigFromFile()
 		if err != nil {
-			// TODO better error handling
-			if !strings.Contains(err.Error(), "no such file or directory") {
-				return err
+			if errors.As(err, &cli.ConfigFileNotFound{}) {
+				log.Info().Msgf("all clean\n")
+				return nil
 			}
-			log.Info().Msgf("all clean\n")
-			return nil
+			return err
 		}
 		if force {
 			c.Force = true
