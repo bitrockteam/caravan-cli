@@ -21,7 +21,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.10.0
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/vault/api v1.1.1
 	github.com/mitchellh/go-homedir v1.1.0
