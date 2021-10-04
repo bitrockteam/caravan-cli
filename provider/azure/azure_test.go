@@ -7,6 +7,8 @@ import (
 	"context"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidate(t *testing.T) {
@@ -34,6 +36,72 @@ func TestValidate(t *testing.T) {
 				}
 			})
 		})
+	}
+}
+
+func TestAzure_Bake(t *testing.T) {
+	ctx := context.Background()
+	a := mockProvider()
+
+	assert.Panics(t, func() { _ = a.Bake(ctx) })
+}
+
+func TestAzure_Deploy(t *testing.T) {
+	ctx := context.Background()
+	a := mockProvider()
+
+	assert.Panics(t, func() { _ = a.Deploy(ctx, cli.Infrastructure) })
+}
+
+func TestAzure_Destroy(t *testing.T) {
+	ctx := context.Background()
+	a := mockProvider()
+
+	assert.Panics(t, func() { _ = a.Destroy(ctx, cli.Infrastructure) })
+}
+
+func TestAzure_CleanProvider(t *testing.T) {
+	ctx := context.Background()
+	a := mockProvider()
+
+	assert.Panics(t, func() { _ = a.CleanProvider(ctx) })
+}
+
+func TestAzure_InitProvider(t *testing.T) {
+	ctx := context.Background()
+	a := mockProvider()
+
+	if err := a.InitProvider(ctx); err.Error() == "mkdir: no such file or directory" {
+		t.Errorf("unexpected error: %v", err)
+	}
+	// ok to fail when a failure in Config,Save()
+}
+
+func TestAzure_Status(t *testing.T) {
+	ctx := context.Background()
+	a := mockProvider()
+
+	assert.Panics(t, func() { _ = a.Status(ctx) })
+}
+
+func mockProvider() *azure.Azure {
+	cfg := mockConfig()
+	return &azure.Azure{
+		GenericProvider: provider.GenericProvider{
+			Caravan: cfg,
+		},
+		AzureHelper: NewHelperMock(cfg.AzureSubscriptionID),
+	}
+}
+
+func mockConfig() *cli.Config {
+	return &cli.Config{
+		Name: "caravan-az-test",
+		AzureConfig: cli.AzureConfig{
+			AzureResourceGroup:  "resourceGroup",
+			AzureTenantID:       "444-555-666",
+			AzureSubscriptionID: "111-222-333",
+		},
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 
 type Azure struct {
 	provider.GenericProvider
-	AzureHelper *Helper
+	AzureHelper HelperInterface
 }
 
 func New(ctx context.Context, c *cli.Config) (Azure, error) {
@@ -212,8 +212,7 @@ func (a Azure) Destroy(ctx context.Context, layer cli.DeployLayer) error {
 }
 
 func (a Azure) CleanProvider(ctx context.Context) error {
-	//TODO: implement me
-	return nil
+	panic("implement me")
 }
 
 func (a Azure) Status(ctx context.Context) error {
