@@ -20,14 +20,22 @@ func (a AWS) CreateStateStore(ctx context.Context, name string) (err error) {
 
 	svc := s3.NewFromConfig(a.AWSConfig)
 
-	_, err = svc.CreateBucket(
-		ctx,
-		&s3.CreateBucketInput{
-			Bucket: aws2.String(name),
-			CreateBucketConfiguration: &types.CreateBucketConfiguration{
-				LocationConstraint: types.BucketLocationConstraint(a.Caravan.Region),
-			},
-		})
+	if a.Caravan.Region != "us-east-1" {
+		_, err = svc.CreateBucket(
+			ctx,
+			&s3.CreateBucketInput{
+				Bucket: aws2.String(name),
+				CreateBucketConfiguration: &types.CreateBucketConfiguration{
+					LocationConstraint: types.BucketLocationConstraint(a.Caravan.Region),
+				},
+			})
+	} else {
+		_, err = svc.CreateBucket(
+			ctx,
+			&s3.CreateBucketInput{
+				Bucket: aws2.String(name),
+			})
+	}
 
 	if err != nil {
 		if !errors.As(err, &bae) && !errors.As(err, &bao) {
