@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"caravan-cli/cli"
-	"caravan-cli/health"
+	"caravan-cli/cli/checker"
 
 	"github.com/rs/zerolog/log"
 
@@ -54,13 +54,13 @@ var upCmd = &cobra.Command{
 		}
 		log.Info().Msgf("[%s] deployment of infrastructure completed\n", c.Status)
 
-		if err := checkStatus(c, "vault", "/v1/sys/leader", 30); err != nil {
+		if err := checkStatus(c, "vault", 30); err != nil {
 			return err
 		}
-		if err := checkStatus(c, "consul", "/v1/status/leader", 30); err != nil {
+		if err := checkStatus(c, "consul", 30); err != nil {
 			return err
 		}
-		if err := checkStatus(c, "nomad", "/v1/status/leader", 30); err != nil {
+		if err := checkStatus(c, "nomad", 30); err != nil {
 			return err
 		}
 		if c.VaultRootToken == "" {
@@ -93,7 +93,7 @@ var upCmd = &cobra.Command{
 			}
 		}
 		log.Info().Msgf("[%s] deployment of platform completed\n", c.Status)
-		if err := checkStatus(c, "consul", "/v1/connect/ca/roots", 20); err != nil {
+		if err := checkURL(c, "consul", "/v1/connect/ca/roots", 60); err != nil {
 			return err
 		}
 		if c.Status < cli.ApplicationDeployDone {
@@ -122,12 +122,47 @@ func init() {
 	rootCmd.AddCommand(upCmd)
 }
 
-func checkStatus(c *cli.Config, tool string, path string, count int) error {
+func checkURL(c *cli.Config, tool, path string, count int) (err error) {
+	tls, err := checker.TLSClient(c.CAPath)
+	if err != nil {
+		return err
+	}
+
+	checker := checker.NewGenericChecker("https://"+tool+"."+c.Name+"."+c.Domain, tls)
+	for i := 0; i <= count; i++ {
+		if checker.CheckURL(ctx, path) {
+			log.Info().Msgf("OK\n")
+			break
+		}
+		if i >= count {
+			log.Warn().Msgf("KO\n")
+			return fmt.Errorf("timeout waiting for %s to be available", tool)
+		}
+		time.Sleep(6 * time.Second)
+		log.Info().Msgf(".")
+	}
+	return nil
+}
+
+func checkStatus(c *cli.Config, tool string, count int) (err error) {
 	log.Info().Msgf("checking %s status:", tool)
 
-	h := health.NewHealth("https://"+tool+"."+c.Name+"."+c.Domain+path, c.CAPath)
+	var check checker.Checker
+	switch tool {
+	case cli.Nomad:
+		check, err = checker.NewNomadChecker("https://"+tool+"."+c.Name+"."+c.Domain, c.CAPath)
+		return err
+	case cli.Consul:
+		check, err = checker.NewConsulChecker("https://"+tool+"."+c.Name+"."+c.Domain, c.CAPath)
+		return err
+	case cli.Vault:
+		check, err = checker.NewVaultChecker("https://"+tool+"."+c.Name+"."+c.Domain, c.CAPath)
+		return err
+	default:
+		log.Error().Msgf("tool not supported: %s\n", tool)
+	}
 	for i := 0; i <= count; i++ {
-		if h.Check(ctx) {
+		if check.Status(ctx) {
 			log.Info().Msgf("OK\n")
 			break
 		}
