@@ -25,7 +25,7 @@ func (t *Terraform) Init(ctx context.Context, wd string) (err error) {
 
 	t.Workdir = wd
 	log.Info().Msgf("running init on workdir: %s\n", t.Workdir)
-	cmd := exec.CommandContext(ctx, "terraform", "init")
+	cmd := exec.CommandContext(ctx, "terraform", "init", "-upgrade")
 	cmd.Dir = t.Workdir
 
 	cmd.Stdout = os.Stdout
