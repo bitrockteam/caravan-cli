@@ -13,7 +13,7 @@ func NewNomadChecker(u, ca string, options ...func(*GenericChecker)) (nc NomadCh
 	if err != nil {
 		return nc, err
 	}
-	gc := NewGenericChecker(u+"/v1/status/leader", client)
+	gc := NewGenericChecker(u, client)
 	for _, op := range options {
 		if op != nil {
 			op(gc)
