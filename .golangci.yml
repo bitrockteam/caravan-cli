@@ -1,5 +1,6 @@
 run:
   tests: true
+  timeout: 3m
 
 linters-settings:
   funlen:
