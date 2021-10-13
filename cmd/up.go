@@ -128,7 +128,7 @@ func checkURL(c *cli.Config, tool, path string, count int) (err error) {
 		return err
 	}
 
-	checker := checker.NewGenericChecker(fmt.Sprintf("https://%s.%s.%s", +tool, c.Name, c.Domain), tls)
+	checker := checker.NewGenericChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), tls)
 	for i := 0; i <= count; i++ {
 		if checker.CheckURL(ctx, path) {
 			log.Info().Msgf("OK\n")
