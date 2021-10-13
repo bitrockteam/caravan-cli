@@ -128,7 +128,7 @@ func checkURL(c *cli.Config, tool, path string, count int) (err error) {
 		return err
 	}
 
-	checker := checker.NewGenericChecker("https://"+tool+"."+c.Name+"."+c.Domain, tls)
+	checker := checker.NewGenericChecker(fmt.Sprintf("https://%s.%s.%s", +tool, c.Name, c.Domain), tls)
 	for i := 0; i <= count; i++ {
 		if checker.CheckURL(ctx, path) {
 			log.Info().Msgf("OK\n")
@@ -150,13 +150,13 @@ func checkStatus(c *cli.Config, tool string, count int) (err error) {
 	var check checker.Checker
 	switch tool {
 	case cli.Nomad:
-		check, err = checker.NewNomadChecker("https://"+tool+"."+c.Name+"."+c.Domain, c.CAPath)
+		check, err = checker.NewNomadChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
 		return err
 	case cli.Consul:
-		check, err = checker.NewConsulChecker("https://"+tool+"."+c.Name+"."+c.Domain, c.CAPath)
+		check, err = checker.NewConsulChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
 		return err
 	case cli.Vault:
-		check, err = checker.NewVaultChecker("https://"+tool+"."+c.Name+"."+c.Domain, c.CAPath)
+		check, err = checker.NewVaultChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
 		return err
 	default:
 		log.Error().Msgf("tool not supported: %s\n", tool)

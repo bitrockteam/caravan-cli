@@ -51,17 +51,17 @@ func (r *Report) CheckStatus(ctx context.Context) (err error) {
 		var h checker.Checker
 		switch t {
 		case Nomad:
-			h, err = checker.NewNomadChecker("https://"+t+"."+r.Caravan.Name+"."+r.Caravan.Domain, r.Caravan.CAPath)
+			h, err = checker.NewNomadChecker(fmt.Sprintf("https://%s.%s.%s", t, r.Caravan.Name, r.Caravan.Domain), r.Caravan.CAPath)
 			if err != nil {
 				return err
 			}
 		case Consul:
-			h, err = checker.NewConsulChecker("https://"+t+"."+r.Caravan.Name+"."+r.Caravan.Domain, r.Caravan.CAPath, dc)
+			h, err = checker.NewConsulChecker(fmt.Sprintf("https://%s.%s.%s", t, r.Caravan.Name, r.Caravan.Domain), r.Caravan.CAPath, dc)
 			if err != nil {
 				return err
 			}
 		case Vault:
-			h, err = checker.NewVaultChecker("https://"+t+"."+r.Caravan.Name+"."+r.Caravan.Domain, r.Caravan.CAPath)
+			h, err = checker.NewVaultChecker(fmt.Sprintf("https://%s.%s.%s", t, r.Caravan.Name, r.Caravan.Domain), r.Caravan.CAPath)
 			if err != nil {
 				return err
 			}
