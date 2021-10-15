@@ -21,7 +21,7 @@ func (g GenericProvider) Bake(ctx context.Context) error {
 		return err
 	}
 	env := map[string]string{}
-	if err := t.ApplyVarFile(ctx, filepath.Base(g.Caravan.WorkdirBakingVars), 1200*time.Second, env, "*"); err != nil {
+	if err := t.ApplyVarFile(ctx, filepath.Base(g.Caravan.WorkdirBakingVars), 1800*time.Second, env, "*"); err != nil {
 		return err
 	}
 	return nil
@@ -148,7 +148,7 @@ func (g GenericProvider) cleanPlatform(ctx context.Context) (err error) {
 func (g GenericProvider) cleanApplication(ctx context.Context) (err error) {
 	fmt.Printf("removing terraform application\n")
 	tf := terraform.New()
-	err = tf.Init(ctx, g.Caravan.WorkdirApplicationVars)
+	err = tf.Init(ctx, g.Caravan.WorkdirApplication)
 	if err != nil {
 		return err
 	}

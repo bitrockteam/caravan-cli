@@ -112,8 +112,8 @@ func (c *Config) SetWorkdir(wd, provider string) {
 
 func (c *Config) SetDomain(domain string) (err error) {
 	if isValidDomain(domain) {
-		c.VaultURL = "https://vault." + c.Name + "." + c.Domain
 		c.Domain = domain
+		c.VaultURL = "https://vault." + c.Name + "." + c.Domain
 		return nil
 	}
 	return fmt.Errorf("please provide a valid domain name")
