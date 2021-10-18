@@ -3,7 +3,7 @@ module caravan-cli
 go 1.16
 
 require (
-	cloud.google.com/go/storage v1.17.0
+	cloud.google.com/go/storage v1.18.1
 	github.com/Azure/azure-sdk-for-go v57.4.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0
@@ -23,7 +23,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/hashicorp/vault/api v1.1.1
+	github.com/hashicorp/vault/api v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/rs/zerolog v1.25.0
 	github.com/satori/go.uuid v1.2.0
