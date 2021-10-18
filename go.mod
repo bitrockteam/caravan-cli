@@ -5,11 +5,11 @@ go 1.16
 require (
 	cloud.google.com/go/storage v1.18.1
 	github.com/Azure/azure-sdk-for-go v57.4.0+incompatible
-	github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.0
+	github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v0.11.0
 	github.com/Azure/azure-sdk-for-go/sdk/resources/armresources v0.3.0
-	github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.0
+	github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.1
 	github.com/Azure/go-autorest/autorest v0.11.21
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.8
 	github.com/Azure/go-autorest/autorest/date v0.3.0
@@ -23,7 +23,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/hashicorp/vault/api v1.1.1
+	github.com/hashicorp/vault/api v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/rs/zerolog v1.25.0
 	github.com/satori/go.uuid v1.2.0
