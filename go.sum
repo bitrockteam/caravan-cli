@@ -53,8 +53,8 @@ github.com/Azure/azure-sdk-for-go v57.0.0+incompatible/go.mod h1:9XXNKU+eRnpl9mo
 github.com/Azure/azure-sdk-for-go v57.1.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v57.4.0+incompatible h1:uzhy/mTwu4rq6Be/fJJnE82PRx2A2vjGjzsA3aQ6Qu0=
 github.com/Azure/azure-sdk-for-go v57.4.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
-github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.0 h1:QyZxLOcvtN6cL8QlyfaN8MrXt2KOyqzZXnMj4aZvXtE=
-github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.0/go.mod h1:wTPnR6WW1XpLguI54oHQ/6fGKGrwOqY/Ev7lcjDBLL4=
+github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1 h1:HKfzfaHhXHXuiP7cVXb00yq+XDSQhjZN+XPIbVTii+8=
+github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1/go.mod h1:L+NzY7foHg+0YTFOnXwXXY8DMpxu9weKlijZZKB+x8A=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0 h1:lhSJz9RMbJcTgxifR1hUNJnn6CNYtbgEDtQV22/9RBA=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0/go.mod h1:h6H6c8enJmmocHUbLiiGY6sx7f9i+X3m1CHdd5c6Rdw=
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v0.10.0/go.mod h1:HcM1YX14R7CJcghJGOYCgdezslRSVzqwLf/q+4Y2r/0=
@@ -64,8 +64,8 @@ github.com/Azure/azure-sdk-for-go/sdk/internal v0.7.0 h1:v9p9TfTbf7AwNb5NYQt7hI4
 github.com/Azure/azure-sdk-for-go/sdk/internal v0.7.0/go.mod h1:yqy467j36fJxcRV2TzfVZ1pCb5vxm4BtZPUdYWe/Xo8=
 github.com/Azure/azure-sdk-for-go/sdk/resources/armresources v0.3.0 h1:I1cONUC2nKiGU3JXm2jRB4+QIs06lGqkplVpwy4ie9o=
 github.com/Azure/azure-sdk-for-go/sdk/resources/armresources v0.3.0/go.mod h1:LdmyxRi5+2XPnbuv0X9c6ymGle+UkoNvqsBvG+oG53M=
-github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.0 h1:LOq4ZG6rMgTAZTyGbYHyxL1EVfZdngpUDRY/KvBToMs=
-github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.0/go.mod h1:mIFJgQ93RCQPBsN2jBDzDOfwJpLacGwXIxmirNQMiq4=
+github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.1 h1:ThP5EafVs4RSwdMzQCoxKee4t2mfoPkJBF076g1twpE=
+github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.1/go.mod h1:CDML+dijOXmHWKaprUkNicZoCZsRMWa5SQhw98pCGvA=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX56iTiv29bbRTIsUNlaFfuhWRQBWjQdVyAevI8=
 github.com/Azure/go-autorest v14.2.0+incompatible h1:V5VMDjClD3GiElqLWO7mz2MxNAK/vTfRHdAubSIPRgs=
 github.com/Azure/go-autorest v14.2.0+incompatible/go.mod h1:r+4oMnoxhatjLLJ6zxSWATqVooLgysK6ZNox3g/xq24=
