@@ -3,7 +3,7 @@ module caravan-cli
 go 1.16
 
 require (
-	cloud.google.com/go/storage v1.17.0
+	cloud.google.com/go/storage v1.18.1
 	github.com/Azure/azure-sdk-for-go v57.4.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.0
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0
@@ -17,7 +17,7 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go-v2 v1.9.2
-	github.com/aws/aws-sdk-go-v2/config v1.8.2
+	github.com/aws/aws-sdk-go-v2/config v1.8.3
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.16.1
 	github.com/go-git/go-git/v5 v5.4.2
