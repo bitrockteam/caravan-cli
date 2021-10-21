@@ -151,27 +151,33 @@ func checkStatus(c *cli.Config, tool string, count int) (err error) {
 	switch tool {
 	case cli.Nomad:
 		check, err = checker.NewNomadChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
-		return err
+		if err != nil {
+			return err
+		}
 	case cli.Consul:
 		check, err = checker.NewConsulChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
-		return err
+		if err != nil {
+			return err
+		}
 	case cli.Vault:
 		check, err = checker.NewVaultChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
-		return err
+		if err != nil {
+			return err
+		}
 	default:
 		log.Error().Msgf("tool not supported: %s\n", tool)
 	}
-	for i := 0; i <= count; i++ {
+	for i := 0; i < count; i++ {
 		if check.Status(ctx) {
-			log.Info().Msgf("OK\n")
+			log.Info().Msgf("checking %s status: OK", tool)
 			break
 		}
 		if i >= count {
-			log.Warn().Msgf("KO\n")
+			log.Warn().Msgf("checking %s status: KO", tool)
 			return fmt.Errorf("timeout waiting for %s to be available", tool)
 		}
 		time.Sleep(6 * time.Second)
-		log.Info().Msgf(".")
+		fmt.Printf(".")
 	}
 	return nil
 }
