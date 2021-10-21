@@ -12,12 +12,13 @@ import (
 
 var (
 	// Common.
-	prv    = ""
-	name   = ""
-	region = ""
-	branch = ""
-	domain = ""
-	force  bool
+	prv         = ""
+	name        = ""
+	region      = ""
+	branch      = ""
+	domain      = ""
+	force       = false
+	deployNomad = true
 
 	// GCP.
 	gcpParentProject = ""

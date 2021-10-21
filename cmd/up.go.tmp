@@ -180,11 +180,11 @@ func checkStatus(c *cli.Config, tool string, count int) (err error) {
 
 	for i := 0; i < count; i++ {
 		if check.Status(ctx) {
-			log.Info().Msgf("checking %s status: OK", tool)
+			fmt.Printf("OK\n")
 			break
 		}
 		if i >= count {
-			log.Warn().Msgf("checking %s status: KO", tool)
+			log.Warn().Msgf("KO\n")
 			return fmt.Errorf("timeout waiting for %s to be available", tool)
 		}
 		time.Sleep(6 * time.Second)

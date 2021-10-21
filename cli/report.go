@@ -32,8 +32,13 @@ type Tool struct {
 }
 
 func NewReport(c *Config) (r *Report) {
+	targets := []string{Vault, Consul}
+	if c.DeployNomad {
+		targets = append(targets, Nomad)
+	}
+
 	r = &Report{
-		Targets: []string{Vault, Nomad, Consul},
+		Targets: targets,
 		Caravan: c,
 		Tools:   map[string]Tool{},
 	}
@@ -41,6 +46,7 @@ func NewReport(c *Config) (r *Report) {
 }
 
 func (r *Report) CheckStatus(ctx context.Context) (err error) {
+	// check CA for https
 	if _, err := os.Stat(r.Caravan.CAPath); os.IsNotExist(err) {
 		return nil
 	}
@@ -83,6 +89,7 @@ Status:		{{.Caravan.Status}}
 Provider:	{{.Caravan.Provider}} 
 Region:		{{ or .Caravan.Region "default"}}
 Domain:		{{ .Caravan.Domain }}
+DeployNomad:    {{ .Caravan.DeployNomad }}
 {{- if gt .Caravan.Status 3 }}
 {{ range $k,$v:= .Tools }}
 {{ $k }}
