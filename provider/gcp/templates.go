@@ -58,7 +58,7 @@ control_plane_role_name            = "control-plane"
 
 vault_skip_tls_verify = true
 consul_insecure_https = true
-ca_cert_file          = "../caravan-infra-{{ .Provider }}/ca_certs.pem"
+ca_cert_file          = "../caravan-infra-gcp/ca_certs.pem"
 `
 
 	applicationTfVarsTmpl = `
@@ -78,7 +78,7 @@ jenkins_volume_external_id = ""
 
 vault_skip_tls_verify = true
 consul_insecure_https = true
-ca_cert_file          = "../caravan-infra-{{ .Provider }}/ca_certs.pem"
+ca_cert_file          = "../caravan-infra-gcp/ca_certs.pem"
 `
 
 	infraBackendTmpl = `
@@ -96,7 +96,7 @@ terraform {
   backend "gcs" {
     bucket      = "{{ .StateStoreName }}"
     prefix      = "platform/terraform/state"
-    credentials = "../caravan-infra-{{ .Provider }}/.{{ .Name }}-terraform-sa-key.json"
+    credentials = "../caravan-infra-gcp/.{{ .Name }}-terraform-sa-key.json"
   }
 }
 `
@@ -105,7 +105,7 @@ terraform {
   backend "gcs" {
     bucket      = "{{ .StateStoreName }}"
     prefix      = "appsupport/terraform/state"
-    credentials = "../caravan-infra-{{ .Provider }}/.{{ .Name }}-terraform-sa-key.json"
+    credentials = "../caravan-infra-gcp/.{{ .Name }}-terraform-sa-key.json"
   }
 }
 `
