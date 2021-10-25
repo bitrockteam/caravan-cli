@@ -35,7 +35,7 @@ nomad_endpoint  = "https://nomad.{{.Name}}.{{.Domain}}"
 
 vault_skip_tls_verify = true
 consul_insecure_https = true
-ca_cert_file          = "../caravan-infra-{{.Provider}}/ca_certs.pem"
+ca_cert_file          = "../caravan-infra-azure/ca_certs.pem"
 
 auth_providers = ["{{.Provider}}"]
 
@@ -65,7 +65,7 @@ jenkins_volume_external_id = ""
 
 vault_skip_tls_verify = true
 consul_insecure_https = true
-ca_cert_file          = "../caravan-infra-{{.Provider}}/ca_certs.pem"
+ca_cert_file          = "../caravan-infra-azure/ca_certs.pem"
 `
 	infraBackendTmpl = `
 terraform {
