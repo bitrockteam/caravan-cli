@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog/log"
@@ -39,6 +40,7 @@ func init() {
 
 	initCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "region for the deployment")
 	initCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "", "")
+	initCmd.Flags().BoolVar(&deployNomad, FlagDeployNomad, true, "deploy Nomad")
 
 	// GCP
 	initCmd.Flags().StringVar(&gcpParentProject, FlagGCPParentProject, "", "(GCP only) parent-project")
@@ -80,6 +82,12 @@ func executeInit(cmd *cobra.Command, args []string) error {
 
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
+	}
+
+	log.Debug().Msgf("input: %t - deploy nomad: %t\n", deployNomad, c.DeployNomad)
+	c.DeployNomad = deployNomad
+	if err := c.Save(); err != nil {
+		log.Error().Msgf("error saving state: %s\n", err)
 	}
 
 	if err := c.SetDomain(domain); err != nil {
@@ -150,7 +158,7 @@ func initRepos(c *cli.Config, b string) (err error) {
 	// checkout repos
 	git := git.NewGit("bitrockteam")
 	for _, repo := range c.Repos {
-		err := git.Clone(repo, ".caravan/"+c.Name+"/"+repo, b)
+		err := git.Clone(repo, filepath.Join(".caravan", c.Name, repo), b)
 		if err != nil {
 			return fmt.Errorf("unable to clone repo %s: %w", repo, err)
 		}

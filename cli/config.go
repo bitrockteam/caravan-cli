@@ -46,6 +46,7 @@ type Config struct {
 	CAPath                    string              `json:",omitempty"`
 	ServiceAccount            string              `json:",omitempty"`
 	Datacenter                string              `json:",omitempty"`
+	DeployNomad               bool                `json:",omitempty"`
 
 	GCPConfig
 	AzureConfig

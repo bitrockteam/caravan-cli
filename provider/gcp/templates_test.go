@@ -28,19 +28,24 @@ func TestGenerateConfig(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name string
-		gold string
+		name        string
+		gold        string
+		deployNomad bool
 	}{
-		{"baking-vars", "baking.golden.tfvars"},
-		{"infra-vars", "infra.golden.tfvars"},
-		{"infra-backend", "infra.golden.tf"},
-		{"platform-vars", "platform.golden.tfvars"},
-		{"platform-backend", "platform.golden.tf"},
-		{"application-backend", "application.golden.tf"},
-		{"application-vars", "application.golden.tfvars"},
+		{"baking-vars", "baking.golden.tfvars", true},
+		{"infra-vars", "infra.golden.tfvars", true},
+		{"infra-vars", "infra.golden.nonomad.tfvars", false},
+		{"infra-backend", "infra.golden.tf", true},
+		{"platform-vars", "platform.golden.tfvars", true},
+		{"platform-vars", "platform.golden.nonomad.tfvars", false},
+		{"platform-backend", "platform.golden.tf", true},
+		{"application-backend", "application.golden.tf", true},
+		{"application-vars", "application.golden.tfvars", true},
+		{"application-vars", "application.golden.nonomad.tfvars", false},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			config.DeployNomad = tc.deployNomad
 			gold := filepath.Join("testdata", tc.gold)
 			templates, _ := gcp.GetTemplates(ctx)
 			for _, tmp := range templates {
@@ -62,7 +67,7 @@ func TestGenerateConfig(t *testing.T) {
 					}
 
 					if strings.Trim(string(got), "\n") != strings.Trim(string(want), "\n") {
-						t.Errorf("%s <-> %s: mismatch found with golden sample:\n%s\n%s\n", tmp.Path, gold, string(got), string(want))
+						t.Errorf("%s <-> %s: mismatch found with golden sample:\n%s\n-----\n%s\n", tmp.Path, gold, string(got), string(want))
 					}
 				}
 			}

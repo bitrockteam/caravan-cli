@@ -1,7 +1,8 @@
 
 vault_endpoint  = "https://vault.test-name.test.me"
 consul_endpoint = "https://consul.test-name.test.me"
-nomad_endpoint  = "https://nomad.test-name.test.me"
+nomad_endpoint  = ""
+enable_nomad    = false
 
 bootstrap_state_backend_provider = "gcp"
 auth_providers                   = ["gcp", "gsuite"]
