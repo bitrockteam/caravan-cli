@@ -36,6 +36,7 @@ var upCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		log.Info().Msgf("[%s] current status\n", c.Status)
 		if c.Status < cli.InfraDeployDone {
 			c.Status = cli.InfraDeployRunning
 			if err := c.Save(); err != nil {
@@ -51,31 +52,38 @@ var upCmd = &cobra.Command{
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
+			log.Info().Msgf("[%s] deployment of infrastructure completed\n", c.Status)
+
+			if err := checkStatus(c, "vault", 30); err != nil {
+				return err
+			}
+			if err := checkStatus(c, "consul", 30); err != nil {
+				return err
+			}
+			if c.DeployNomad {
+				if err := checkStatus(c, "nomad", 30); err != nil {
+					return err
+				}
+			}
+			log.Debug().Msgf("setting Vault root token\n")
+			if c.VaultRootToken == "" {
+				if err := c.SetVaultRootToken(); err != nil {
+					return fmt.Errorf("error setting Vault root Token: %w", err)
+				}
+			}
+			if c.DeployNomad {
+				if c.NomadToken == "" {
+					log.Debug().Msgf("setting Nomad token\n")
+					if err := c.SetNomadToken(); err != nil {
+						return fmt.Errorf("error setting Nomad token: %w", err)
+					}
+				}
+			}
+			if err := c.Save(); err != nil {
+				return fmt.Errorf("error persisting state: %w", err)
+			}
 		}
 		log.Info().Msgf("[%s] deployment of infrastructure completed\n", c.Status)
-
-		if err := checkStatus(c, "vault", 30); err != nil {
-			return err
-		}
-		if err := checkStatus(c, "consul", 30); err != nil {
-			return err
-		}
-		if err := checkStatus(c, "nomad", 30); err != nil {
-			return err
-		}
-		if c.VaultRootToken == "" {
-			if err := c.SetVaultRootToken(); err != nil {
-				return fmt.Errorf("error setting Vault Root Token: %w", err)
-			}
-		}
-		if c.NomadToken == "" {
-			if err := c.SetNomadToken(); err != nil {
-				return fmt.Errorf("error setting Nomad Token: %w", err)
-			}
-		}
-		if err := c.Save(); err != nil {
-			return fmt.Errorf("error persisting state: %w", err)
-		}
 		if c.Status < cli.PlatformDeployDone {
 			c.Status = cli.PlatformDeployRunning
 			if err := c.Save(); err != nil {
@@ -91,29 +99,31 @@ var upCmd = &cobra.Command{
 			if err := c.Save(); err != nil {
 				return fmt.Errorf("error persisting state: %w", err)
 			}
-		}
-		log.Info().Msgf("[%s] deployment of platform completed\n", c.Status)
-		if err := checkURL(c, "consul", "/v1/connect/ca/roots", 60); err != nil {
-			return err
-		}
-		if c.Status < cli.ApplicationDeployDone {
-			c.Status = cli.ApplicationDeployRunning
-			if err := c.Save(); err != nil {
-				return fmt.Errorf("error persisting state: %w", err)
-			}
-
-			err := prv.Deploy(ctx, cli.ApplicationSupport)
-			if err != nil {
+			log.Info().Msgf("[%s] deployment of platform completed\n", c.Status)
+			if err := checkURL(c, "consul", "/v1/connect/ca/roots", 60); err != nil {
 				return err
 			}
-
-			c.Status = cli.ApplicationDeployDone
-			if err := c.Save(); err != nil {
-				return fmt.Errorf("error persisting state: %w", err)
-			}
 		}
-		log.Info().Msgf("[%s] deployment of application completed\n", c.Status)
+		log.Info().Msgf("[%s] deployment of platform completed\n", c.Status)
+		if c.DeployNomad {
+			if c.Status < cli.ApplicationDeployDone {
+				c.Status = cli.ApplicationDeployRunning
+				if err := c.Save(); err != nil {
+					return fmt.Errorf("error persisting state: %w", err)
+				}
 
+				err := prv.Deploy(ctx, cli.ApplicationSupport)
+				if err != nil {
+					return err
+				}
+
+				c.Status = cli.ApplicationDeployDone
+				if err := c.Save(); err != nil {
+					return fmt.Errorf("error persisting state: %w", err)
+				}
+			}
+			log.Info().Msgf("[%s] deployment of application completed\n", c.Status)
+		}
 		return nil
 	},
 }
@@ -151,27 +161,34 @@ func checkStatus(c *cli.Config, tool string, count int) (err error) {
 	switch tool {
 	case cli.Nomad:
 		check, err = checker.NewNomadChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
-		return err
+		if err != nil {
+			return err
+		}
 	case cli.Consul:
 		check, err = checker.NewConsulChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
-		return err
+		if err != nil {
+			return err
+		}
 	case cli.Vault:
 		check, err = checker.NewVaultChecker(fmt.Sprintf("https://%s.%s.%s", tool, c.Name, c.Domain), c.CAPath)
-		return err
+		if err != nil {
+			return err
+		}
 	default:
 		log.Error().Msgf("tool not supported: %s\n", tool)
 	}
-	for i := 0; i <= count; i++ {
+
+	for i := 0; i < count; i++ {
 		if check.Status(ctx) {
-			log.Info().Msgf("OK\n")
+			log.Info().Msgf("checking %s status: OK", tool)
 			break
 		}
 		if i >= count {
-			log.Warn().Msgf("KO\n")
+			log.Warn().Msgf("checking %s status: KO", tool)
 			return fmt.Errorf("timeout waiting for %s to be available", tool)
 		}
 		time.Sleep(6 * time.Second)
-		log.Info().Msgf(".")
+		fmt.Printf(".")
 	}
 	return nil
 }
