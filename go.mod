@@ -25,11 +25,10 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/vault/api v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/rs/zerolog v1.25.0
+	github.com/rs/zerolog v1.26.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	google.golang.org/api v0.60.0
 	google.golang.org/grpc v1.41.0
 	gopkg.in/ini.v1 v1.63.2
