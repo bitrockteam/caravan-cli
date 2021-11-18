@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 
@@ -47,6 +48,9 @@ type Config struct {
 	ServiceAccount            string              `json:",omitempty"`
 	Datacenter                string              `json:",omitempty"`
 	DeployNomad               bool                `json:",omitempty"`
+	LinuxOSFamily             string              `json:",omitempty"`
+	LinuxOSVersion            string              `json:",omitempty"`
+	LinuxOS                   string              `json:",omitempty"`
 
 	GCPConfig
 	AzureConfig
@@ -133,6 +137,24 @@ func (c *Config) SetVaultRootToken() error {
 	}
 	// TODO make more robust
 	c.VaultRootToken = string(vrt[0 : len(vrt)-1])
+	return nil
+}
+
+// SetDistro sets the linux ditribution
+func (c *Config) SetDistro(d string) (err error) {
+	if len(strings.Split(d, "-")) < 2 {
+		return fmt.Errorf("unsupported linux distribution")
+	}
+	c.LinuxOS = strings.Split(d, "-")[0]
+	c.LinuxOSVersion = strings.Split(d, "-")[1]
+	switch d {
+	case "ubuntu-2104":
+		c.LinuxOSFamily = "debian"
+	case "centos-7", "centos-8":
+		c.LinuxOSFamily = "redhat"
+	default:
+		return fmt.Errorf("unsupported linux distribution")
+	}
 	return nil
 }
 

@@ -40,6 +40,10 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
+		if err := c.SetDistro(distro); err != nil {
+			return err
+		}
+
 		git := git.NewGit("bitrockteam")
 		if err := git.Clone("caravan-baking", filepath.Join(c.WorkdirProject, "caravan-baking"), branch); err != nil {
 			return err
@@ -71,6 +75,7 @@ func init() {
 
 	bakeCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
 	bakeCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
+	bakeCmd.Flags().StringVarP(&distro, FlagLinuxDistro, FlagLinuxDistroShort, "centos7", "linux distribution")
 	bakeCmd.Flags().StringVarP(&region, FlagRegion, FlagRegionShort, "", "optional: override default profile region")
 	bakeCmd.Flags().StringVarP(&branch, FlagBranch, FlagBranchShort, "main", "optional: define a branch to checkout instead of default")
 
