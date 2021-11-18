@@ -140,7 +140,7 @@ func (c *Config) SetVaultRootToken() error {
 	return nil
 }
 
-// SetDistro sets the linux ditribution
+// SetDistro sets the linux ditribution.
 func (c *Config) SetDistro(d string) (err error) {
 	if len(strings.Split(d, "-")) < 2 {
 		return fmt.Errorf("unsupported linux distribution")
