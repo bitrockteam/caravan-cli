@@ -22,7 +22,7 @@ external_domain         = "{{ .Domain }}"
 tfstate_bucket_name     = "{{ .StateStoreName }}"
 tfstate_table_name      = "{{ .LockName }}"
 tfstate_region          = "{{ .Region }}"
-ami_filter_name         = "caravan-{{ .LinuxOS }}-{{ .LinuxOSVersion }}"
+ami_filter_name         = "caravan-os-{{ .LinuxOS }}-{{ .LinuxOSVersion }}"
 ssh_username            = "{{ .LinuxOS }}"
 `
 
