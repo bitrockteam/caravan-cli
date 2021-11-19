@@ -3,9 +3,12 @@ package aws
 const (
 	bakingTfVarsTmpl = `
 build_on_aws      = true
-build_image_name  = "caravan-centos-image"
 aws_region        = "{{ .Region }}"
 aws_instance_type = "t3.small"
+linux_os          = "{{ .LinuxOS }}"
+linux_os_version  = "{{ .LinuxOSVersion }}"
+linux_os_family   = "{{ .LinuxOSFamily }}"
+ssh_username      = "{{ .LinuxOS }}"
 `
 
 	infraTfVarsTmpl = `
@@ -19,6 +22,8 @@ external_domain         = "{{ .Domain }}"
 tfstate_bucket_name     = "{{ .StateStoreName }}"
 tfstate_table_name      = "{{ .LockName }}"
 tfstate_region          = "{{ .Region }}"
+ami_filter_name         = "caravan-os-{{ .LinuxOS }}-{{ .LinuxOSVersion }}-*"
+ssh_username            = "{{ .LinuxOS }}"
 `
 
 	platformTfVarsTmpl = `

@@ -19,6 +19,7 @@ var (
 	domain      = ""
 	force       = false
 	deployNomad = true
+	distro      = ""
 
 	// GCP.
 	gcpParentProject = ""

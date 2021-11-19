@@ -23,6 +23,7 @@ In the following table the support of the corresponding provider for each provid
 |status| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | 
 |update| :x: | :x: | :x: | :x: | 
 |clean| :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | 
+|multiOS| :heavy_check_mark: | :x: | :x: | :x: |
 
 ## Usage
 A typical session is as follows:

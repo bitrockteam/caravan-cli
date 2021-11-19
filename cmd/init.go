@@ -33,6 +33,7 @@ func init() {
 	initCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
 	initCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
 	initCmd.Flags().StringVarP(&domain, FlagDomain, FlagDomainShort, "", "")
+	initCmd.Flags().StringVarP(&distro, FlagLinuxDistro, FlagLinuxDistroShort, "ubuntu-2104", "linux distribution for image")
 
 	_ = initCmd.MarkFlagRequired(FlagProject)
 	_ = initCmd.MarkFlagRequired(FlagProvider)
@@ -82,6 +83,10 @@ func executeInit(cmd *cobra.Command, args []string) error {
 
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
+	}
+
+	if err := c.SetDistro(distro); err != nil {
+		return err
 	}
 
 	log.Debug().Msgf("input: %t - deploy nomad: %t\n", deployNomad, c.DeployNomad)

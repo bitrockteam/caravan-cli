@@ -19,6 +19,7 @@ func TestGenerateConfig(t *testing.T) {
 	config, _ := cli.NewConfigFromScratch("test-name", "aws", "eu-south-1")
 	config.SetWorkdir(dir, "aws")
 	_ = config.SetDomain("test.me")
+	_ = config.SetDistro("ubuntu-2104")
 	aws, _ := aws.New(ctx, config)
 
 	testCases := []struct {
