@@ -148,7 +148,7 @@ func (c *Config) SetDistro(d string) (err error) {
 	c.LinuxOS = strings.Split(d, "-")[0]
 	c.LinuxOSVersion = strings.Split(d, "-")[1]
 	switch d {
-	case "ubuntu-2104":
+	case "ubuntu-2104", "ubuntu-2004":
 		c.LinuxOSFamily = "debian"
 	case "centos-7", "centos-8":
 		c.LinuxOSFamily = "redhat"
