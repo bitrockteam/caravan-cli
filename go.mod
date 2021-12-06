@@ -16,9 +16,9 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
-	github.com/aws/aws-sdk-go-v2 v1.11.1
+	github.com/aws/aws-sdk-go-v2 v1.11.2
 	github.com/aws/aws-sdk-go-v2/config v1.10.2
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.8.1
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.19.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/uuid v1.3.0
@@ -29,7 +29,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
-	google.golang.org/api v0.60.0
+	google.golang.org/api v0.61.0
 	google.golang.org/grpc v1.42.0
 	gopkg.in/ini.v1 v1.66.2
 )
