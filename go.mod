@@ -29,7 +29,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.0
-	google.golang.org/api v0.62.0
+	google.golang.org/api v0.63.0
 	google.golang.org/grpc v1.43.0
 	gopkg.in/ini.v1 v1.66.2
 )
