@@ -30,6 +30,6 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.10.0
 	google.golang.org/api v0.62.0
-	google.golang.org/grpc v1.42.0
+	google.golang.org/grpc v1.43.0
 	gopkg.in/ini.v1 v1.66.2
 )
