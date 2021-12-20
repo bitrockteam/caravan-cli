@@ -52,8 +52,8 @@ cloud.google.com/go/storage v1.18.2/go.mod h1:AiIj7BWXyhO5gGVmYJ+S8tbkCx3yb0IMju
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/Azure/azure-sdk-for-go v57.0.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v57.1.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
-github.com/Azure/azure-sdk-for-go v60.1.0+incompatible h1:j6y8ddurcaiyLfwBwPmJFaunp6BDzyQTuAgMrm1r++o=
-github.com/Azure/azure-sdk-for-go v60.1.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
+github.com/Azure/azure-sdk-for-go v60.2.0+incompatible h1:twJOQQl3um6o+1q5SSyAdLr2GCX8dJPVRNS1eKOnv54=
+github.com/Azure/azure-sdk-for-go v60.2.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1 h1:HKfzfaHhXHXuiP7cVXb00yq+XDSQhjZN+XPIbVTii+8=
 github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1/go.mod h1:L+NzY7foHg+0YTFOnXwXXY8DMpxu9weKlijZZKB+x8A=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0 h1:lhSJz9RMbJcTgxifR1hUNJnn6CNYtbgEDtQV22/9RBA=
