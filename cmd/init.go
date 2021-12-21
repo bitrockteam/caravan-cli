@@ -72,11 +72,11 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		if errors.As(err, &cli.ConfigFileNotFound{}) {
 			c, err = cli.NewConfigFromScratch(name, prv, region)
 			if err != nil {
-				log.Error().Msgf("unable to create config from scratch: %s\n", err)
+				log.Error().Msgf("unable to create config from scratch: %s", err)
 				return err
 			}
 		} else {
-			log.Error().Msgf("unable to create config from file: %s\n", err)
+			log.Error().Msgf("unable to create config from file: %s", err)
 			return err
 		}
 	}
@@ -89,10 +89,10 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	log.Debug().Msgf("input: %t - deploy nomad: %t\n", deployNomad, c.DeployNomad)
+	log.Debug().Msgf("input: %t - deploy nomad: %t", deployNomad, c.DeployNomad)
 	c.DeployNomad = deployNomad
 	if err := c.Save(); err != nil {
-		log.Error().Msgf("error saving state: %s\n", err)
+		log.Error().Msgf("error saving state: %s", err)
 	}
 
 	if err := c.SetDomain(domain); err != nil {
@@ -109,19 +109,19 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := initRepos(c, branch); err != nil {
-		log.Error().Msgf("error: %s\n", err)
+		log.Error().Msgf("error: %s", err)
 		return err
 	}
 
 	if err := initProvider(c, p); err != nil {
-		log.Error().Msgf("error during init: %s\n", err)
+		log.Error().Msgf("error during init: %s", err)
 		return err
 	}
 
 	if c.Status < cli.InitDone {
 		c.Status = cli.InitDone
 		if err := c.Save(); err != nil {
-			log.Error().Msgf("error saving state: %s\n", err)
+			log.Error().Msgf("error saving state: %s", err)
 		}
 	}
 
@@ -129,7 +129,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 }
 
 func initProvider(c *cli.Config, p provider.Provider) error {
-	log.Info().Msgf("initializing cloud resources\n")
+	log.Info().Msgf("initializing cloud resources")
 	if err := p.InitProvider(ctx); err != nil {
 		return fmt.Errorf("error initing provider: %w", err)
 	}
@@ -139,12 +139,12 @@ func initProvider(c *cli.Config, p provider.Provider) error {
 		return fmt.Errorf("failed to get templates: %w", err)
 	}
 
-	log.Info().Msgf("generating terraform config files on: %s\n", c.WorkdirProject)
+	log.Info().Msgf("generating terraform config files on: %s", c.WorkdirProject)
 	if err := os.MkdirAll(c.WorkdirProject, 0777); err != nil {
 		return err
 	}
 	for _, t := range templates {
-		log.Info().Msgf("generating %v: %s \n", t.Name, t.Path)
+		log.Info().Msgf("generating %v: %s", t.Name, t.Path)
 		if t.Name != "baking-vars" {
 			if err := t.Render(c); err != nil {
 				return err

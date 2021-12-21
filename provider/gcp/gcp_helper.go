@@ -19,7 +19,7 @@ import (
 )
 
 func (g GCP) CreateStateStore(ctx context.Context, name string) error {
-	log.Info().Msgf("creating bucket %s on project: %s\n", name, g.Caravan.Name)
+	log.Info().Msgf("creating bucket %s on project: %s", name, g.Caravan.Name)
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -46,7 +46,7 @@ func (g GCP) CreateStateStore(ctx context.Context, name string) error {
 }
 
 func (g GCP) DeleteStateStore(ctx context.Context, name string) error {
-	log.Info().Msgf("deleting bucket %s on project: %s\n", name, g.Caravan.Name)
+	log.Info().Msgf("deleting bucket %s on project: %s", name, g.Caravan.Name)
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -69,7 +69,7 @@ func (g GCP) DeleteStateStore(ctx context.Context, name string) error {
 }
 
 func (g GCP) WriteStateStore(ctx context.Context, bucket, object, data string) error {
-	log.Info().Msgf("getting writer on bucket %s on project: %s\n", bucket, g.Caravan.Name)
+	log.Info().Msgf("getting writer on bucket %s on project: %s", bucket, g.Caravan.Name)
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -93,7 +93,7 @@ func (g GCP) WriteStateStore(ctx context.Context, bucket, object, data string) e
 }
 
 func (g GCP) EmptyStateStore(ctx context.Context, name string) error {
-	log.Info().Msgf("emptying bucket %s on project: %s\n", name, g.Caravan.Name)
+	log.Info().Msgf("emptying bucket %s on project: %s", name, g.Caravan.Name)
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -165,7 +165,7 @@ func (g GCP) CreateProject(ctx context.Context, id, orgID string) error {
 
 // DeleteProject deletes a project from its project id.
 func (g GCP) DeleteProject(ctx context.Context, name, organization string) error {
-	log.Info().Msgf("deleting project: %s\n", name)
+	log.Info().Msgf("deleting project: %s", name)
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
@@ -224,12 +224,12 @@ func (g GCP) GetProject(ctx context.Context, name, organization string) (p *clou
 	if len(resp.Projects) != 1 {
 		return p, fmt.Errorf("unable to uniquely identify project: %s (%d)", name, len(resp.Projects))
 	}
-	// log.Info().Msgf("found project: %v\n", resp.Projects[0])
+	// log.Info().Msgf("found project: %v", resp.Projects[0])
 	return resp.Projects[0], nil
 }
 
 func (g GCP) SetBillingAccount(ctx context.Context, name, bai string) (err error) {
-	log.Info().Msgf("Setting Billing account: %s\n", bai)
+	log.Info().Msgf("Setting Billing account: %s", bai)
 
 	cloudbillingservice, err := cloudbilling.NewService(ctx)
 	if err != nil {
@@ -250,7 +250,7 @@ func (g GCP) SetBillingAccount(ctx context.Context, name, bai string) (err error
 }
 
 func (g GCP) CreateServiceAccount(ctx context.Context, name string) (err error) {
-	log.Info().Msgf("Create service account: %s\n", name)
+	log.Info().Msgf("Create service account: %s", name)
 
 	iamservice, err := iam.NewService(ctx)
 	if err != nil {
@@ -276,7 +276,7 @@ func (g GCP) CreateServiceAccount(ctx context.Context, name string) (err error) 
 }
 
 func (g GCP) DeleteServiceAccount(ctx context.Context, name string) (err error) {
-	log.Info().Msgf("delete service account: %s\n", name)
+	log.Info().Msgf("delete service account: %s", name)
 
 	iamservice, err := iam.NewService(ctx)
 	if err != nil {
@@ -296,7 +296,7 @@ func (g GCP) DeleteServiceAccount(ctx context.Context, name string) (err error) 
 }
 
 func (g GCP) CreateServiceAccountKeys(ctx context.Context, sa, name string) (key string, err error) {
-	log.Info().Msgf("create service account keys: %s\n", name)
+	log.Info().Msgf("create service account keys: %s", name)
 
 	iamservice, err := iam.NewService(ctx)
 	if err != nil {
@@ -316,7 +316,7 @@ func (g GCP) CreateServiceAccountKeys(ctx context.Context, sa, name string) (key
 }
 
 func (g GCP) AddPolicyBinding(ctx context.Context, resource, name, member, role string) error {
-	log.Info().Msgf("add policy binding: %s %s@%s %s\n", member, role, resource, name)
+	log.Info().Msgf("add policy binding: %s %s@%s %s", member, role, resource, name)
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
@@ -341,7 +341,7 @@ func (g GCP) AddPolicyBinding(ctx context.Context, resource, name, member, role 
 }
 
 func (g GCP) GetPolicyBinding(ctx context.Context, resource, name string) (policy *cloudresourcemanager.Policy, err error) {
-	// log.Info().Msgf("get policy binding: %s / %s\n", resource, name)
+	// log.Info().Msgf("get policy binding: %s / %s", resource, name)
 
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {

@@ -37,12 +37,12 @@ func NewGenericChecker(u string, options ...func(*GenericChecker)) *GenericCheck
 func (c GenericChecker) CheckURL(ctx context.Context, u string) bool {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.url+u, nil)
 	if err != nil {
-		log.Error().Msgf("error creating request: %s\n", err)
+		log.Error().Msgf("error creating request: %s", err)
 		return false
 	}
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		log.Error().Msgf("error executing request: %s\n", err)
+		log.Error().Msgf("error executing request: %s", err)
 		return false
 	}
 	defer resp.Body.Close()

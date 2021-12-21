@@ -39,12 +39,12 @@ func (cc ConsulChecker) Version(ctx context.Context) (version string) {
 	u := "/ui/" + cc.Datacenter + "/services"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, cc.url+u, nil)
 	if err != nil {
-		log.Error().Msgf("error creating request: %s\n", err)
+		log.Error().Msgf("error creating request: %s", err)
 		return fmt.Sprintf("error: %s\n", err)
 	}
 	resp, err := cc.Client.Do(req)
 	if err != nil {
-		log.Error().Msgf("error executing request: %s\n", err)
+		log.Error().Msgf("error executing request: %s", err)
 		return fmt.Sprintf("error: %s\n", err)
 	}
 	defer resp.Body.Close()

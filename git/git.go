@@ -21,7 +21,7 @@ func NewGit(org string) (g Git) {
 }
 
 func (g Git) Clone(name, dest, branch string) (err error) {
-	log.Info().Msgf("cloning repo %s/%s to %s - branch: %s\n", g.org, name, dest, branch)
+	log.Info().Msgf("cloning repo %s/%s to %s - branch: %s", g.org, name, dest, branch)
 
 	repo, err := git.PlainClone("./"+dest, false, &git.CloneOptions{
 		URL:      "https://github.com/" + g.org + "/" + name,

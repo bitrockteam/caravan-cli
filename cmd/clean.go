@@ -22,7 +22,7 @@ var cleanCmd = &cobra.Command{
 		c, err = cli.NewConfigFromFile()
 		if err != nil {
 			if errors.As(err, &cli.ConfigFileNotFound{}) {
-				log.Info().Msgf("all clean\n")
+				log.Info().Msgf("all clean")
 				return nil
 			}
 			return err
@@ -39,7 +39,7 @@ var cleanCmd = &cobra.Command{
 		if c.Status >= cli.ApplicationDeployRunning {
 			c.Status = cli.ApplicationCleanRunning
 			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s", err)
 				return nil
 			}
 
@@ -49,7 +49,7 @@ var cleanCmd = &cobra.Command{
 
 			c.Status = cli.ApplicationCleanDone
 			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s", err)
 				return nil
 			}
 		}
@@ -57,7 +57,7 @@ var cleanCmd = &cobra.Command{
 		if c.Status >= cli.PlatformDeployRunning {
 			c.Status = cli.PlatformCleanRunning
 			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s", err)
 				return nil
 			}
 
@@ -67,7 +67,7 @@ var cleanCmd = &cobra.Command{
 
 			c.Status = cli.PlatformCleanDone
 			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s", err)
 				return nil
 			}
 		}
@@ -75,7 +75,7 @@ var cleanCmd = &cobra.Command{
 		if c.Status >= cli.InfraDeployRunning {
 			c.Status = cli.InfraCleanRunning
 			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s", err)
 				return nil
 			}
 
@@ -85,17 +85,17 @@ var cleanCmd = &cobra.Command{
 
 			c.Status = cli.InfraCleanDone
 			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s\n", err)
+				log.Error().Msgf("error during config update of config: %s", err)
 				return nil
 			}
 		}
 
 		err = prv.CleanProvider(ctx)
 		if err != nil {
-			log.Error().Msgf("error during clean of cloud resources: %s\n", err)
+			log.Error().Msgf("error during clean of cloud resources: %s", err)
 			return nil
 		}
-		log.Info().Msgf("removing %s/%s\n", c.Workdir, c.Name)
+		log.Info().Msgf("removing %s/%s", c.Workdir, c.Name)
 
 		os.RemoveAll(c.WorkdirProject)
 		os.RemoveAll(c.Workdir + "/caravan.state")

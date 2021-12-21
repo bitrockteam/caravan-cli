@@ -102,10 +102,10 @@ Linux Distro:   {{ .Caravan.LinuxOS }}-{{ .Caravan.LinuxOSVersion }}
 `)
 
 	if err != nil {
-		log.Error().Msgf("error parsing report: %s\n", err)
+		log.Error().Msgf("error parsing report: %s", err)
 	}
 
 	if err := t.Execute(os.Stdout, r); err != nil {
-		log.Error().Msgf("error executing report: %s\n", err)
+		log.Error().Msgf("error executing report: %s", err)
 	}
 }
