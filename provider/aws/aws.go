@@ -124,10 +124,10 @@ func (a AWS) InitProvider(ctx context.Context) error {
 }
 
 func (a AWS) CleanProvider(ctx context.Context) error {
-	log.Info().Msgf("removing terraform state and locking structures\n")
+	log.Info().Msgf("removing terraform state and locking structures")
 
 	if a.Caravan.Force {
-		log.Info().Msgf("emptying bucket %s\n", a.Caravan.StateStoreName)
+		log.Info().Msgf("emptying bucket %s", a.Caravan.StateStoreName)
 		err := a.EmptyStateStore(ctx, a.Caravan.StateStoreName)
 		if err != nil {
 			return fmt.Errorf("error emptying: %w", err)

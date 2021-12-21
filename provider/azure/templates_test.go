@@ -55,8 +55,8 @@ func TestGenerateConfig(t *testing.T) {
 			templates, _ := az.GetTemplates(ctx)
 			for _, tmp := range templates {
 				if tmp.Name == tc.name {
-					// log.Info().Msgf("%s\n", tc.name)
-					// log.Info().Msgf("test: %s\n", tmp.Path)
+					// log.Info().Msgf("%s", tc.name)
+					// log.Info().Msgf("test: %s", tmp.Path)
 
 					if err := tmp.Render(az.Caravan); err != nil {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)

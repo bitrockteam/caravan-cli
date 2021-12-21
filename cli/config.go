@@ -169,7 +169,7 @@ func (c *Config) SetNomadToken() error {
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("setting nomad token: %s\n", t)
+	log.Info().Msgf("setting nomad token: %s", t)
 	c.NomadToken = t
 
 	return nil

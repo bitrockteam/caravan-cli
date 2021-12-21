@@ -45,7 +45,7 @@ func (g GenericProvider) Deploy(ctx context.Context, layer cli.DeployLayer) erro
 
 func GenericDeployInfra(ctx context.Context, c *cli.Config, targets []string) error {
 	// Infra
-	log.Info().Msgf("deploying infra\n")
+	log.Info().Msgf("deploying infra")
 	tf := terraform.New()
 	if err := tf.Init(ctx, c.WorkdirInfra); err != nil {
 		return err
@@ -61,7 +61,7 @@ func GenericDeployInfra(ctx context.Context, c *cli.Config, targets []string) er
 
 func GenericDeployPlatform(ctx context.Context, c *cli.Config, targets []string) error {
 	// Platform
-	log.Info().Msgf("deploying platform\n")
+	log.Info().Msgf("deploying platform")
 	tf := terraform.New()
 	if err := tf.Init(ctx, c.WorkdirPlatform); err != nil {
 		return err
@@ -80,7 +80,7 @@ func GenericDeployPlatform(ctx context.Context, c *cli.Config, targets []string)
 
 func GenericDeployApplicationSupport(ctx context.Context, c *cli.Config, targets []string) error {
 	// Application support
-	log.Info().Msgf("deploying application\n")
+	log.Info().Msgf("deploying application")
 	tf := terraform.New()
 	if err := tf.Init(ctx, c.WorkdirApplication); err != nil {
 		return err
@@ -111,7 +111,7 @@ func (g GenericProvider) Destroy(ctx context.Context, layer cli.DeployLayer) err
 }
 
 func (g GenericProvider) cleanInfra(ctx context.Context) (err error) {
-	log.Info().Msgf("removing terraform infrastructure\n")
+	log.Info().Msgf("removing terraform infrastructure")
 	tf := terraform.New()
 	err = tf.Init(ctx, g.Caravan.WorkdirInfra)
 	if err != nil {
@@ -119,7 +119,7 @@ func (g GenericProvider) cleanInfra(ctx context.Context) (err error) {
 	}
 	env := map[string]string{}
 	if err := tf.Destroy(ctx, filepath.Base(g.Caravan.WorkdirInfraVars), env); err != nil {
-		log.Error().Msgf("error during destroy of cloud resources: %s\n", err)
+		log.Error().Msgf("error during destroy of cloud resources: %s", err)
 		if !g.Caravan.Force {
 			return err
 		}
@@ -128,7 +128,7 @@ func (g GenericProvider) cleanInfra(ctx context.Context) (err error) {
 }
 
 func (g GenericProvider) cleanPlatform(ctx context.Context) (err error) {
-	log.Info().Msgf("removing terraform platform\n")
+	log.Info().Msgf("removing terraform platform")
 	tf := terraform.New()
 	err = tf.Init(ctx, g.Caravan.WorkdirPlatform)
 	if err != nil {
@@ -139,7 +139,7 @@ func (g GenericProvider) cleanPlatform(ctx context.Context) (err error) {
 		"NOMAD_TOKEN": g.Caravan.NomadToken,
 	}
 	if err := tf.Destroy(ctx, filepath.Base(g.Caravan.WorkdirPlatformVars), env); err != nil {
-		log.Error().Msgf("error during destroy of cloud resources: %s\n", err)
+		log.Error().Msgf("error during destroy of cloud resources: %s", err)
 		if !g.Caravan.Force {
 			return err
 		}
@@ -148,7 +148,7 @@ func (g GenericProvider) cleanPlatform(ctx context.Context) (err error) {
 }
 
 func (g GenericProvider) cleanApplication(ctx context.Context) (err error) {
-	log.Info().Msgf("removing terraform application\n")
+	log.Info().Msgf("removing terraform application")
 	tf := terraform.New()
 	err = tf.Init(ctx, g.Caravan.WorkdirApplication)
 	if err != nil {
@@ -159,7 +159,7 @@ func (g GenericProvider) cleanApplication(ctx context.Context) (err error) {
 		"NOMAD_TOKEN": g.Caravan.NomadToken,
 	}
 	if err := tf.Destroy(ctx, filepath.Base(g.Caravan.WorkdirApplicationVars), env); err != nil {
-		log.Error().Msgf("error during destroy of cloud resources: %s\n", err)
+		log.Error().Msgf("error during destroy of cloud resources: %s", err)
 		if !g.Caravan.Force {
 			return err
 		}

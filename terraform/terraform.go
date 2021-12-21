@@ -24,7 +24,7 @@ func (t *Terraform) Init(ctx context.Context, wd string) (err error) {
 	defer cancel()
 
 	t.Workdir = wd
-	log.Info().Msgf("running init on workdir: %s\n", t.Workdir)
+	log.Info().Msgf("running init on workdir: %s", t.Workdir)
 	cmd := exec.CommandContext(ctx, "terraform", "init", "-upgrade")
 	cmd.Dir = t.Workdir
 
@@ -47,7 +47,7 @@ func (t Terraform) ApplyVarMap(ctx context.Context, config map[string]string) (e
 	for k, v := range config {
 		args = append(args, fmt.Sprintf("-var=%s=%s", k, v))
 	}
-	log.Info().Msgf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
+	log.Info().Msgf("running apply on workdir: %s with args: %s", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 
@@ -71,7 +71,7 @@ func (t Terraform) ApplyVarFile(ctx context.Context, file string, timeout time.D
 	if target != "*" {
 		args = append(args, "-target="+target)
 	}
-	log.Info().Msgf("running apply on workdir: %s with args: %s\n", t.Workdir, args)
+	log.Info().Msgf("running apply on workdir: %s with args: %s", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 	cmd.Env = os.Environ()
@@ -95,7 +95,7 @@ func (t Terraform) Destroy(ctx context.Context, file string, env map[string]stri
 	args = append(args, "destroy")
 	args = append(args, "-auto-approve")
 	args = append(args, "-var-file="+file)
-	log.Info().Msgf("running destroy on workdir: %s with args: %s\n", t.Workdir, args)
+	log.Info().Msgf("running destroy on workdir: %s with args: %s", t.Workdir, args)
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 	cmd.Env = os.Environ()

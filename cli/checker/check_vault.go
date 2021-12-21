@@ -43,12 +43,12 @@ func (v VaultChecker) Version(ctx context.Context) (version string) {
 	u := "/v1/sys/health"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, v.url+u, nil)
 	if err != nil {
-		log.Error().Msgf("error creating request: %s\n", err)
+		log.Error().Msgf("error creating request: %s", err)
 		return fmt.Sprintf("error: %s\n", err)
 	}
 	resp, err := v.Client.Do(req)
 	if err != nil {
-		log.Error().Msgf("error executing request: %s\n", err)
+		log.Error().Msgf("error executing request: %s", err)
 		return fmt.Sprintf("error: %s\n", err)
 	}
 	defer resp.Body.Close()
@@ -60,7 +60,7 @@ func (v VaultChecker) Version(ctx context.Context) (version string) {
 	r := VaultResponse{}
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		log.Error().Msgf("unmarshal: %s error: %s\n", body, err)
+		log.Error().Msgf("unmarshal: %s error: %s", body, err)
 		return fmt.Sprintf("error: %s\n", err)
 	}
 
