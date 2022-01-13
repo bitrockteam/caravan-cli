@@ -1,10 +1,16 @@
+## This workflow is managed by meta-repo.
+# Please do not edit from the cli repo.
+
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
-name: Build
+name: Build and validation
 
 defaults:
   run:
