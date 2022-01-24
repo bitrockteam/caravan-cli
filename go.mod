@@ -32,5 +32,5 @@ require (
 	github.com/spf13/viper v1.10.1
 	google.golang.org/api v0.65.0
 	google.golang.org/grpc v1.43.0
-	gopkg.in/ini.v1 v1.66.2
+	gopkg.in/ini.v1 v1.66.3
 )
