@@ -69,7 +69,7 @@ func (a AWS) EmptyStateStore(ctx context.Context, name string) (err error) {
 			Bucket: &name,
 		})
 	if err != nil {
-		if errors.As(err, &nsb) {
+		if errors.As(err, &nsb) || strings.Contains(err.Error(), "NoSuchBucket") {
 			return nil
 		}
 		return fmt.Errorf("error listing object versions: %w", err)
