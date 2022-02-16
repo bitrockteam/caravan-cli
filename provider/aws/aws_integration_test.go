@@ -24,6 +24,9 @@ func TestStateStore(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating aws config: %s\n", err)
 	}
+	if err := aws.DeleteStateStore(ctx, aws.Caravan.Name); err != nil {
+		t.Fatalf("error deleting bucket: %s\n", err)
+	}
 	if err := aws.CreateStateStore(ctx, aws.Caravan.Name); err != nil {
 		t.Fatalf("error creating bucket: %s\n", err)
 	}
@@ -48,6 +51,9 @@ func TestEmptyStateStore(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("error creating aws config: %s\n", err)
+	}
+	if err := aws.EmptyStateStore(ctx, aws.Caravan.Name); err != nil {
+		t.Fatalf("error emptying bucket: %s\n", err)
 	}
 	if err := aws.CreateStateStore(ctx, aws.Caravan.Name); err != nil {
 		t.Fatalf("error creating bucket: %s\n", err)
