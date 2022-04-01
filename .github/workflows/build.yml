@@ -13,14 +13,16 @@ defaults:
   run:
     shell: bash
 
+strategy:
+  matrix:
+    go-version: ['1.16']
+    platform: [ubuntu-latest]
+    go-osarch: [ 'darwin/amd64', 'linux/amd64' ]
+
 jobs:
   lint:
-    name: Lint files
-    strategy:
-      matrix:
-        go-version: ['1.16']
-        platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
+    name: Lint files
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: actions/setup-go@v2
@@ -31,14 +33,9 @@ jobs:
         with:
           args: --verbose
           skip-go-installation: true
-  test:
-    name: Run tests
-    needs: lint
-    strategy:
-      matrix:
-        go-version: ['1.16']
-        platform: [ubuntu-latest]
+  build:
     runs-on: ${{ matrix.platform }}
+    needs: lint
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: actions/setup-go@v2
@@ -49,38 +46,13 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-linux/amd64-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ matrix.go-osarch }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-linux/amd64-
       - run: go test ./... -v -cover
-  build:
-    name: Build binary
-    needs: test
-    strategy:
-      matrix:
-        goosarch:
-          - 'darwin/amd64'
-          - 'linux/amd64'
-        go-version: ['1.16']
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2.3.4
-      - uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go-version }}
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.goosarch }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.goosarch }}
       - name: Get OS and arch info
         run: |
-          GOOSARCH=${{matrix.goosarch}}
+          GOOSARCH=${{matrix.go-osarch}}
           GOOS=${GOOSARCH%/*}
           GOARCH=${GOOSARCH#*/}
           BINARY_NAME=${{github.repository}}-$GOOS-$GOARCH
