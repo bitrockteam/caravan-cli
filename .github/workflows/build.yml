@@ -14,24 +14,6 @@ defaults:
     shell: bash
 
 jobs:
-  lint:
-    strategy:
-      matrix:
-        go-version: ['1.16']
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
-    name: Lint files
-    steps:
-      - uses: actions/checkout@v2.3.4
-      - uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          args: --verbose
-          skip-go-installation: true
-
   build:
     strategy:
       matrix:
@@ -39,7 +21,6 @@ jobs:
         platform: [ubuntu-latest]
         go-osarch: [ 'darwin/amd64', 'linux/amd64' ]
     runs-on: ${{ matrix.platform }}
-    needs: lint
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: actions/setup-go@v2
@@ -53,7 +34,12 @@ jobs:
           key: ${{ runner.os }}-go-${{ matrix.go-osarch }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-linux/amd64-
-      - name: Execute tests
+      - name: lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          args: --verbose
+          skip-go-installation: true
+      - name: test
         run: go test ./... -v -cover
       - name: Get OS and arch info
         run: |
@@ -64,6 +50,6 @@ jobs:
           echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
           echo "GOOS=$GOOS" >> $GITHUB_ENV
           echo "GOARCH=$GOARCH" >> $GITHUB_ENV
-      - name: Build
+      - name: build
         run: |
           go build -o "$BINARY_NAME" -v
