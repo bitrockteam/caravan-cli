@@ -33,7 +33,7 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ matrix.go-osarch }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-linux/amd64-
+            ${{ runner.os }}-go-${{ matrix.go-osarch }}-
       - name: lint
         uses: golangci/golangci-lint-action@v2
         with:
