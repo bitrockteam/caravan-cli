@@ -33,7 +33,7 @@ func init() {
 	initCmd.Flags().StringVarP(&name, FlagProject, FlagProjectShort, "", "name of project")
 	initCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
 	initCmd.Flags().StringVarP(&domain, FlagDomain, FlagDomainShort, "", "")
-	initCmd.Flags().StringVarP(&distro, FlagLinuxDistro, FlagLinuxDistroShort, "ubuntu-2104", "linux distribution for image")
+	initCmd.Flags().StringVarP(&distro, FlagLinuxDistro, FlagLinuxDistroShort, "ubuntu-2204", "linux distribution for image")
 
 	_ = initCmd.MarkFlagRequired(FlagProject)
 	_ = initCmd.MarkFlagRequired(FlagProvider)
