@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.22.1
 	github.com/Azure/azure-sdk-for-go v66.0.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.1.1
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v0.11.0
 	github.com/Azure/azure-sdk-for-go/sdk/resources/armresources v0.3.1
 	github.com/Azure/azure-sdk-for-go/sdk/storage/armstorage v0.2.1
