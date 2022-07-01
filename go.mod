@@ -3,7 +3,7 @@ module caravan-cli
 go 1.16
 
 require (
-	cloud.google.com/go/storage v1.22.1
+	cloud.google.com/go/storage v1.23.0
 	github.com/Azure/azure-sdk-for-go v66.0.0+incompatible
 	github.com/Azure/azure-sdk-for-go/sdk/authorization/armauthorization v0.2.1
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v0.19.0
@@ -27,7 +27,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/rs/zerolog v1.26.1
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
 	google.golang.org/api v0.86.0
 	google.golang.org/grpc v1.47.0
