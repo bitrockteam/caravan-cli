@@ -36,7 +36,7 @@ var cleanCmd = &cobra.Command{
 			return err
 		}
 
-		if c.Status >= cli.ApplicationDeployRunning {
+		if c.Status > cli.ApplicationCleanDone {
 			c.Status = cli.ApplicationCleanRunning
 			if err := c.Save(); err != nil {
 				log.Error().Msgf("error during config update of config: %s", err)
@@ -54,7 +54,7 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 
-		if c.Status >= cli.PlatformDeployRunning {
+		if c.Status > cli.PlatformCleanDone {
 			c.Status = cli.PlatformCleanRunning
 			if err := c.Save(); err != nil {
 				log.Error().Msgf("error during config update of config: %s", err)
@@ -72,7 +72,7 @@ var cleanCmd = &cobra.Command{
 			}
 		}
 
-		if c.Status >= cli.InfraDeployRunning {
+		if c.Status > cli.InfraCleanDone {
 			c.Status = cli.InfraCleanRunning
 			if err := c.Save(); err != nil {
 				log.Error().Msgf("error during config update of config: %s", err)
