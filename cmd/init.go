@@ -34,6 +34,7 @@ func init() {
 	initCmd.Flags().StringVarP(&prv, FlagProvider, FlagProviderShort, "", "cloud provider")
 	initCmd.Flags().StringVarP(&domain, FlagDomain, FlagDomainShort, "", "")
 	initCmd.Flags().StringVarP(&distro, FlagLinuxDistro, FlagLinuxDistroShort, "ubuntu-2204", "linux distribution for image")
+	initCmd.Flags().StringVarP(&edition, FlagEdition, FlagEditionShort, "os", "Hashicorp tools edition (os: open source/ent: enterprise")
 
 	_ = initCmd.MarkFlagRequired(FlagProject)
 	_ = initCmd.MarkFlagRequired(FlagProvider)
@@ -86,6 +87,9 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := c.SetDistro(distro); err != nil {
+		return err
+	}
+	if err := c.SetEdition(edition); err != nil {
 		return err
 	}
 

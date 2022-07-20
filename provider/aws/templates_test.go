@@ -20,6 +20,7 @@ func TestGenerateConfig(t *testing.T) {
 	config.SetWorkdir(dir, "aws")
 	_ = config.SetDomain("test.me")
 	_ = config.SetDistro("ubuntu-2204")
+	_ = config.SetEdition("ent")
 	aws, _ := aws.New(ctx, config)
 
 	testCases := []struct {
