@@ -20,6 +20,7 @@ var (
 	force       = false
 	deployNomad = true
 	distro      = ""
+	edition     = ""
 
 	// GCP.
 	gcpParentProject = ""

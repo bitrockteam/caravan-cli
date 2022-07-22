@@ -51,6 +51,7 @@ type Config struct {
 	LinuxOSFamily             string              `json:",omitempty"`
 	LinuxOSVersion            string              `json:",omitempty"`
 	LinuxOS                   string              `json:",omitempty"`
+	Edition                   string              `json:",omitempty"`
 
 	GCPConfig
 	AzureConfig
@@ -192,6 +193,15 @@ func (c *Config) Save() (err error) {
 		return err
 	}
 	return nil
+}
+
+// SetEdition sets the edition value in the config.
+func (c *Config) SetEdition(edition string) error {
+	if edition == "os" || edition == "ent" {
+		c.Edition = edition
+		return nil
+	}
+	return fmt.Errorf("only os or ent are allowed: %s", edition)
 }
 
 // isValidDomain checks if the provided string is a valid domain name.

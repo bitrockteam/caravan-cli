@@ -63,7 +63,6 @@ func TLSClient(ca string) (func(*GenericChecker), error) {
 			MinVersion: tls.VersionTLS12,
 			RootCAs:    caCertPool,
 		}
-		tlsConfig.BuildNameToCertificate()
 		transport := &http.Transport{TLSClientConfig: tlsConfig}
 
 		gc.Client = &http.Client{Transport: transport}

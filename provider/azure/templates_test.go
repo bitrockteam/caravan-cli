@@ -24,6 +24,7 @@ func TestGenerateConfig(t *testing.T) {
 
 	config.SetWorkdir(dir, provider.Azure)
 	_ = config.SetDomain("test.me")
+	_ = config.SetEdition("ent")
 	config.SetAzureSubscriptionID("111-222-333")
 	config.SetAzureResourceGroup("caravan-test-rg")
 	config.SetAzureBakingResourceGroup("caravan-admin")

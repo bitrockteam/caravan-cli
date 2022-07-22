@@ -18,6 +18,8 @@ const (
 	FlagDeployNomad      CliFlag = "deploy-nomad"
 	FlagLinuxDistro      CliFlag = "linux-distro"
 	FlagLinuxDistroShort CliFlag = "l"
+	FlagEdition          CliFlag = "edition"
+	FlagEditionShort     CliFlag = "e"
 
 	FlagGCPParentProject CliFlag = "gcp-parent-project"
 	FlagGCPDnsZone       CliFlag = "gcp-dns-zone"
