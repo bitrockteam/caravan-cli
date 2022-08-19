@@ -16,6 +16,8 @@ const (
 	PlatformCleanRunning
 	PlatformDeployRunning
 	PlatformDeployDone
+	PlatformCheckRunning
+	PlatformCheckDone
 	ApplicationCleanDone
 	ApplicationCleanRunning
 	ApplicationDeployRunning

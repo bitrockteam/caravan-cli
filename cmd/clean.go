@@ -6,6 +6,7 @@ package cmd
 import (
 	"caravan-cli/cli"
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -25,15 +26,21 @@ var cleanCmd = &cobra.Command{
 				log.Info().Msgf("all clean")
 				return nil
 			}
-			return err
+			return fmt.Errorf("error reading config: %s", err)
 		}
 		if force {
 			c.Force = true
 		}
 
+		if c.Status == cli.InitMissing {
+			os.RemoveAll(c.WorkdirProject)
+			os.RemoveAll(c.Workdir + "/caravan.state")
+			return nil
+		}
+
 		prv, err := getProvider(ctx, c)
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting provider: %s", err)
 		}
 
 		if c.Status > cli.ApplicationCleanDone {
