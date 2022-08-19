@@ -191,10 +191,7 @@ func (a Azure) InitProvider(ctx context.Context) error {
 		return err
 	}
 
-	err = a.Caravan.Save()
-	if err != nil {
-		return err
-	}
+	a.Caravan.Save()
 
 	return nil
 }

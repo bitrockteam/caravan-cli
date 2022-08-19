@@ -177,22 +177,30 @@ func (c *Config) SetNomadToken() error {
 }
 
 // Save serializes to JSON the configuration and a local state store (caravan.state).
-func (c *Config) Save() (err error) {
+func (c *Config) Save() {
 	data, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
-		return err
+		log.Panic().Msgf("unable to marshal config: %s", err)
+		panic("unable to mashall config")
 	}
 
 	err = os.MkdirAll(c.Workdir, os.ModePerm)
 	if err != nil {
-		return err
+		log.Panic().Msgf("unable to create config directory: %s", err)
+		panic("unable to create dir")
 	}
 
 	err = ioutil.WriteFile(filepath.Join(c.Workdir, "caravan.state"), data, 0600)
 	if err != nil {
-		return err
+		log.Panic().Msgf("unable to write config file: %s", err)
+		panic("unable to write file")
 	}
-	return nil
+}
+
+func (c *Config) SetStatus(status Status) {
+	c.Status = status
+	c.Save()
+	log.Debug().Msgf("status updated: %s -> %s", c.Status, status)
 }
 
 // SetEdition sets the edition value in the config.
