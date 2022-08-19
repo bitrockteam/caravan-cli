@@ -12,10 +12,14 @@ const (
 	InfraCleanRunning
 	InfraDeployRunning
 	InfraDeployDone
+	InfraCheckRunning
+	InfraCheckDone
 	PlatformCleanDone
 	PlatformCleanRunning
 	PlatformDeployRunning
 	PlatformDeployDone
+	PlatformConsulDeployRunning
+	PlatformConsulDeployDone
 	ApplicationCleanDone
 	ApplicationCleanRunning
 	ApplicationDeployRunning
@@ -31,10 +35,14 @@ func (s Status) String() string {
 		fmt.Sprintf("%d-InfraCleanRunning", s),
 		fmt.Sprintf("%d-InfraDeployRunning", s),
 		fmt.Sprintf("%d-InfraDeployDone", s),
+		fmt.Sprintf("%d-InfraCheckRunning", s),
+		fmt.Sprintf("%d-InfraCheckDone", s),
 		fmt.Sprintf("%d-PlatformCleanDone", s),
 		fmt.Sprintf("%d-PlatformCleanRunning", s),
 		fmt.Sprintf("%d-PlatformDeployRunning", s),
 		fmt.Sprintf("%d-PlatformDeployDone", s),
+		fmt.Sprintf("%d-PlatformConsulDeployRunning", s),
+		fmt.Sprintf("%d-PlatformConsulDeployDone", s),
 		fmt.Sprintf("%d-ApplicationCleanDone", s),
 		fmt.Sprintf("%d-ApplicationCleanRunning", s),
 		fmt.Sprintf("%d-ApplicationDeployRunning", s),

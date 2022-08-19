@@ -6,6 +6,7 @@ package cmd
 import (
 	"caravan-cli/cli"
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -25,69 +26,57 @@ var cleanCmd = &cobra.Command{
 				log.Info().Msgf("all clean")
 				return nil
 			}
-			return err
+			return fmt.Errorf("error reading config: %w", err)
 		}
 		if force {
 			c.Force = true
 		}
 
+		if c.Status == cli.InitMissing {
+			os.RemoveAll(c.WorkdirProject)
+			os.RemoveAll(c.Workdir + "/caravan.state")
+			return nil
+		}
+
 		prv, err := getProvider(ctx, c)
 		if err != nil {
-			return err
+			return fmt.Errorf("error getting provider: %w", err)
 		}
 
 		if c.Status > cli.ApplicationCleanDone {
-			c.Status = cli.ApplicationCleanRunning
-			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s", err)
-				return nil
-			}
+			log.Info().Msgf("[%s] removing application layer", c.Status)
+			c.SaveStatus(cli.ApplicationCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.ApplicationSupport); err != nil {
 				return err
 			}
 
-			c.Status = cli.ApplicationCleanDone
-			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s", err)
-				return nil
-			}
+			c.SaveStatus(cli.ApplicationCleanDone)
+			log.Info().Msgf("[%s] application layer removed", c.Status)
 		}
 
 		if c.Status > cli.PlatformCleanDone {
-			c.Status = cli.PlatformCleanRunning
-			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s", err)
-				return nil
-			}
+			log.Info().Msgf("[%s] removing platform layer", c.Status)
+			c.SaveStatus(cli.PlatformCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.Platform); err != nil {
 				return err
 			}
 
-			c.Status = cli.PlatformCleanDone
-			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s", err)
-				return nil
-			}
+			c.SaveStatus(cli.PlatformCleanDone)
+			log.Info().Msgf("[%s] platform layer removed", c.Status)
 		}
 
 		if c.Status > cli.InfraCleanDone {
-			c.Status = cli.InfraCleanRunning
-			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s", err)
-				return nil
-			}
+			log.Info().Msgf("[%s] removing infra layer", c.Status)
+			c.SaveStatus(cli.InfraCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.Infrastructure); err != nil {
 				return err
 			}
 
-			c.Status = cli.InfraCleanDone
-			if err := c.Save(); err != nil {
-				log.Error().Msgf("error during config update of config: %s", err)
-				return nil
-			}
+			c.SaveStatus(cli.InfraCleanDone)
+			log.Info().Msgf("[%s] infra layer removed", c.Status)
 		}
 
 		err = prv.CleanProvider(ctx)

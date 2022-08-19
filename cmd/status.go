@@ -27,8 +27,10 @@ var statusCmd = &cobra.Command{
 			return err
 		}
 		r := cli.NewReport(c)
-		if err := r.CheckStatus(ctx); err != nil {
-			return err
+		if c.Status >= cli.InfraDeployDone {
+			if err := r.CheckStatus(ctx); err != nil {
+				return err
+			}
 		}
 		r.PrintReport()
 
