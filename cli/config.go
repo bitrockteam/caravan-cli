@@ -197,7 +197,7 @@ func (c *Config) Save() {
 	}
 }
 
-func (c *Config) SetStatus(status Status) {
+func (c *Config) SaveStatus(status Status) {
 	c.Status = status
 	c.Save()
 	log.Debug().Msgf("status updated: %s -> %s", c.Status, status)

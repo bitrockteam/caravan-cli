@@ -39,14 +39,14 @@ var upCmd = &cobra.Command{
 		log.Info().Msgf("[%s] current status", c.Status)
 		if c.Status < cli.InfraDeployDone {
 			log.Info().Msgf("[%s] infrastructure deployment starting", c.Status)
-			c.SetStatus(cli.InfraDeployRunning)
+			c.SaveStatus(cli.InfraDeployRunning)
 
 			err := prv.Deploy(ctx, cli.Infrastructure)
 			if err != nil {
 				return err
 			}
 
-			c.SetStatus(cli.InfraDeployDone)
+			c.SaveStatus(cli.InfraDeployDone)
 			log.Info().Msgf("[%s] infrastructure deployment completed", c.Status)
 		}
 		if c.Status < cli.InfraCheckDone {
@@ -62,7 +62,7 @@ var upCmd = &cobra.Command{
 					return err
 				}
 			}
-			c.SetStatus(cli.InfraCheckDone)
+			c.SaveStatus(cli.InfraCheckDone)
 
 			log.Debug().Msgf("setting Vault root token")
 			if c.VaultRootToken == "" {
@@ -84,14 +84,14 @@ var upCmd = &cobra.Command{
 		if c.Status < cli.PlatformDeployDone {
 
 			log.Info().Msgf("[%s] platform deployment starting", c.Status)
-			c.SetStatus(cli.PlatformDeployRunning)
+			c.SaveStatus(cli.PlatformDeployRunning)
 
 			err := prv.Deploy(ctx, cli.Platform)
 			if err != nil {
 				return err
 			}
 
-			c.SetStatus(cli.PlatformDeployDone)
+			c.SaveStatus(cli.PlatformDeployDone)
 			log.Info().Msgf("[%s] platform deployment completed", c.Status)
 		}
 		if c.Status < cli.PlatformConsulDeployDone {
@@ -99,21 +99,21 @@ var upCmd = &cobra.Command{
 			if err := checkURL(c, "consul", "/v1/connect/ca/roots", 60); err != nil {
 				return err
 			}
-			c.SetStatus(cli.PlatformConsulDeployDone)
+			c.SaveStatus(cli.PlatformConsulDeployDone)
 			log.Info().Msgf("[%s] consul checks completed", c.Status)
 		}
 
 		if c.DeployNomad {
 			if c.Status < cli.ApplicationDeployDone {
 				log.Info().Msgf("[%s] application deployment starting", c.Status)
-				c.SetStatus(cli.ApplicationDeployRunning)
+				c.SaveStatus(cli.ApplicationDeployRunning)
 
 				err := prv.Deploy(ctx, cli.ApplicationSupport)
 				if err != nil {
 					return err
 				}
 
-				c.SetStatus(cli.ApplicationDeployDone)
+				c.SaveStatus(cli.ApplicationDeployDone)
 				log.Info().Msgf("[%s] deployment of application completed", c.Status)
 			}
 		}

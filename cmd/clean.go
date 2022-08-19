@@ -45,37 +45,37 @@ var cleanCmd = &cobra.Command{
 
 		if c.Status > cli.ApplicationCleanDone {
 			log.Info().Msgf("[%s] removing application layer", c.Status)
-			c.SetStatus(cli.ApplicationCleanRunning)
+			c.SaveStatus(cli.ApplicationCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.ApplicationSupport); err != nil {
 				return err
 			}
 
-			c.SetStatus(cli.ApplicationCleanDone)
+			c.SaveStatus(cli.ApplicationCleanDone)
 			log.Info().Msgf("[%s] application layer removed", c.Status)
 		}
 
 		if c.Status > cli.PlatformCleanDone {
 			log.Info().Msgf("[%s] removing platform layer", c.Status)
-			c.SetStatus(cli.PlatformCleanRunning)
+			c.SaveStatus(cli.PlatformCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.Platform); err != nil {
 				return err
 			}
 
-			c.SetStatus(cli.PlatformCleanDone)
+			c.SaveStatus(cli.PlatformCleanDone)
 			log.Info().Msgf("[%s] platform layer removed", c.Status)
 		}
 
 		if c.Status > cli.InfraCleanDone {
 			log.Info().Msgf("[%s] removing infra layer", c.Status)
-			c.SetStatus(cli.InfraCleanRunning)
+			c.SaveStatus(cli.InfraCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.Infrastructure); err != nil {
 				return err
 			}
 
-			c.SetStatus(cli.InfraCleanDone)
+			c.SaveStatus(cli.InfraCleanDone)
 			log.Info().Msgf("[%s] infra layer removed", c.Status)
 		}
 

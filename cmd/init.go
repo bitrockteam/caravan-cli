@@ -121,7 +121,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if c.Status < cli.InitDone {
-		c.SetStatus(cli.InitDone)
+		c.SaveStatus(cli.InitDone)
 	}
 
 	return nil
