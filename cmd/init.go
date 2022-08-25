@@ -47,6 +47,8 @@ func init() {
 	// GCP
 	initCmd.Flags().StringVar(&gcpParentProject, FlagGCPParentProject, "", "(GCP only) parent-project")
 	initCmd.Flags().StringVar(&gcpDNSZone, FlagGCPDnsZone, "", "(GCP only) cloud dns zone name")
+	initCmd.Flags().StringVar(&gcpOrgID, FlagGCPOrgID, "", "(GCP only) project organization ID")
+	initCmd.Flags().StringVar(&gcpBillingID, FlagGCPBillingID, "", "(GCP only) project organization ID")
 
 	// Azure
 	initCmd.Flags().StringVar(&azResourceGroup, FlagAZResourceGroup, "", "(Azure only) resource group name")
@@ -175,6 +177,8 @@ func processFlags(c *cli.Config) error {
 		requiredFlags := map[string]string{
 			FlagGCPParentProject: gcpParentProject,
 			FlagGCPDnsZone:       gcpDNSZone,
+			FlagGCPOrgID:         gcpOrgID,
+			FlagGCPBillingID:     gcpBillingID,
 		}
 		for param, value := range requiredFlags {
 			if err2 := mustBeNonEmpty(value, param, provider.GCP); err2 != nil {
@@ -184,6 +188,8 @@ func processFlags(c *cli.Config) error {
 
 		c.GCPParentProject = gcpParentProject
 		c.GCPDNSZone = gcpDNSZone
+		c.GCPBillingID = gcpBillingID
+		c.SetGCPOrgID(gcpOrgID)
 	}
 
 	if prv == provider.Azure {

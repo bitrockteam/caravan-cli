@@ -25,6 +25,8 @@ var (
 	// GCP.
 	gcpParentProject = ""
 	gcpDNSZone       = ""
+	gcpOrgID         = ""
+	gcpBillingID     = ""
 
 	// Azure.
 	azResourceGroup  = ""

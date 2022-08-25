@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type GCP struct {
@@ -97,6 +99,32 @@ func (g GCP) ValidateConfiguration(ctx context.Context) error {
 }
 
 func (g GCP) InitProvider(ctx context.Context) error {
+	log.Debug().Msgf("creating project: %s - %s ", g.Caravan.Name, g.Caravan.GCPOrgID)
+	if err := g.CreateProject(ctx, g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
+		return err
+	}
+
+	log.Debug().Msgf("setting billing account: %s - %s ", g.Caravan.Name, g.Caravan.GCPBillingID)
+	if err := g.SetBillingAccount(ctx, g.Caravan.Name, g.Caravan.GCPBillingID); err != nil {
+		return err
+	}
+
+	services := []string{
+		"compute.googleapis.com",
+		"monitoring.googleapis.com",
+		"logging.googleapis.com",
+		"serviceusage.googleapis.com",
+		"cloudkms.googleapis.com",
+		"iam.googleapis.com",
+		"cloudresourcemanager.googleapis.com",
+		"dns.googleapis.com",
+	}
+	log.Debug().Msgf("enabling service access")
+	if err := g.EnableServiceAccess(ctx, g.Caravan.Name, services); err != nil {
+		return err
+	}
+
+	log.Debug().Msgf("creating service account: %s - %s ", g.Caravan.Name, g.Caravan.ServiceAccount)
 	if err := g.CreateServiceAccount(ctx, g.Caravan.ServiceAccount); err != nil {
 		return err
 	}
@@ -150,6 +178,9 @@ func (g GCP) InitProvider(ctx context.Context) error {
 }
 
 func (g GCP) CleanProvider(ctx context.Context) error {
+	if err := g.DeleteProject(ctx, g.Caravan.Name, g.Caravan.GCPOrgID); err != nil {
+		return err
+	}
 	if err := g.DeleteServiceAccount(ctx, g.Caravan.ServiceAccount); err != nil {
 		return err
 	}

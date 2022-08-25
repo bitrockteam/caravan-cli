@@ -96,6 +96,7 @@ var upCmd = &cobra.Command{
 		}
 		if c.Status < cli.PlatformConsulDeployDone {
 			log.Info().Msgf("[%s] consul deployment check", c.Status)
+			c.SaveStatus(cli.PlatformConsulDeployRunning)
 			if err := checkURL(c, "consul", "/v1/connect/ca/roots", 60); err != nil {
 				return err
 			}

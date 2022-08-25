@@ -19,10 +19,11 @@ use_le_staging        = true
 dc_name               = "gcp-dc"
 control_plane_sa_name = "control-plane"
 worker_plane_sa_name  = "worker-plane"
-image                 = "projects/{{ .GCPParentProject }}/global/images/family/caravan-centos-image-{{ .Edition }}"
+image                 = "projects/{{ .GCPParentProject }}/global/images/family/caravan-{{ .Edition }}-{{ .LinuxOS }}-{{ .LinuxOSVersion }}"
 parent_dns_project_id = "{{ .GCPParentProject }}"
 parent_dns_zone_name  = "{{ .GCPDNSZone }}"
 google_account_file   = ".{{ .Name }}-terraform-sa-key.json"
+ssh_username          = "{{ .LinuxOS }}"
 {{- if not .DeployNomad }}
 enable_nomad          = false
 {{- end }}

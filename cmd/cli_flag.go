@@ -23,6 +23,8 @@ const (
 
 	FlagGCPParentProject CliFlag = "gcp-parent-project"
 	FlagGCPDnsZone       CliFlag = "gcp-dns-zone"
+	FlagGCPOrgID         CliFlag = "gcp-org-id"
+	FlagGCPBillingID     CliFlag = "gcp-billing-account-id"
 
 	FlagAZResourceGroup  CliFlag = "az-resource-group"
 	FlagAZSubscriptionID CliFlag = "az-subscription-id"
