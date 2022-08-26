@@ -95,9 +95,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 
 	log.Debug().Msgf("input: %t - deploy nomad: %t", deployNomad, c.DeployNomad)
 	c.DeployNomad = deployNomad
-	if err := c.Save(); err != nil {
-		log.Error().Msgf("error saving state: %s", err)
-	}
+	c.Save()
 
 	if err := c.SetDomain(domain); err != nil {
 		return fmt.Errorf("error setting domain: %w", err)
@@ -123,10 +121,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if c.Status < cli.InitDone {
-		c.Status = cli.InitDone
-		if err := c.Save(); err != nil {
-			log.Error().Msgf("error saving state: %s", err)
-		}
+		c.SaveStatus(cli.InitDone)
 	}
 
 	return nil
@@ -161,9 +156,7 @@ func initProvider(c *cli.Config, p provider.Provider) error {
 
 func initRepos(c *cli.Config, b string) (err error) {
 	c.SetBranch(b)
-	if err := c.Save(); err != nil {
-		return fmt.Errorf("unable to save config after setting branch %s: %w", b, err)
-	}
+	c.Save()
 	// checkout repos
 	git := git.NewGit("bitrockteam")
 	for _, repo := range c.Repos {

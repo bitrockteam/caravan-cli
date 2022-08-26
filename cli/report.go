@@ -91,6 +91,7 @@ Region:		{{ or .Caravan.Region "default"}}
 Domain:		{{ .Caravan.Domain }}
 DeployNomad:    {{ .Caravan.DeployNomad }}
 Linux Distro:   {{ .Caravan.LinuxOS }}-{{ .Caravan.LinuxOSVersion }}
+Licensing:      {{ .Caravan.Edition }}
 {{- if gt .Caravan.Status 3 }}
 {{ range $k,$v:= .Tools }}
 {{ $k }}
