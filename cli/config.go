@@ -4,7 +4,6 @@ import (
 	"caravan-cli/vault"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -86,7 +85,7 @@ func NewConfigFromFile() (c *Config, err error) {
 	wd := ".caravan"
 	var b []byte
 
-	if b, err = ioutil.ReadFile(filepath.Join(wd, "caravan.state")); err != nil {
+	if b, err = os.ReadFile(filepath.Join(wd, "caravan.state")); err != nil {
 		return c, ConfigFileNotFound{Err: err}
 	}
 
@@ -132,7 +131,7 @@ func (c *Config) SetBranch(branch string) {
 // SetVaultRootToken reads the content of the token file into config.
 func (c *Config) SetVaultRootToken() error {
 	// TODO consolidate in constructor
-	vrt, err := ioutil.ReadFile(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token"))
+	vrt, err := os.ReadFile(filepath.Join(c.WorkdirInfra, "."+c.Name+"-root_token"))
 	if err != nil {
 		return err
 	}
@@ -188,7 +187,7 @@ func (c *Config) Save() (err error) {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(c.Workdir, "caravan.state"), data, 0600)
+	err = os.WriteFile(filepath.Join(c.Workdir, "caravan.state"), data, 0600)
 	if err != nil {
 		return err
 	}

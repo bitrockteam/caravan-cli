@@ -4,8 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/rs/zerolog/log"
 )
@@ -50,11 +50,11 @@ func (c GenericChecker) CheckURL(ctx context.Context, u string) bool {
 }
 
 func TLSClient(ca string) (func(*GenericChecker), error) {
-	if _, err := ioutil.ReadFile(ca); err != nil {
+	if _, err := os.ReadFile(ca); err != nil {
 		return nil, err
 	}
 	return func(gc *GenericChecker) {
-		caCert, _ := ioutil.ReadFile(ca)
+		caCert, _ := os.ReadFile(ca)
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
 

@@ -20,7 +20,7 @@ func New(ctx context.Context, c *cli.Config) (Azure, error) {
 	if err = a.ValidateConfiguration(ctx); err != nil {
 		return a, err
 	}
-	if a.AzureHelper, err = NewHelper(a.Caravan.AzureUseCLI); err != nil {
+	if a.AzureHelper, err = NewHelper(a.Caravan.AzureUseCLI, a.Caravan.AzureSubscriptionID); err != nil {
 		return a, err
 	}
 	return a, nil
@@ -81,14 +81,14 @@ func (a Azure) ValidateConfiguration(ctx context.Context) error {
 
 func (a Azure) InitProvider(ctx context.Context) error {
 	var err error
-	err = a.AzureHelper.CreateResourceGroup(ctx, a.Caravan.AzureResourceGroup, a.Caravan.AzureSubscriptionID, a.Caravan.Region)
+	err = a.AzureHelper.CreateResourceGroup(ctx, a.Caravan.AzureResourceGroup, a.Caravan.Region)
 	if err != nil {
 		return err
 	}
 
 	//TODO: create storage account (prefix)sa
 	saName := fmt.Sprintf("crv%ssa", a.Caravan.Name)
-	err = a.AzureHelper.CreateStorageAccount(ctx, a.Caravan.AzureSubscriptionID, saName, a.Caravan.AzureResourceGroup, a.Caravan.Region)
+	err = a.AzureHelper.CreateStorageAccount(ctx, saName, a.Caravan.AzureResourceGroup, a.Caravan.Region)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (a Azure) InitProvider(ctx context.Context) error {
 
 	//TODO: create storage container tfstate
 	containerName := "tfstate"
-	err = a.AzureHelper.CreateStorageContainer(ctx, a.Caravan.AzureSubscriptionID, a.Caravan.AzureResourceGroup, a.Caravan.AzureStorageAccount, containerName)
+	err = a.AzureHelper.CreateStorageContainer(ctx, a.Caravan.AzureResourceGroup, a.Caravan.AzureStorageAccount, containerName)
 	if err != nil {
 		return err
 	}
