@@ -17,7 +17,7 @@ jobs:
     name: Lint files
     strategy:
       matrix:
-        go-version: [1.16.x]
+        go-version: [1.18.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -34,7 +34,7 @@ jobs:
     name: Run tests
     strategy:
       matrix:
-        go-version: [1.16.x]
+        go-version: [1.18.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     needs: lint
@@ -59,7 +59,7 @@ jobs:
           - 'windows/386'
           - 'windows/amd64'
           - 'windows/arm'
-        go-version: [1.16.x]
+        go-version: [1.18.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
     steps:

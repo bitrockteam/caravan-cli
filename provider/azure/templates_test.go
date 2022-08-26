@@ -5,7 +5,7 @@ import (
 	"caravan-cli/provider"
 	"caravan-cli/provider/azure"
 	"context"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -13,7 +13,7 @@ import (
 
 func TestGenerateConfig(t *testing.T) {
 	ctx := context.Background()
-	dir, err := ioutil.TempDir("", "caravan-test-")
+	dir, err := os.MkdirTemp("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,11 +63,11 @@ func TestGenerateConfig(t *testing.T) {
 						t.Errorf("error generating template %s: %s\n", tmp.Name, err)
 					}
 
-					want, err := ioutil.ReadFile(gold)
+					want, err := os.ReadFile(gold)
 					if err != nil {
 						t.Fatalf("error reading golden file: %s\n", err)
 					}
-					got, err := ioutil.ReadFile(tmp.Path)
+					got, err := os.ReadFile(tmp.Path)
 					if err != nil {
 						t.Fatalf("error reading current file: %s\n", err)
 					}

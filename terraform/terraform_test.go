@@ -2,7 +2,6 @@ package terraform_test
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -11,7 +10,7 @@ import (
 
 func TestTerraformInit(t *testing.T) {
 	ctx := context.Background()
-	dir, err := ioutil.TempDir("", "caravan-test-")
+	dir, err := os.MkdirTemp("", "caravan-test-")
 	if err != nil {
 		t.Fatal(err)
 	}
