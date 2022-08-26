@@ -54,8 +54,8 @@ Another example overriding some default values:
 In GCP context the following conditions must be met for the ```init``` and ```up``` command to be successful:
 
 * Authentication: the gcloud cli must be installed and the application default authentication must be provided with the following command: ``` gcloud auth application-default login ```
-* Parent project: a parent project where the VM images are stored must be available
-* Billing account and organization: as part of the init step a new project is created to isolate the caravan's resources. For the creation an existing organization ID and Billing account must be provided.
+* Parent project: a parent project (gcp-parent-project)  where the VM images are stored must be available. A cloud-dns zone should also be available (gcp-dns-zone)
+* Billing account and organization: as part of the init step a new project is created to isolate the caravan's resources. For the creation an existing organization ID (gcp-org-id) and Billing account (gcp-billing-account-id) must be provided.
 * User access rights: the authenticated user should be allowed to create in the parent project the terraform service account needed to create/access the VM images
 
 #### Command line examples
@@ -85,7 +85,7 @@ To delete anenvironment the following command is available:
 ```
 ./caravan clean
 ```
-A ```--force true``` option is needed to remove all the objects from the cloud bucket in order to avoid losing state.
+A ```--force true``` option is provided in case of an hard clean is needed. This option will execute the ```terraform destroy``` and remove all the state, regardless. After a forced delete is applied it's suggested to manually check that no resources are left over. 
 
 ## Develop
 
