@@ -14,6 +14,7 @@ import (
 	"google.golang.org/api/cloudresourcemanager/v3"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/serviceusage/v1"
 	"google.golang.org/grpc/status"
 	"gopkg.in/ini.v1"
 )
@@ -37,7 +38,7 @@ func (g GCP) CreateStateStore(ctx context.Context, name string) error {
 	bucket := client.Bucket(name)
 	if err := bucket.Create(ctx, g.Caravan.Name, storageLocation); err != nil {
 		s, _ := status.FromError(err)
-		if strings.Contains(s.Message(), "You already own this bucket") {
+		if strings.Contains(s.Message(), "You already own this bucket") || strings.Contains(s.Message(), "Your previous request to create the named bucket succeeded and you already own it") {
 			return nil
 		}
 		return fmt.Errorf("error during bucket %s create: %w", name, err)
@@ -123,6 +124,7 @@ func (g GCP) EmptyStateStore(ctx context.Context, name string) error {
 
 // CreateProject creates a project in GCP and waits for the completion.
 func (g GCP) CreateProject(ctx context.Context, id, orgID string) error {
+	log.Info().Msgf("creating project: %s", id)
 	cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to get resourcemanager: %w", err)
@@ -229,7 +231,7 @@ func (g GCP) GetProject(ctx context.Context, name, organization string) (p *clou
 }
 
 func (g GCP) SetBillingAccount(ctx context.Context, name, bai string) (err error) {
-	log.Info().Msgf("Setting Billing account: %s", bai)
+	log.Info().Msgf("setting billing account: %s", bai)
 
 	cloudbillingservice, err := cloudbilling.NewService(ctx)
 	if err != nil {
@@ -363,4 +365,32 @@ func (g GCP) GetUserEmail(path string) (string, error) {
 		return "", err
 	}
 	return f.Section("core").Key("account").String(), nil
+}
+
+func (g GCP) EnableServiceAccess(ctx context.Context, project string, services []string) error {
+	log.Info().Msgf("enabling service access: %s - %s", project, services)
+	su, err := serviceusage.NewService(ctx)
+	if err != nil {
+		return fmt.Errorf("unable to get serviceusage: %w", err)
+	}
+
+	bes := &serviceusage.BatchEnableServicesRequest{ServiceIds: services}
+
+	op, err := su.Services.BatchEnable(fmt.Sprintf("projects/%s", project), bes).Context(ctx).Do()
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < 30; i++ {
+		log.Debug().Msgf("waiting for operation %s to complete - [%d/30]", op.Name, i)
+		resp, err := su.Operations.Get(op.Name).Context(ctx).Do()
+		if err != nil {
+			return fmt.Errorf("error getting operation %s: %w", resp.Error.Message, err)
+		}
+		if resp.Done {
+			return nil
+		}
+		time.Sleep(2 * time.Second)
+	}
+	return fmt.Errorf("timed out enabling service access %s: %s", project, services)
 }

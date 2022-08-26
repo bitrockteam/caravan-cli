@@ -20,6 +20,7 @@ func TestGenerateConfig(t *testing.T) {
 	config.SetWorkdir(dir, "gcp")
 	_ = config.SetDomain("test.me")
 	_ = config.SetEdition("ent")
+	_ = config.SetDistro("centos-7")
 	config.GCPDNSZone = "dns-zone"
 	config.GCPParentProject = "parent-project"
 	config.GCPUserEmail = "test.name@test.me"

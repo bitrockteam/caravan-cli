@@ -49,6 +49,14 @@ func TestProject(t *testing.T) {
 		t.Errorf("want %s,%s got %s,%s\n", name, c.GCPOrgID, p.Name, p.Parent)
 	}
 
+	if err := g.EnableServiceAccess(ctx, name, []string{"serviceusage.googleapis.com", "compute.googleapis.com"}); err != nil {
+		t.Errorf("unable to enable access to services: %s\n", err)
+	}
+
+	if err := g.EnableServiceAccess(ctx, name, []string{"serviceusage.googleapis.com", "compute.googleapis.com"}); err != nil {
+		t.Errorf("unable to enable access to services: %s\n", err)
+	}
+
 	if err := g.DeleteProject(ctx, name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
@@ -56,6 +64,7 @@ func TestProject(t *testing.T) {
 	if err := g.DeleteProject(ctx, name, c.GCPOrgID); err != nil {
 		t.Fatalf("unable to delete project %s: %s\n", name, err)
 	}
+
 }
 
 func TestStateStore(t *testing.T) {
@@ -75,6 +84,7 @@ func TestStateStore(t *testing.T) {
 	if err := g.CreateStateStore(ctx, name); err != nil {
 		t.Errorf("unable to create the bucket: %s", err)
 	}
+	// idempotence
 	if err := g.CreateStateStore(ctx, name); err != nil {
 		t.Errorf("unable to create the bucket: %s", err)
 	}
