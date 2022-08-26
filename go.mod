@@ -29,7 +29,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	google.golang.org/api v0.94.0
 	google.golang.org/grpc v1.49.0
-	gopkg.in/ini.v1 v1.66.6
+	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
