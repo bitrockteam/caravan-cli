@@ -152,8 +152,12 @@ func (g GCP) InitProvider(ctx context.Context) error {
 		return err
 	}
 
-	// permission for the current user on the parent project
-	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, "user:"+g.Caravan.GCPUserEmail, "roles/iam.serviceAccountUser"); err != nil {
+	p, err := g.GetProject(ctx, g.Caravan.Name, g.Caravan.GCPOrgID)
+	if err != nil {
+		return err
+	}
+	// permission for the current project service account to the parent project
+	if err := g.AddPolicyBinding(ctx, "projects", g.Caravan.GCPParentProject, "serviceAccount:"+strings.ReplaceAll(p.Name, "projects/", "")+"@cloudservices.gserviceaccount.com", "roles/compute.imageUser"); err != nil {
 		return err
 	}
 

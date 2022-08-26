@@ -381,7 +381,7 @@ func (g GCP) EnableServiceAccess(ctx context.Context, project string, services [
 		return err
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 30; i++ {
 		resp, err := su.Operations.Get(op.Name).Context(ctx).Do()
 		if err != nil {
 			return fmt.Errorf("error getting operation %s: %w", resp.Error.Message, err)
