@@ -59,10 +59,9 @@ In GCP context the following conditions must be met for the ```init``` and ```up
 * User access rights: the authenticated user should be allowed to create in the parent project the terraform service account needed to create/access the VM images
 
 #### Command line examples
-``
+```
 ./caravan-cli init --provider gcp --project <project_name> --linux-distro centos-7 --branch main --domain <doman> --region <gcp_region> --gcp-dns-zone <gcp_dns_zone> --gcp-parent-project <gcp_parent_project> --gcp-org-id <gcp_org_id> --gcp-billing-account-id <gcp_billing_account_id>
 ```
-
 
 This will generate in the ```.caravan``` local folder the needed variables/templates for the correspondig provider selected. In the same folder the git repos with the relevant terraform code will be checked-out with the default branch (release branch) unless the ```--branch``` optional parameter is specified.
 
