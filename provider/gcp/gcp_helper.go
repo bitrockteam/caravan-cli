@@ -382,6 +382,7 @@ func (g GCP) EnableServiceAccess(ctx context.Context, project string, services [
 	}
 
 	for i := 0; i < 30; i++ {
+		log.Debug().Msgf("waiting for operation %s to complete - [%d/30]", op.Name, i)
 		resp, err := su.Operations.Get(op.Name).Context(ctx).Do()
 		if err != nil {
 			return fmt.Errorf("error getting operation %s: %w", resp.Error.Message, err)
