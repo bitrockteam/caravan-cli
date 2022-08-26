@@ -14,7 +14,7 @@ defaults:
     shell: bash
 
 jobs:
-  build:
+  ci:
     strategy:
       matrix:
         go-version: ['1.18']
