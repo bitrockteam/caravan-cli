@@ -194,6 +194,9 @@ func (g GCP) CleanProvider(ctx context.Context) error {
 	if err := g.DeleteStateStore(ctx, g.Caravan.StateStoreName); err != nil {
 		return err
 	}
-
+	// remove billing account association
+	if err := g.SetBillingAccount(ctx, g.Caravan.Name, ""); err != nil {
+		return err
+	}
 	return nil
 }
