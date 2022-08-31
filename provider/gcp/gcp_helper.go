@@ -243,7 +243,10 @@ func (g GCP) SetBillingAccount(ctx context.Context, name, bai string) (err error
 		return fmt.Errorf("unable to get project billing info: %w", err)
 	}
 
-	pbi.BillingAccountName = fmt.Sprintf("billingAccounts/%s", bai)
+	pbi.BillingAccountName = ""
+	if bai != "" {
+		pbi.BillingAccountName = fmt.Sprintf("billingAccounts/%s", bai)
+	}
 	_, err = cloudbillingservice.Projects.UpdateBillingInfo(fmt.Sprintf("projects/%s", name), pbi).Context(ctx).Do()
 	if err != nil {
 		return fmt.Errorf("unable to update project billing info: %w", err)
