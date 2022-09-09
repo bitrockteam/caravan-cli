@@ -6,6 +6,7 @@ type Status int
 
 const (
 	InitMissing Status = iota
+	InitRunning
 	InitDone
 	BakingDone
 	InfraCleanDone
@@ -29,6 +30,7 @@ const (
 func (s Status) String() string {
 	return [...]string{
 		fmt.Sprintf("%d-InitMissing", s),
+		fmt.Sprintf("%d-InitRunning", s),
 		fmt.Sprintf("%d-InitDone", s),
 		fmt.Sprintf("%d-BakingDone", s),
 		fmt.Sprintf("%d-InfraCleanDone", s),

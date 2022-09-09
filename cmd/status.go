@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,9 @@ var statusCmd = &cobra.Command{
 			}
 			return err
 		}
+
+		log.Info().Msgf("[%s] running status on project %s", c.Status, c.Name)
+
 		r := cli.NewReport(c)
 		if c.Status >= cli.InfraDeployDone {
 			if err := r.CheckStatus(ctx); err != nil {

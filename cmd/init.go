@@ -84,6 +84,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	log.Info().Msgf("[%s] running init on project %s", c.Status, c.Name)
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
 	}
@@ -111,6 +112,8 @@ func executeInit(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
+	c.SaveStatus(cli.InitRunning)
 
 	if err := initRepos(c, branch); err != nil {
 		log.Error().Msgf("error: %s", err)
