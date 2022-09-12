@@ -32,11 +32,11 @@ var upCmd = &cobra.Command{
 			return err
 		}
 
+		log.Info().Msgf("[%s] running up on project %s", c.Status, c.Name)
 		prv, err := getProvider(ctx, c)
 		if err != nil {
 			return err
 		}
-		log.Info().Msgf("[%s] current status", c.Status)
 		if c.Status < cli.InfraDeployDone {
 			log.Info().Msgf("[%s] infrastructure deployment starting", c.Status)
 			c.SaveStatus(cli.InfraDeployRunning)

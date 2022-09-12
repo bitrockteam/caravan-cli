@@ -31,6 +31,7 @@ var cleanCmd = &cobra.Command{
 		if force {
 			c.Force = true
 		}
+		log.Info().Msgf("running clean on project %s", c.Name)
 
 		if c.Status == cli.InitMissing {
 			os.RemoveAll(c.WorkdirProject)
