@@ -3,7 +3,6 @@ package git
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -24,8 +23,7 @@ func (g Git) Clone(name, dest, branch string) (err error) {
 	log.Info().Msgf("cloning repo %s/%s to %s - branch: %s", g.org, name, dest, branch)
 
 	repo, err := git.PlainClone("./"+dest, false, &git.CloneOptions{
-		URL:      "https://github.com/" + g.org + "/" + name,
-		Progress: os.Stdout,
+		URL: "https://github.com/" + g.org + "/" + name,
 	})
 	if err != nil {
 		if err.Error() != "repository already exists" {
