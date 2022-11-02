@@ -83,8 +83,9 @@ func executeInit(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-
-	log.Info().Msgf("[%s] running init on project %s", c.Status, c.Name)
+	c.LogLevel = logLevel
+	target := cli.InitDone
+	log.Info().Msgf("[%s->%s] running init on project %s", c.Status, target, c.Name)
 	if c.Name != name || c.Provider != prv {
 		return fmt.Errorf("please run a clean before changing project name or provider")
 	}
@@ -129,6 +130,7 @@ func executeInit(cmd *cobra.Command, args []string) error {
 		c.SaveStatus(cli.InitDone)
 	}
 
+	log.Info().Msgf("[%s->%s] completed init on project %s", c.Status, target, c.Name)
 	return nil
 }
 
@@ -163,7 +165,7 @@ func initRepos(c *cli.Config, b string) (err error) {
 	c.SetBranch(b)
 	c.Save()
 	// checkout repos
-	git := git.NewGit("bitrockteam")
+	git := git.NewGit("bitrockteam", logLevel)
 	for _, repo := range c.Repos {
 		err := git.Clone(repo, filepath.Join(".caravan", c.Name, repo), b)
 		if err != nil {

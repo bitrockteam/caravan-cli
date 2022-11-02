@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"caravan-cli/cli"
-	"fmt"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -22,7 +21,7 @@ var statusCmd = &cobra.Command{
 		c, err := cli.NewConfigFromFile()
 		if err != nil {
 			if strings.Contains(err.Error(), "no such file or directory") {
-				fmt.Printf("project status is missing: %s\n", cli.InitMissing)
+				log.Info().Msgf("project status is: %s", cli.InitMissing)
 				return nil
 			}
 			return err

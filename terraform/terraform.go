@@ -2,6 +2,7 @@
 package terraform
 
 import (
+	"caravan-cli/cli"
 	"context"
 	"fmt"
 	"os"
@@ -12,11 +13,12 @@ import (
 )
 
 type Terraform struct {
-	Workdir string
+	Workdir  string
+	logLevel string
 }
 
-func New() (t *Terraform) {
-	return &Terraform{}
+func New(logLevel string) (t *Terraform) {
+	return &Terraform{logLevel: logLevel}
 }
 
 func (t *Terraform) Init(ctx context.Context, wd string) (err error) {
@@ -27,8 +29,9 @@ func (t *Terraform) Init(ctx context.Context, wd string) (err error) {
 	log.Info().Msgf("running init on workdir: %s", t.Workdir)
 	cmd := exec.CommandContext(ctx, "terraform", "init", "-upgrade")
 	cmd.Dir = t.Workdir
-
-	cmd.Stdout = os.Stdout
+	if t.logLevel == cli.LogLevelDebug {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
@@ -51,7 +54,9 @@ func (t Terraform) ApplyVarMap(ctx context.Context, config map[string]string) (e
 	cmd := exec.CommandContext(ctx, "terraform", args...)
 	cmd.Dir = t.Workdir
 
-	cmd.Stdout = os.Stdout
+	if t.logLevel == cli.LogLevelDebug {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
@@ -78,7 +83,9 @@ func (t Terraform) ApplyVarFile(ctx context.Context, file string, timeout time.D
 	for k, v := range env {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
-	cmd.Stdout = os.Stdout
+	if t.logLevel == cli.LogLevelDebug {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
@@ -102,7 +109,9 @@ func (t Terraform) Destroy(ctx context.Context, file string, env map[string]stri
 	for k, v := range env {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
-	cmd.Stdout = os.Stdout
+	if t.logLevel == cli.LogLevelDebug {
+		cmd.Stdout = os.Stdout
+	}
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {

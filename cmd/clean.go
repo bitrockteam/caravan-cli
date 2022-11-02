@@ -28,6 +28,7 @@ var cleanCmd = &cobra.Command{
 			}
 			return fmt.Errorf("error reading config: %w", err)
 		}
+		c.LogLevel = logLevel
 		if force {
 			c.Force = true
 		}
@@ -43,9 +44,9 @@ var cleanCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("error getting provider: %w", err)
 		}
-
+		target := cli.InfraCleanDone
 		if c.Status > cli.ApplicationCleanDone {
-			log.Info().Msgf("[%s] removing application layer", c.Status)
+			log.Info().Msgf("[%s->%s] removing application layer", c.Status, target)
 			c.SaveStatus(cli.ApplicationCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.ApplicationSupport); err != nil {
@@ -53,11 +54,11 @@ var cleanCmd = &cobra.Command{
 			}
 
 			c.SaveStatus(cli.ApplicationCleanDone)
-			log.Info().Msgf("[%s] application layer removed", c.Status)
+			log.Info().Msgf("[%s->%s] application layer removed", c.Status, target)
 		}
 
 		if c.Status > cli.PlatformCleanDone {
-			log.Info().Msgf("[%s] removing platform layer", c.Status)
+			log.Info().Msgf("[%s->%s] removing platform layer", c.Status, target)
 			c.SaveStatus(cli.PlatformCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.Platform); err != nil {
@@ -65,11 +66,11 @@ var cleanCmd = &cobra.Command{
 			}
 
 			c.SaveStatus(cli.PlatformCleanDone)
-			log.Info().Msgf("[%s] platform layer removed", c.Status)
+			log.Info().Msgf("[%s->%s] platform layer removed", c.Status, target)
 		}
 
 		if c.Status > cli.InfraCleanDone {
-			log.Info().Msgf("[%s] removing infra layer", c.Status)
+			log.Info().Msgf("[%s->%s] removing infra layer", c.Status, target)
 			c.SaveStatus(cli.InfraCleanRunning)
 
 			if err := prv.Destroy(ctx, cli.Infrastructure); err != nil {
@@ -77,7 +78,7 @@ var cleanCmd = &cobra.Command{
 			}
 
 			c.SaveStatus(cli.InfraCleanDone)
-			log.Info().Msgf("[%s] infra layer removed", c.Status)
+			log.Info().Msgf("[%s->%s] infra layer removed", c.Status, target)
 		}
 
 		err = prv.CleanProvider(ctx)
