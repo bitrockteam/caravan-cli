@@ -2,7 +2,9 @@
 package git
 
 import (
+	"caravan-cli/cli"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -12,19 +14,23 @@ import (
 )
 
 type Git struct {
-	org string
+	org      string
+	logLevel string
 }
 
-func NewGit(org string) (g Git) {
-	return Git{org: org}
+func NewGit(org string, logLevel string) (g Git) {
+	return Git{org: org, logLevel: logLevel}
 }
 
 func (g Git) Clone(name, dest, branch string) (err error) {
 	log.Info().Msgf("cloning repo %s/%s to %s - branch: %s", g.org, name, dest, branch)
-
-	repo, err := git.PlainClone("./"+dest, false, &git.CloneOptions{
+	cloneOptions := &git.CloneOptions{
 		URL: "https://github.com/" + g.org + "/" + name,
-	})
+	}
+	if g.logLevel == cli.LogLevelDebug {
+		cloneOptions.Progress = os.Stdout
+	}
+	repo, err := git.PlainClone("./"+dest, false, cloneOptions)
 	if err != nil {
 		if err.Error() != "repository already exists" {
 			return fmt.Errorf("unable to clone repo %s: %w", name, err)

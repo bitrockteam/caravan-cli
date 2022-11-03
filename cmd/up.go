@@ -31,14 +31,16 @@ var upCmd = &cobra.Command{
 			}
 			return err
 		}
+		c.LogLevel = logLevel
 
-		log.Info().Msgf("[%s] running up on project %s", c.Status, c.Name)
+		target := cli.ApplicationDeployDone
+		log.Info().Msgf("[%s->%s] running up on project %s", c.Status, target, c.Name)
 		prv, err := getProvider(ctx, c)
 		if err != nil {
 			return err
 		}
 		if c.Status < cli.InfraDeployDone {
-			log.Info().Msgf("[%s] infrastructure deployment starting", c.Status)
+			log.Info().Msgf("[%s->%s] infrastructure deployment starting", c.Status, target)
 			c.SaveStatus(cli.InfraDeployRunning)
 
 			err := prv.Deploy(ctx, cli.Infrastructure)
@@ -47,10 +49,10 @@ var upCmd = &cobra.Command{
 			}
 
 			c.SaveStatus(cli.InfraDeployDone)
-			log.Info().Msgf("[%s] infrastructure deployment completed", c.Status)
+			log.Info().Msgf("[%s->%s] infrastructure deployment completed", c.Status, target)
 		}
 		if c.Status < cli.InfraCheckDone {
-			log.Info().Msgf("[%s] infrastructure check starting", c.Status)
+			log.Info().Msgf("[%s->%s] infrastructure check starting", c.Status, target)
 			if err := checkStatus(c, "vault", 30); err != nil {
 				return err
 			}
@@ -79,11 +81,11 @@ var upCmd = &cobra.Command{
 				}
 			}
 			c.Save()
-			log.Info().Msgf("[%s] infrastructure check done", c.Status)
+			log.Info().Msgf("[%s->%s] infrastructure check done", c.Status, target)
 		}
 		if c.Status < cli.PlatformDeployDone {
 
-			log.Info().Msgf("[%s] platform deployment starting", c.Status)
+			log.Info().Msgf("[%s->%s] platform deployment starting", c.Status, target)
 			c.SaveStatus(cli.PlatformDeployRunning)
 
 			err := prv.Deploy(ctx, cli.Platform)
@@ -92,21 +94,21 @@ var upCmd = &cobra.Command{
 			}
 
 			c.SaveStatus(cli.PlatformDeployDone)
-			log.Info().Msgf("[%s] platform deployment completed", c.Status)
+			log.Info().Msgf("[%s->%s] platform deployment completed", c.Status, target)
 		}
 		if c.Status < cli.PlatformConsulDeployDone {
-			log.Info().Msgf("[%s] consul deployment check", c.Status)
+			log.Info().Msgf("[%s->%s] consul deployment check", c.Status, target)
 			c.SaveStatus(cli.PlatformConsulDeployRunning)
 			if err := checkURL(c, "consul", "/v1/connect/ca/roots", 60); err != nil {
 				return err
 			}
 			c.SaveStatus(cli.PlatformConsulDeployDone)
-			log.Info().Msgf("[%s] consul checks completed", c.Status)
+			log.Info().Msgf("[%s->%s] consul checks completed", c.Status, target)
 		}
 
 		if c.DeployNomad {
 			if c.Status < cli.ApplicationDeployDone {
-				log.Info().Msgf("[%s] application deployment starting", c.Status)
+				log.Info().Msgf("[%s->%s] application deployment starting", c.Status, target)
 				c.SaveStatus(cli.ApplicationDeployRunning)
 
 				err := prv.Deploy(ctx, cli.ApplicationSupport)
@@ -115,10 +117,10 @@ var upCmd = &cobra.Command{
 				}
 
 				c.SaveStatus(cli.ApplicationDeployDone)
-				log.Info().Msgf("[%s] deployment of application completed", c.Status)
+				log.Info().Msgf("[%s->%s] deployment of application completed", c.Status, target)
 			}
 		}
-		log.Info().Msgf("[%s] current status", c.Status)
+		log.Info().Msgf("[%s->%s] current status", c.Status, target)
 		return nil
 	},
 }

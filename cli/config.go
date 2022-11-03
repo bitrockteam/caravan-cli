@@ -13,6 +13,9 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
+const LogLevelInfo = "info"
+const LogLevelDebug = "debug"
+
 // Config is the main configuration data structure that is persisted to JSON.
 type Config struct {
 	Name                      string              `json:",omitempty"`
@@ -51,6 +54,7 @@ type Config struct {
 	LinuxOSVersion            string              `json:",omitempty"`
 	LinuxOS                   string              `json:",omitempty"`
 	Edition                   string              `json:",omitempty"`
+	LogLevel                  string              `json:",omitempty"`
 
 	GCPConfig
 	AzureConfig

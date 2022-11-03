@@ -34,7 +34,7 @@ var bakeCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
+		c.LogLevel = logLevel
 		p, err := getProvider(ctx, c)
 		if err != nil {
 			return err
@@ -44,7 +44,7 @@ var bakeCmd = &cobra.Command{
 			return err
 		}
 
-		git := git.NewGit("bitrockteam")
+		git := git.NewGit("bitrockteam", logLevel)
 		if err := git.Clone("caravan-baking", filepath.Join(c.WorkdirProject, "caravan-baking"), branch); err != nil {
 			return err
 		}
