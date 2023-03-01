@@ -262,7 +262,6 @@ func (a Helper) CreateServicePrincipal(ctx context.Context, tenantID, name strin
 	}
 
 	log.Info().Msgf("creating ad service principal for application [%s]", name)
-	time.Now().Add(time.Hour * 24 * 365)
 	sp, err := c.Create(ctx, graphrbac.ServicePrincipalCreateParameters{
 		AppID:          &appID,
 		AccountEnabled: to.Ptr(true),
